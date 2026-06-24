@@ -20,7 +20,7 @@ FounderOS takes a user's skills, budget, time, and goals — then deploys a mult
 | Frontend | Next.js 14, TailwindCSS |
 | Backend | FastAPI (Python) |
 | Agent Orchestration | LangGraph |
-| AI Model | Claude (Anthropic API) |
+| AI Model | OpenAI |
 | Memory | PostgreSQL |
 | Vector DB (optional) | ChromaDB / Qdrant |
 
