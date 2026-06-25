@@ -148,3 +148,35 @@ def test_founder_fit_analyze_returns_structured_output(cs_founder):
     assert out.agent_name == "Founder-Fit Agent"
     assert 0 <= out.score <= 10
     assert out.key_findings  # dimension scores surfaced as findings
+
+
+# ── LangGraph orchestration (Phase 3) ────────────────────────────────────────
+
+def test_analyst_fanout_all_three_present(cs_founder):
+    """A single /api/analyze call must return all three fanned-out analysts."""
+    from fastapi.testclient import TestClient
+    from backend.main import app
+
+    client = TestClient(app)
+    resp = client.post("/api/analyze", json={"profile": cs_founder.model_dump()})
+    assert resp.status_code == 200
+
+    names = {o["agent_name"] for o in resp.json()["agent_outputs"]}
+    assert {"Trend Analyst", "Finance Agent", "Growth Agent"}.issubset(names)
+    assert len(names) == 7  # response shape unchanged — all 7 agents
+
+
+@pytest.mark.asyncio
+async def test_run_graph_state_has_expected_keys(cs_founder):
+    """run_graph returns a state dict with all expected keys populated."""
+    from backend.graph import run_graph
+
+    state = await run_graph(cs_founder)
+
+    for key in ("startup_profile", "agent_outputs", "debate_rounds",
+                "top_ideas", "execution_plan", "final_memo", "errors"):
+        assert key in state, f"missing state key: {key}"
+
+    assert len(state["agent_outputs"]) == 7
+    assert state["errors"] == []
+    assert state["top_ideas"]  # at least one idea produced

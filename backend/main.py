@@ -10,25 +10,15 @@ Endpoints:
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-import json
+import asyncio
 
 from .config import settings
 from .models import (
     AnalyzeRequest,
     FeedbackRequest,
     VentureRecommendation,
-    AgentOutput,
 )
-from .agents import (
-    OpportunityScoutAgent,
-    TrendAnalystAgent,
-    FinanceAgent,
-    SkepticAgent,
-    GrowthAgent,
-    FounderFitAgent,
-    VenturePartnerAgent,
-)
-from .consensus.debate_engine import DebateEngine
+from .graph import run_graph
 
 # ─────────────────────────────────────────────
 # App Setup
@@ -56,92 +46,29 @@ recommendations_store: dict[str, dict] = {}
 # Core Orchestration
 # ─────────────────────────────────────────────
 
-def run_agent_society(profile, memory_context: str = "") -> VentureRecommendation:
+async def build_recommendation(profile, memory_context: str = "") -> VentureRecommendation:
     """
-    Orchestrate the full agent society pipeline:
-    Scout → Trend + Finance + Growth (parallel) → Skeptic → Founder-Fit → Debate → Venture Partner
+    Run the LangGraph agent society and assemble the API response.
+    Pipeline (see backend/graph.py):
+    Scout → Trend ∥ Finance ∥ Growth (parallel fan-out) → Skeptic → Founder-Fit → Debate → Venture Partner
     """
-
-    # --- Step 1: Scout opportunities ---
-    scout = OpportunityScoutAgent()
-    scout_output = scout.analyze(profile)
-    opportunities = scout_output.raw_data.get("opportunities", [])
-
-    context = {"opportunities": opportunities}
-
-    # --- Step 2: Parallel analysis (Trend, Finance, Growth) ---
-    trend = TrendAnalystAgent()
-    finance = FinanceAgent()
-    growth = GrowthAgent()
-
-    trend_output = trend.analyze(profile, context)
-    finance_output = finance.analyze(profile, context)
-    growth_output = growth.analyze(profile, context)
-
-    # Pass financial data to skeptic for reality-checking
-    finance_context = finance_output.raw_data.get("financial_analysis", [])
-    market_context = trend_output.raw_data.get("market_analysis", [])
-
-    # --- Step 3: Skeptic challenges everything ---
-    skeptic = SkepticAgent()
-    skeptic_output = skeptic.analyze(
-        profile,
-        {
-            **context,
-            "financial_analysis": finance_context,
-            "market_analysis": market_context,
-        },
-    )
-
-    # --- Step 4: Founder-Fit checks the human side (Skeptic → Founder-Fit → Venture Partner) ---
-    founder_fit = FounderFitAgent()
-    founder_fit_output = founder_fit.analyze(profile, context)
-
-    # --- Step 5: Debate Engine ---
-    all_outputs: dict[str, AgentOutput] = {
-        "Opportunity Scout": scout_output,
-        "Trend Analyst": trend_output,
-        "Finance Agent": finance_output,
-        "Growth Agent": growth_output,
-        "Skeptic Agent": skeptic_output,
-        "Founder-Fit Agent": founder_fit_output,
-    }
-
-    debate_engine = DebateEngine()
-    profile_context = (
-        f"Founder: {profile.name}, Budget: SGD {profile.budget}, "
-        f"Hours/week: {profile.weekly_hours}, Goals: {profile.goals}\n"
-        f"Memory context:\n{memory_context}"
-    )
-    debate_rounds, debate_summary = debate_engine.run(all_outputs, profile_context)
-
-    # --- Step 6: Venture Partner makes final call ---
-    vp = VenturePartnerAgent()
-    vp_context = {
-        "scout_output": scout_output,
-        "trend_output": trend_output,
-        "finance_output": finance_output,
-        "growth_output": growth_output,
-        "skeptic_output": skeptic_output,
-        "founder_fit_output": founder_fit_output,
-        "debate_summary": debate_summary,
-        "memory_context": memory_context,
-    }
-    vp_output = vp.analyze(profile, vp_context)
-
-    top_ideas, execution_plan = vp.build_structured_recommendation(
-        vp_output.raw_data, profile
-    )
+    state = await run_graph(profile, memory_context)
+    top_ideas = state.get("top_ideas", [])
 
     return VentureRecommendation(
         user_profile=profile,
-        agent_outputs=list(all_outputs.values()) + [vp_output],
-        debate_rounds=debate_rounds,
+        agent_outputs=list(state["agent_outputs"].values()),
+        debate_rounds=state.get("debate_rounds", []),
         top_ideas=top_ideas,
         recommended_idea=top_ideas[0] if top_ideas else None,
-        execution_plan=execution_plan,
-        final_memo=vp_output.analysis,
+        execution_plan=state.get("execution_plan"),
+        final_memo=state.get("final_memo", ""),
     )
+
+
+def run_agent_society(profile, memory_context: str = "") -> VentureRecommendation:
+    """Synchronous wrapper around the async graph — used by tests and any sync caller."""
+    return asyncio.run(build_recommendation(profile, memory_context))
 
 
 # ─────────────────────────────────────────────
@@ -160,13 +87,13 @@ def root():
 
 
 @app.post("/api/analyze", response_model=VentureRecommendation)
-def analyze(request: AnalyzeRequest):
+async def analyze(request: AnalyzeRequest):
     """
     Submit a founder profile and receive a full venture recommendation.
-    This is the main endpoint — runs the full agent society pipeline.
+    This is the main endpoint — runs the full agent society pipeline (LangGraph).
     """
     try:
-        recommendation = run_agent_society(request.profile)
+        recommendation = await build_recommendation(request.profile)
 
         # Persist in memory store
         recommendations_store[recommendation.recommendation_id] = (

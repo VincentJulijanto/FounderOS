@@ -7,11 +7,12 @@
 > **PRD / source of truth for phases:** `docs/blueprint.html` (Build Blueprint v1.0) — 10 phases (0–9).
 
 **Last updated:** 2026-06-25
-**Current phase:** Phase 3 — LangGraph Orchestration (NOT STARTED — up next)
-**Overall completion:** ~58% (Phases 0, 1, 2 done)
+**Current phase:** Phase 5 — Memory Loop (NEXT). Phase 4 (Debate) already built earlier.
+**Overall completion:** ~68% (Phases 0, 1, 2, 3 done; Phase 4 debate engine functional)
 **LLM mode:** mock (no API key yet — `USE_MOCK_LLM=true`)
-**Tests:** 10/10 passing (`python -m pytest -q` from repo root, inside `.venv`)
-**Branch:** `phase-2-agents` (ready to merge into `main`)
+**Tests:** 12/12 passing (`python -m pytest -q` from repo root, inside `.venv`)
+**Branch:** `phase-3-langgraph` (branched off `phase-2-agents`, NOT merged to main — awaiting
+partner discussion on the phase-2 branch)
 
 ---
 
@@ -22,9 +23,9 @@
 | 0 | Scaffold & Tooling | ✅ Done |
 | 1 | Provider & Mock Layer | ✅ Done |
 | 2 | Agent Abstraction + 7 Agents | ✅ Done (all 7 agents) |
-| 3 | LangGraph Orchestration | ⬜ Not started ← NEXT |
-| 4 | Debate & Consensus Engine | 🟡 Largely built, not the current focus |
-| 5 | Memory Loop (episodic + semantic) | 🟡 Modules written, NOT wired |
+| 3 | LangGraph Orchestration | ✅ Done (parallel analyst fan-out) |
+| 4 | Debate & Consensus Engine | 🟡 Built & wired as a graph node |
+| 5 | Memory Loop (episodic + semantic) | 🟡 Modules written, NOT wired ← NEXT |
 | 6 | MCP Integration | ⬜ Not started (placeholder pkg only) |
 | 7 | Frontend | 🟡 Components exist, integration unverified |
 | 8 | Benchmark Harness | ⬜ Not started (placeholder pkg only) |
@@ -32,23 +33,27 @@
 
 ---
 
-## What we JUST did (Phase 2 — COMPLETE, on branch `phase-2-agents`)
+## What we JUST did (Phase 3 — COMPLETE, on branch `phase-3-langgraph`)
 
-- **Task 1 — Audited all 6 existing agents.** All pass (subclass + `SYSTEM_PROMPT` +
-  `_mock_response()` + structured `analyze()`). No fixes needed.
-- **Task 2 — Built `agents/founder_fit.py`** (`FounderFitAgent`). Standalone `BaseAgent`,
-  `llm_model = DEEP_MODEL`, follows the scout.py pattern (module-level `_MOCK` + `SYSTEM_PROMPT`).
-  Scores 5 dimensions (founder_background, domain_expertise, execution_history, team_composition,
-  coachability) each with score+rationale, plus `overall_fit_score`, `strengths`, `gaps`, `summary`.
-  **`venture_partner.py` left untouched** (its founder-fit fields/prompt still exist — see Notes).
-- **Task 3 — Registered** in `agents/__init__.py` and `main.py`. Pipeline is now:
-  Scout → Trend/Finance/Growth → Skeptic → **Founder-Fit** → Debate → Venture Partner.
-  `founder_fit_output` also passed into `vp_context` (VP doesn't read it yet — VP untouched).
-- **Task 4 — Verified mock mode:** all 7 mock fixtures parse as valid JSON; full pipeline
-  returns 7 agent outputs including "Founder-Fit Agent". No malformed fixtures.
-- **Task 5 — Tests:** added `test_founder_fit_mock_returns_expected_keys` and
-  `test_founder_fit_analyze_returns_structured_output`; renamed/upgraded the six-agent test to
-  `test_all_seven_agents_appear_in_output` (now asserts exact set of 7). **10/10 passing.**
+- Installed `langgraph==0.1.9` into `.venv` (was in requirements.txt but never installed).
+- **Built `backend/graph.py`** — a LangGraph `StateGraph`. Nodes: scout → analysts → skeptic →
+  founder_fit → debate → venture_partner. State is a `TypedDict` (`GraphState`) with a dict-merge
+  reducer on `agent_outputs` and `operator.add` on `errors`.
+- **Parallel fan-out is real:** `analysts_node` runs Trend/Finance/Growth via
+  `asyncio.gather(asyncio.to_thread(...))`. Agents are sync, so `to_thread` gives true concurrency.
+  Proven: 3×0.5s injected delays complete in 0.52s (would be 1.5s sequential).
+- **Wired into `main.py`:** `/api/analyze` is now `async` and `await build_recommendation(profile)`
+  → `run_graph()`. Kept a **sync `run_agent_society` wrapper** (`asyncio.run`) so the existing
+  tests and any sync callers keep working. Removed now-unused agent/DebateEngine imports from main.
+- **Response shape unchanged** — verified over HTTP: 7 agents in order, execution plan, roadmap,
+  debate_rounds. Debate engine still runs (as a node), untouched.
+- **Tests:** added `test_analyst_fanout_all_three_present` (TestClient → /api/analyze, all 3
+  analysts + 7 total) and `test_run_graph_state_has_expected_keys` (async, asserts state keys).
+  **12/12 passing.**
+
+### Earlier (Phase 2 — on `phase-2-agents`, merged into this branch's history)
+- Built `FounderFitAgent` (7th agent, DEEP_MODEL, 5 dimensions). VP left untouched.
+  Registered between Skeptic and VP. Tests went 8 → 10.
 
 ## What's WORKING
 
@@ -62,8 +67,8 @@
 ## What's NOT working / known gaps
 
 - Memory modules (`memory/episodic.py`, `memory/semantic.py`) are written but **not wired** into
-  `main.py` — recommendations use an in-memory dict; nothing learns yet. (Phase 5 — later.)
-- No LangGraph orchestration — `main.py` runs agents **sequentially**, not in parallel. (Phase 3.)
+  the graph — recommendations use an in-memory dict; nothing learns yet. `run_graph` already
+  threads a `memory_context` param end-to-end, so Phase 5 is mostly integration. (NEXT.)
 - `mcp/` and `benchmark/` are placeholder packages only. (Phases 6, 8.)
 - Doc drift: `README.md` and `docs/architecture.md` say "Claude/Anthropic"; actual stack is Qwen.
 
@@ -92,7 +97,8 @@
 - `backend/agents/scout.py` — cleanest reference for a FAST agent
 - `backend/agents/venture_partner.py` — DEEP agent; contains the founder-fit prompt fragment to promote
 - `backend/agents/__init__.py` — agent registry/exports
-- `backend/main.py` — `run_agent_society()` pipeline + FastAPI endpoints
+- `backend/graph.py` — **LangGraph orchestrator** (`GraphState`, nodes, `run_graph()`); parallel analysts
+- `backend/main.py` — `build_recommendation()` (async) + `run_agent_society()` sync wrapper + endpoints
 - `backend/models.py` — `UserProfile`, `AgentOutput`, `StartupIdea`, etc.
 - `backend/tests/test_pipeline.py` — existing tests
 
