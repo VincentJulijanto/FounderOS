@@ -50,13 +50,14 @@ export default function ProfileForm({ onSubmit }: Props) {
     <div className="max-w-2xl mx-auto space-y-8 animate-slide-up">
 
       {/* Agent preview */}
-      <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-8">
+      <div className="grid grid-cols-4 md:grid-cols-7 gap-3 mb-8">
         {[
           { icon: '🔭', name: 'Scout' },
           { icon: '📈', name: 'Trend' },
           { icon: '💰', name: 'Finance' },
           { icon: '🚀', name: 'Growth' },
           { icon: '🎯', name: 'Skeptic' },
+          { icon: '🧩', name: 'Founder-Fit' },
           { icon: '🤝', name: 'Partner' },
         ].map(agent => (
           <div key={agent.name} className="card text-center py-3 px-2 opacity-60 hover:opacity-100 transition-opacity">
@@ -184,7 +185,7 @@ export default function ProfileForm({ onSubmit }: Props) {
       </button>
 
       <p className="text-center text-xs text-gray-600">
-        6 AI agents will analyse your profile and debate the best startup for you.
+        7 AI agents will analyse your profile and debate the best startup for you.
         This typically takes 30–90 seconds.
       </p>
     </div>

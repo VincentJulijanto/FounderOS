@@ -12,6 +12,7 @@ const AGENTS = [
   { icon: '💰', name: 'Finance Agent', role: 'Running financial models...', color: 'border-yellow-700 bg-yellow-950/40' },
   { icon: '🚀', name: 'Growth Agent', role: 'Building acquisition strategy...', color: 'border-purple-700 bg-purple-950/40' },
   { icon: '🎯', name: 'Skeptic Agent', role: 'Challenging assumptions...', color: 'border-red-700 bg-red-950/40' },
+  { icon: '🧩', name: 'Founder-Fit Agent', role: 'Scoring founder–opportunity fit...', color: 'border-teal-700 bg-teal-950/40' },
   { icon: '🤝', name: 'Venture Partner', role: 'Synthesising recommendation...', color: 'border-orange-700 bg-orange-950/40' },
 ]
 

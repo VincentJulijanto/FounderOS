@@ -156,7 +156,7 @@ export default function Home() {
               Your AI Venture Studio
             </h1>
             <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              A society of 6 specialized AI agents will scout, debate, and build
+              A society of 7 specialized AI agents will scout, debate, and build
               your complete startup execution plan — tailored to your skills and budget.
             </p>
           </div>

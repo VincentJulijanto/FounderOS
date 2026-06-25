@@ -7,21 +7,24 @@ User Input (Profile)
         │
         ▼
 ┌──────────────────────────────────────────────────┐
-│                 FastAPI Backend                   │
+│           FastAPI Backend (LangGraph)             │
 │                                                  │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
-│  │  Scout   │  │  Trend   │  │ Finance  │  ← parallel
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘       │
-│       │              │              │             │
-│       └──────────────┼──────────────┘             │
-│                      │                           │
-│              ┌───────┴───────┐                   │
-│              │  Growth Agent │                   │
+│              ┌───────────────┐                   │
+│              │  Scout Agent  │ ← discovers       │
 │              └───────┬───────┘                   │
+│                      │                           │
+│  ┌──────────┐  ┌─────┴────┐  ┌──────────┐       │
+│  │  Trend   │  │ Finance  │  │  Growth  │  ← parallel fan-out
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘       │
+│       └──────────────┼──────────────┘             │
 │                      │                           │
 │              ┌───────┴───────┐                   │
 │              │ Skeptic Agent │ ← challenges all  │
 │              └───────┬───────┘                   │
+│                      │                           │
+│           ┌──────────┴──────────┐                │
+│           │ Founder-Fit Agent   │ ← founder match│
+│           └──────────┬──────────┘                │
 │                      │                           │
 │           ┌──────────┴──────────┐                │
 │           │   Debate Engine     │ ← conflict res │
@@ -48,13 +51,15 @@ User Input (Profile)
 
 ## Agent Architecture
 
-Each agent is a Python class extending `BaseAgent`:
+There are **7 agents**: Scout, Trend Analyst, Finance, Growth, Skeptic, Founder-Fit,
+and Venture Partner. Each is a Python class extending `BaseAgent`:
 
 ```
 BaseAgent
-├── _call_claude(system, user_msg) → str    # Claude API call
+├── _call_llm(system, user_msg) → str       # Qwen (DashScope) API call
 ├── _parse_json(text) → dict               # JSON extraction
 ├── _format_profile(profile) → str         # Shared formatter
+├── _mock_response() → str                 # Per-agent mock JSON (offline mode)
 └── analyze(profile, context) → AgentOutput  # Override in subclass
 ```
 
@@ -68,7 +73,7 @@ UserProfile + context_dict
         │
         ├─ _format_profile(profile)
         ├─ Build user_message with context
-        ├─ _call_claude(SYSTEM_PROMPT, user_message)
+        ├─ _call_llm(SYSTEM_PROMPT, user_message)
         ├─ _parse_json(raw_response)
         └─ return AgentOutput(...)
 ```
@@ -83,7 +88,7 @@ Step 1: Conflict Detection
 
 Step 2: Debate Rounds (up to 3)
   For each round:
-    conflicts + agent_outputs → Claude → DebateRound
+    conflicts + agent_outputs → Qwen → DebateRound
     (agents argue, revise positions, moderator decides)
     if resolution_achieved: break
 
@@ -135,7 +140,7 @@ New session starts
  Session completes → update episodic DB
       │
       ▼
- Extract semantic insights (Claude analysis)
+ Extract semantic insights (Qwen analysis)
       │
       ▼
  Upsert semantic DB (confidence++)
@@ -217,9 +222,9 @@ VentureRecommendation
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
-| LLM | Claude (Anthropic) | Best reasoning, structured output |
+| LLM | Qwen (qwen-turbo / qwen-plus via DashScope) | Strong reasoning, JSON mode, cost-effective |
 | Framework | FastAPI | Async, auto-docs, Pydantic native |
-| Orchestration | Direct + LangGraph | Simple first, LangGraph for scale |
+| Orchestration | LangGraph (StateGraph) | Parallel analyst fan-out via asyncio.gather + to_thread |
 | Memory | PostgreSQL | Reliable, queryable, production-ready |
 | Frontend | Next.js 14 + Tailwind | App Router, TypeScript, fast dev |
 | Deployment | Vercel (FE) + Railway (BE) | Free tier for hackathon |

@@ -126,16 +126,16 @@ Click **"Launch Agent Society →"**
 ## 💡 Judge Q&A Prep
 
 **Q: How is this different from ChatGPT?**  
-A: ChatGPT gives one response. FounderOS has 6 agents with opposing mandates — the Skeptic's job is to *challenge* the Scout. The conflict resolution is where the value comes from.
+A: ChatGPT gives one response. FounderOS has 7 agents with opposing mandates — the Skeptic's job is to *challenge* the Scout. The conflict resolution is where the value comes from.
 
 **Q: Does the memory actually work?**  
-A: For the hackathon, memory is in-memory store. Production version uses PostgreSQL with SQLAlchemy. The semantic extraction via Claude is fully implemented.
+A: For the hackathon, memory is in-memory store. Production version uses PostgreSQL with SQLAlchemy. The semantic extraction via Qwen is fully implemented.
 
 **Q: Can it handle different user types?**  
 A: Yes — we've tested with designers, marketers, non-technical users. The Founder Fit assessment ensures recommendations match actual skills.
 
 **Q: What's the latency?**  
-A: Full pipeline is ~45–90 seconds (6 LLM calls + debate rounds). For demo, can show pre-loaded result.
+A: Full pipeline is ~45–90 seconds (7 LLM calls + debate rounds). For demo, can show pre-loaded result.
 
 ---
 
@@ -143,7 +143,7 @@ A: Full pipeline is ~45–90 seconds (6 LLM calls + debate rounds). For demo, ca
 
 - [ ] Backend running locally (`uvicorn main:app --reload`)
 - [ ] Frontend running (`npm run dev`)
-- [ ] `.env` file with valid Anthropic API key
+- [ ] `.env` file with valid `QWEN_API_KEY` (DashScope)
 - [ ] Pre-loaded fallback result in case of API issues
 - [ ] Profile form pre-filled with Alex's data (saves 30 seconds)
 - [ ] Browser at full screen, dark mode
