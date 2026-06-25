@@ -7,12 +7,48 @@
 > **PRD / source of truth for phases:** `docs/blueprint.html` (Build Blueprint v1.0) — 10 phases (0–9).
 
 **Last updated:** 2026-06-25
-**Current phase:** Phase 5 — Memory Loop (NEXT). Phase 4 (Debate) already built earlier.
-**Overall completion:** ~68% (Phases 0, 1, 2, 3 done; Phase 4 debate engine functional)
+**Current phase:** Phase 5 — Memory Loop (NEXT — start only now that Sprints A/B/C are handled).
+Phase 4 (Debate) built earlier; Phase 7 (Frontend) now wired to real data.
+**Overall completion:** ~74% (Phases 0–3 done; Phase 4 debate functional; Phase 7 frontend wired)
 **LLM mode:** mock (no API key yet — `USE_MOCK_LLM=true`)
 **Tests:** 12/12 passing (`python -m pytest -q` from repo root, inside `.venv`)
 **Branch:** `phase-3-langgraph` (branched off `phase-2-agents`, NOT merged to main — awaiting
 partner discussion on the phase-2 branch)
+
+---
+
+## Audit follow-up sprints (2026-06-25) — A ✅ / B ⏸ deferred / C ✅
+
+### Sprint A — pre-flight cleanup ✅ (commit `6f12541`)
+- **A1 Tailwind:** added `frontend/postcss.config.js`; added the color shades the UI
+  actually uses but were undefined (`brand-400/800/950`, `accent-400`). `npm run build`
+  now compiles and the UI is styled (was unstyled — no postcss config + purged classes).
+- **A2 Founder-Fit score:** VP no longer emits its own number. `venture_partner.py` reads
+  `context["founder_fit_output"]` and overwrites `founder_fit_score` on every idea with the
+  dedicated agent's score; also feeds the canonical number into the VP prompt summary.
+  Verified: FounderFitAgent **6.6** == StartupCard **6.6** (was 6.6 vs 8.2).
+- **A3 Doc drift:** README / architecture.md / demo_script.md → Qwen (not Claude), 7 agents
+  (not 6), LangGraph parallel fan-out, real memory stack (PostgreSQL+Qwen, no Chroma/Qdrant).
+  Frontend "6 agents" text + icon rosters → 7 everywhere.
+
+### Sprint B — live smoke test ⏸ DEFERRED, NOT RUN (no API key)
+- **No `.env` / no `QWEN_API_KEY` available** at audit time (user chose "proceed to C, defer B").
+- **Still required before trusting live mode.** Nothing about real-model behaviour is verified:
+  whether all 7 agents return parseable JSON, whether `_parse_json` survives real Qwen output,
+  whether the debate engine actually fires (`debate_rounds > 0`) on real conflicts. **Run this
+  before relying on live mode or demoing with a key.**
+
+### Sprint C — AgentDebate wired to real data ✅ (commit `c779f1f`)
+- Removed the hardcoded "AI Study Buddy / NUS" debate fixture and the fake
+  `setTimeout('debating', 3000)` timer. AgentDebate now renders the real 7-agent roster
+  (live roles + scores), real `debate_rounds` (conflicts / revised positions / moderator
+  verdict), and the real `debate_summary`, all from `/api/analyze` props.
+- Backend now exposes `debate_summary` on `VentureRecommendation`.
+- **Known limitation (ties to Sprint B):** in **mock mode the debate engine returns
+  `_MOCK_NO_CONFLICT` → 0 rounds**, so the debate centerpiece only shows the consensus
+  message. The round-by-round UI is built and handles real rounds, but needs a **live key**
+  to populate. Deliberately did NOT fabricate mock conflicts (that's the fake content the
+  audit removed). Consider a representative mock-debate fixture later if demoing keyless.
 
 ---
 
@@ -27,7 +63,7 @@ partner discussion on the phase-2 branch)
 | 4 | Debate & Consensus Engine | 🟡 Built & wired as a graph node |
 | 5 | Memory Loop (episodic + semantic) | 🟡 Modules written, NOT wired ← NEXT |
 | 6 | MCP Integration | ⬜ Not started (placeholder pkg only) |
-| 7 | Frontend | 🟡 Components exist, integration unverified |
+| 7 | Frontend | 🟡 Wired to real data (AgentDebate live); not browser-smoke-tested with a key |
 | 8 | Benchmark Harness | ⬜ Not started (placeholder pkg only) |
 | 9 | Go Live (insert keys) | ⬜ Not started |
 
@@ -69,16 +105,21 @@ partner discussion on the phase-2 branch)
 - Memory modules (`memory/episodic.py`, `memory/semantic.py`) are written but **not wired** into
   the graph — recommendations use an in-memory dict; nothing learns yet. `run_graph` already
   threads a `memory_context` param end-to-end, so Phase 5 is mostly integration. (NEXT.)
+  - **REQUIRED Phase 5 fix (do not defer):** even though `memory_context` is threaded into the
+    graph and into `vp_context["memory_context"]`, the **VP prompt never uses it** — once memory
+    is wired, the VP must actually fold `memory_context` into its user message / synthesis, or
+    learning won't influence recommendations. This is part of Phase 5, not a later cleanup.
 - `mcp/` and `benchmark/` are placeholder packages only. (Phases 6, 8.)
-- Doc drift: `README.md` and `docs/architecture.md` say "Claude/Anthropic"; actual stack is Qwen.
+- **Sprint B not run** — real-model JSON parsing / debate-firing unverified (see audit section).
+- ~~Doc drift~~ ✅ fixed in Sprint A (Claude→Qwen, 6→7 agents, LangGraph fan-out, real memory stack).
 
 ## Phase 2 notes / deviations
 
-- **Founder-fit now lives in two places.** Per instruction, `venture_partner.py` was left
-  untouched — it still has its own `founder_fit_score` field + prompt fragment + `founder_fit_rationale`.
-  The new `FounderFitAgent` is the dedicated source of truth. Later (Phase 3/6 cleanup), the VP
-  should consume `founder_fit_output` from context instead of re-deriving its own — right now
-  `vp_context["founder_fit_output"]` is passed but ignored by `VenturePartnerAgent._compile_agent_summary`.
+- ~~**Founder-fit now lives in two places.**~~ ✅ RESOLVED in Sprint A2. `FounderFitAgent` is the
+  single source of truth: `VenturePartnerAgent.analyze` now reads `context["founder_fit_output"]`
+  and overwrites `founder_fit_score` on every idea with that agent's score (and surfaces the
+  canonical number in the VP prompt summary). VP's qualitative founder-fit prompt fragment +
+  `founder_fit_rationale` remain as guidance text only. UI now shows one consistent number (6.6).
 - Pipeline step comments in `main.py` were renumbered (Founder-Fit inserted as Step 4; Debate→5, VP→6).
 
 ## Architectural decisions / conventions to remember
@@ -105,5 +146,8 @@ partner discussion on the phase-2 branch)
 ## Next session should start by
 
 1. Reading this file.
-2. If Phase 2 is done: update the tracker and begin Phase 3 (LangGraph) or Phase 5 (wire memory).
-3. Running `python -m pytest -q` to confirm baseline is green before changing anything.
+2. Running `python -m pytest -q` to confirm baseline is green (12/12) before changing anything.
+3. **Begin Phase 5 (Memory Loop)** — Sprints A & C are done; B is deferred (no key). When wiring
+   memory, the **VP-uses-`memory_context` fix is mandatory inside Phase 5** (see gaps above).
+4. **Run Sprint B** (live smoke test) whenever a `QWEN_API_KEY` becomes available — it is still
+   outstanding and blocks any confidence in live-mode JSON parsing + debate firing.
