@@ -1,0 +1,150 @@
+"""
+Smoke tests for the FounderOS agent pipeline in mock mode.
+Run with: pytest backend/tests/test_pipeline.py -v
+No API key required — USE_MOCK_LLM=true by default.
+"""
+
+import pytest
+from backend.models import UserProfile, VentureRecommendation
+from backend.main import run_agent_society
+
+
+@pytest.fixture
+def cs_founder():
+    return UserProfile(
+        name="Alex Tan",
+        background="NUS Computer Science student, Year 2",
+        skills=["Python", "React", "machine learning"],
+        budget=500,
+        weekly_hours=10,
+        interests=["AI", "education", "productivity"],
+        goals="Earn SGD 2,000/month side income within 3 months",
+    )
+
+
+@pytest.fixture
+def design_founder():
+    return UserProfile(
+        name="Priya Sharma",
+        background="Graphic designer with 2 years freelance experience",
+        skills=["Figma", "brand design", "social media"],
+        budget=200,
+        weekly_hours=8,
+        interests=["sustainability", "e-commerce", "wellness"],
+        goals="Replace full-time salary with freelance + product income",
+    )
+
+
+# ── Schema completeness ───────────────────────────────────────────────────────
+
+def test_recommendation_has_required_fields(cs_founder):
+    rec = run_agent_society(cs_founder)
+    assert rec.recommendation_id
+    assert rec.user_profile.name == "Alex Tan"
+    assert isinstance(rec.agent_outputs, list)
+    assert isinstance(rec.debate_rounds, list)
+    assert isinstance(rec.top_ideas, list)
+    assert rec.recommended_idea is not None
+    assert rec.execution_plan is not None
+    assert rec.final_memo
+
+
+def test_top_idea_scores_in_range(cs_founder):
+    rec = run_agent_society(cs_founder)
+    idea = rec.top_ideas[0]
+    assert idea.name
+    assert 0 <= idea.startup_score <= 10
+    assert 0 <= idea.feasibility_score <= 10
+    assert 0 <= idea.market_attractiveness_score <= 10
+    assert 0 <= idea.founder_fit_score <= 10
+    assert 0 <= idea.risk_score <= 10
+    assert idea.risk_level in ("Low", "Medium", "High")
+
+
+def test_execution_plan_is_complete(cs_founder):
+    rec = run_agent_society(cs_founder)
+    plan = rec.execution_plan
+    assert plan.startup_name
+    assert plan.value_proposition
+    assert plan.customer_persona
+    assert plan.lean_canvas.problem
+    assert plan.lean_canvas.solution
+    assert plan.lean_canvas.revenue_streams
+    assert plan.mvp_scope
+    assert plan.elevator_pitch
+    assert len(plan.thirty_day_roadmap) >= 4
+
+
+def test_outreach_templates_present(cs_founder):
+    rec = run_agent_society(cs_founder)
+    templates = rec.execution_plan.customer_outreach_templates
+    assert "cold_email" in templates
+    assert "linkedin_dm" in templates
+
+
+# ── Agent society shape ───────────────────────────────────────────────────────
+
+def test_all_seven_agents_appear_in_output(cs_founder):
+    rec = run_agent_society(cs_founder)
+    names = {o.agent_name for o in rec.agent_outputs}
+    expected = {
+        "Opportunity Scout", "Trend Analyst", "Finance Agent",
+        "Growth Agent", "Skeptic Agent", "Founder-Fit Agent", "Venture Partner",
+    }
+    assert expected == names, f"Missing or extra agents: {expected ^ names}"
+
+
+def test_mock_mode_skips_debate(cs_founder):
+    # Mock conflict detector returns no conflicts → debate rounds = 0
+    rec = run_agent_society(cs_founder)
+    assert rec.debate_rounds == []
+
+
+# ── Pipeline is deterministic in mock mode ───────────────────────────────────
+
+def test_two_runs_same_profile_same_top_idea(cs_founder):
+    rec_a = run_agent_society(cs_founder)
+    rec_b = run_agent_society(cs_founder)
+    assert rec_a.top_ideas[0].name == rec_b.top_ideas[0].name
+
+
+# ── Different profiles both succeed ──────────────────────────────────────────
+
+def test_design_founder_pipeline_succeeds(design_founder):
+    rec = run_agent_society(design_founder)
+    assert rec.recommendation_id
+    assert rec.top_ideas[0].name
+
+
+# ── Founder-Fit agent (Phase 2) ──────────────────────────────────────────────
+
+def test_founder_fit_mock_returns_expected_keys(cs_founder):
+    from backend.agents import FounderFitAgent
+
+    agent = FounderFitAgent()
+    data = agent._parse_json(agent._mock_response())
+
+    # 5 dimensions, each with a numeric score and a rationale
+    expected_dims = {
+        "founder_background", "domain_expertise", "execution_history",
+        "team_composition", "coachability",
+    }
+    assert set(data["dimensions"]) == expected_dims
+    for dim in expected_dims:
+        d = data["dimensions"][dim]
+        assert isinstance(d["score"], (int, float))
+        assert 0 <= d["score"] <= 10
+        assert d["rationale"]
+
+    # overall score + summary
+    assert 0 <= data["overall_fit_score"] <= 10
+    assert data["summary"]
+
+
+def test_founder_fit_analyze_returns_structured_output(cs_founder):
+    from backend.agents import FounderFitAgent
+
+    out = FounderFitAgent().analyze(cs_founder, {"opportunities": []})
+    assert out.agent_name == "Founder-Fit Agent"
+    assert 0 <= out.score <= 10
+    assert out.key_findings  # dimension scores surfaced as findings
