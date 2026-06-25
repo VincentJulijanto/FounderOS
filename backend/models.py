@@ -131,9 +131,9 @@ class VentureRecommendation(BaseModel):
     user_profile: UserProfile
     agent_outputs: List[AgentOutput]
     debate_rounds: List[DebateRound]
-    top_ideas: List[StartupIdea]            # top 3
-    recommended_idea: StartupIdea           # #1 pick
-    execution_plan: ExecutionPlan
+    top_ideas: List[StartupIdea]                  # top 3
+    recommended_idea: Optional[StartupIdea] = None  # None only if model returned no ideas
+    execution_plan: Optional[ExecutionPlan] = None
     final_memo: str                         # investment-style write-up
     created_at: datetime = Field(default_factory=datetime.utcnow)
 

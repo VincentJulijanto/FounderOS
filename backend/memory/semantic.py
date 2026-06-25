@@ -13,8 +13,8 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import String, Text, DateTime, Integer, select
-import anthropic
 from ..config import settings
+from ..llm.provider import QwenProvider, DEEP_MODEL
 
 
 class SemanticBase(DeclarativeBase):
@@ -63,14 +63,18 @@ Only extract insights with clear evidence. Don't speculate.
 """
 
 
+_EXTRACTION_SYSTEM = "You are a memory analyst. Respond with valid JSON only."
+
+
 class SemanticMemory:
     """
     Extracts and stores semantic insights about a user.
-    Uses Claude to analyse episodic history and surface patterns.
+    Uses Qwen to analyse episodic history and surface patterns.
     """
 
     def __init__(self):
-        self.client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+        self.provider = QwenProvider(model=DEEP_MODEL)
+        self.mock = self.provider.mock
 
     async def extract_and_store(
         self,
@@ -85,17 +89,14 @@ class SemanticMemory:
         if not episodic_history or episodic_history == "No previous sessions found.":
             return []
 
-        # Ask Claude to extract patterns
+        if self.mock:
+            return []
+
         prompt = EXTRACTION_PROMPT.format(history=episodic_history)
-        response = self.client.messages.create(
-            model=settings.claude_model,
-            max_tokens=1000,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        raw = response.content[0].text
+        raw = self.provider.chat(_EXTRACTION_SYSTEM, prompt, max_tokens=1000)
 
         try:
-            data = json.loads(raw.strip().strip("```json").strip("```"))
+            data = json.loads(raw.strip())
             insights_data = data.get("insights", [])
         except (json.JSONDecodeError, AttributeError):
             return []
