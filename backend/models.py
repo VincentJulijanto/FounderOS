@@ -131,6 +131,7 @@ class VentureRecommendation(BaseModel):
     user_profile: UserProfile
     agent_outputs: List[AgentOutput]
     debate_rounds: List[DebateRound]
+    debate_summary: str = ""                       # consensus write-up (empty rounds = no conflicts)
     top_ideas: List[StartupIdea]                  # top 3
     recommended_idea: Optional[StartupIdea] = None  # None only if model returned no ideas
     execution_plan: Optional[ExecutionPlan] = None

@@ -59,6 +59,7 @@ async def build_recommendation(profile, memory_context: str = "") -> VentureReco
         user_profile=profile,
         agent_outputs=list(state["agent_outputs"].values()),
         debate_rounds=state.get("debate_rounds", []),
+        debate_summary=state.get("debate_summary", ""),
         top_ideas=top_ideas,
         recommended_idea=top_ideas[0] if top_ideas else None,
         execution_plan=state.get("execution_plan"),

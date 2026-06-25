@@ -12,6 +12,7 @@ export interface VentureRecommendation {
   recommendation_id: string
   agent_outputs: AgentOutput[]
   debate_rounds: DebateRound[]
+  debate_summary: string
   top_ideas: StartupIdea[]
   recommended_idea: StartupIdea
   execution_plan: ExecutionPlanData
@@ -94,11 +95,9 @@ export default function Home() {
   const handleSubmit = async (profileData: Record<string, unknown>) => {
     setPhase('analyzing')
     setError(null)
+    setRecommendation(null)
 
     try {
-      // Simulate phase transitions for demo effect
-      setTimeout(() => setPhase('debating'), 3000)
-
       const res = await fetch(`${API_URL}/api/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -111,8 +110,10 @@ export default function Home() {
       }
 
       const data: VentureRecommendation = await res.json()
+      // Real data has arrived — drive the debate view from it, then let the
+      // user advance to the full plan. (No fake timer-based phase transition.)
       setRecommendation(data)
-      setPhase('results')
+      setPhase('debating')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
       setPhase('input')
@@ -176,7 +177,13 @@ export default function Home() {
 
         {/* Phase: Analyzing / Debating */}
         {(phase === 'analyzing' || phase === 'debating') && (
-          <AgentDebate phase={phase} />
+          <AgentDebate
+            phase={phase}
+            agentOutputs={recommendation?.agent_outputs}
+            debateRounds={recommendation?.debate_rounds}
+            debateSummary={recommendation?.debate_summary}
+            onContinue={() => setPhase('results')}
+          />
         )}
 
         {/* Phase: Results */}
