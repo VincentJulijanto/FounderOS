@@ -54,6 +54,7 @@ class GraphState(TypedDict, total=False):
     # Filled by later nodes
     debate_rounds: list
     debate_summary: str
+    consensus: Any
     top_ideas: list
     execution_plan: Any
     final_memo: str
@@ -144,8 +145,13 @@ def debate_node(state: GraphState) -> dict:
         f"Hours/week: {profile.weekly_hours}, Goals: {profile.goals}\n"
         f"Memory context:\n{state.get('memory_context', '')}"
     )
-    debate_rounds, debate_summary = DebateEngine().run(outputs, profile_context)
-    return {"debate_rounds": debate_rounds, "debate_summary": debate_summary}
+    debate_rounds, consensus = DebateEngine().run(outputs, profile_context)
+    # debate_summary mirrors consensus.summary so VP context + response shape are unchanged.
+    return {
+        "debate_rounds": debate_rounds,
+        "debate_summary": consensus.summary,
+        "consensus": consensus,
+    }
 
 
 def venture_partner_node(state: GraphState) -> dict:
@@ -210,7 +216,7 @@ async def run_graph(profile: UserProfile, memory_context: str = "") -> GraphStat
     Run the full agent society and return the final graph state.
 
     The state contains: agent_outputs (all 7), debate_rounds, debate_summary,
-    top_ideas, execution_plan, final_memo, errors.
+    consensus (ConsensusReport), top_ideas, execution_plan, final_memo, errors.
     """
     initial: GraphState = {
         "startup_profile": profile,

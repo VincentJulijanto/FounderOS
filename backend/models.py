@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
@@ -57,6 +59,7 @@ class ConflictPoint(BaseModel):
     agent_b: str
     agent_b_position: str
     severity: str   # "low" | "medium" | "high"
+    resolved: bool = False   # set per round; backward-compatible default
 
 
 class DebateRound(BaseModel):
@@ -65,6 +68,23 @@ class DebateRound(BaseModel):
     revised_positions: Dict[str, str]   # agent_name -> revised stance
     resolution_achieved: bool
     moderator_summary: str
+
+
+class ConsensusReport(BaseModel):
+    """
+    Quantified outcome of the debate. consensus_score is a *resolution rate* —
+    how much of the severity-weighted disagreement the society resolved — NOT a
+    measure of idea quality. A run that resolves one trivial conflict (10.0) is
+    not "better" than one that surfaces three hard ones and resolves two (6.0).
+    Labels describe agreement only.
+    """
+    consensus_score: float                       # 0–10, severity-weighted resolution rate
+    label: str                                   # agreement label (see debate_engine bands)
+    total_conflicts: int
+    resolved_conflicts: int
+    unresolved_conflicts: List[ConflictPoint] = []   # structured, not just prose
+    rounds_used: int
+    summary: str                                 # human-readable write-up
 
 
 # ─────────────────────────────────────────────
@@ -131,7 +151,8 @@ class VentureRecommendation(BaseModel):
     user_profile: UserProfile
     agent_outputs: List[AgentOutput]
     debate_rounds: List[DebateRound]
-    debate_summary: str = ""                       # consensus write-up (empty rounds = no conflicts)
+    debate_summary: str = ""                       # consensus write-up (mirrors consensus.summary)
+    consensus: Optional[ConsensusReport] = None    # quantified debate outcome
     top_ideas: List[StartupIdea]                  # top 3
     recommended_idea: Optional[StartupIdea] = None  # None only if model returned no ideas
     execution_plan: Optional[ExecutionPlan] = None

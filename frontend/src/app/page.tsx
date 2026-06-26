@@ -13,10 +13,21 @@ export interface VentureRecommendation {
   agent_outputs: AgentOutput[]
   debate_rounds: DebateRound[]
   debate_summary: string
+  consensus: ConsensusReport | null
   top_ideas: StartupIdea[]
   recommended_idea: StartupIdea
   execution_plan: ExecutionPlanData
   final_memo: string
+}
+
+export interface ConsensusReport {
+  consensus_score: number
+  label: string
+  total_conflicts: number
+  resolved_conflicts: number
+  unresolved_conflicts: ConflictPoint[]
+  rounds_used: number
+  summary: string
 }
 
 export interface AgentOutput {
@@ -44,6 +55,7 @@ export interface ConflictPoint {
   agent_b: string
   agent_b_position: string
   severity: string
+  resolved?: boolean
 }
 
 export interface StartupIdea {
@@ -182,6 +194,7 @@ export default function Home() {
             agentOutputs={recommendation?.agent_outputs}
             debateRounds={recommendation?.debate_rounds}
             debateSummary={recommendation?.debate_summary}
+            consensus={recommendation?.consensus}
             onContinue={() => setPhase('results')}
           />
         )}
