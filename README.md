@@ -19,10 +19,10 @@ FounderOS takes a user's skills, budget, time, and goals — then deploys a mult
 |-------|-----------|
 | Frontend | Next.js 14, TailwindCSS |
 | Backend | FastAPI (Python) |
-| Agent Orchestration | LangGraph |
-| AI Model | OpenAI |
-| Memory | PostgreSQL |
-| Vector DB (optional) | ChromaDB / Qdrant |
+| Agent Orchestration | LangGraph (parallel analyst fan-out) |
+| AI Model | Qwen (qwen-turbo / qwen-plus via DashScope API) |
+| Memory | PostgreSQL (SQLAlchemy async) |
+| Semantic memory | Qwen embeddings persisted in PostgreSQL — no separate vector DB |
 
 ---
 
@@ -36,12 +36,13 @@ founderos/
 │       └── components/     # ProfileForm, AgentDebate, StartupCard, ExecutionPlan
 │
 ├── backend/
-│   ├── agents/             # 6 specialized AI agents
+│   ├── agents/             # 7 specialized AI agents
 │   │   ├── scout.py        # Opportunity Scout
 │   │   ├── trend.py        # Trend Analyst
 │   │   ├── finance.py      # Finance Analyst
-│   │   ├── skeptic.py      # Devil's Advocate
 │   │   ├── growth.py       # Growth Strategist
+│   │   ├── skeptic.py      # Devil's Advocate
+│   │   ├── founder_fit.py  # Founder-Fit Agent
 │   │   └── venture_partner.py  # Final Decision Maker
 │   │
 │   ├── memory/
@@ -81,7 +82,7 @@ pip install -r requirements.txt
 
 ```bash
 cp .env.example .env
-# Edit .env with your Anthropic API key and DB connection
+# Edit .env with your QWEN_API_KEY (DashScope) and DB connection
 ```
 
 ### 3. Run Backend
@@ -107,17 +108,21 @@ Frontend runs at `http://localhost:3000`, API at `http://localhost:8000`.
 ### Pipeline
 
 ```
-                  ┌─────────────────┐
-                  │  Trend Analyst  │
-                  ├─────────────────┤
-  ┌───────┐       │ Finance Analyst │       ┌─────────┐     ┌───────────────┐     ┌──────────────────┐
-  │ Scout │ ───►  ├─────────────────┤ ───►  │ Skeptic │ ──► │ Debate Engine │ ──► │ Venture Partner  │
-  └───────┘       │ Growth Strategist│      └─────────┘     └───────────────┘     └──────────────────┘
-                  └─────────────────┘
-   discover         analyze (parallel)        challenge         resolve conflicts      final decision
+                  ┌──────────────────┐
+                  │  Trend Analyst   │
+                  ├──────────────────┤
+  ┌───────┐       │ Finance Analyst  │      ┌─────────┐    ┌─────────────┐    ┌───────────────┐    ┌──────────────────┐
+  │ Scout │ ───►  ├──────────────────┤ ──►  │ Skeptic │ ─► │ Founder-Fit │ ─► │ Debate Engine │ ─► │ Venture Partner  │
+  └───────┘       │ Growth Strategist│      └─────────┘    └─────────────┘    └───────────────┘    └──────────────────┘
+                  └──────────────────┘
+   discover        analyze (parallel)        challenge        founder match       resolve conflicts      final decision
 
-Scout → [Trend + Finance + Growth] → Skeptic → Debate Engine → Venture Partner
+Scout → [Trend ∥ Finance ∥ Growth] → Skeptic → Founder-Fit → Debate Engine → Venture Partner
 ```
+
+The three analyst agents (Trend, Finance, Growth) fan out concurrently via LangGraph
+(`asyncio.gather` + `asyncio.to_thread`); every other stage runs sequentially on real
+data dependencies.
 
 | Agent | Role | Output |
 |-------|------|--------|
@@ -126,6 +131,7 @@ Scout → [Trend + Finance + Growth] → Skeptic → Debate Engine → Venture P
 | **Finance** | Estimates costs & revenue | Financial feasibility score |
 | **Growth** | Plans acquisition strategy | Go-to-market plan |
 | **Skeptic** | Challenges assumptions | Risk report |
+| **Founder-Fit** | Scores founder–opportunity match across 5 dimensions | Founder-fit score |
 | **Venture Partner** | Facilitates consensus & decides | Investment-style memo |
 
 ---

@@ -164,6 +164,14 @@ class VenturePartnerAgent(BaseAgent):
         raw = self._call_llm(SYSTEM_PROMPT, user_message, max_tokens=4000)
         data = self._parse_json(raw)
 
+        # Founder-Fit is owned by the dedicated FounderFitAgent. Defer to its score
+        # for the final field so the UI never shows two conflicting numbers; the VP's
+        # own founder-fit prompt fragment stays as qualitative guidance only.
+        ff_output = context.get("founder_fit_output")
+        if ff_output is not None:
+            for idea in data.get("top_ideas", []):
+                idea["founder_fit_score"] = ff_output.score
+
         return AgentOutput(
             agent_name=self.name,
             role=self.role,
@@ -206,6 +214,11 @@ class VenturePartnerAgent(BaseAgent):
             lines.append(f"SKEPTIC: {sk.analysis[:200]}")
             if sk.concerns:
                 lines.append(f"  Top concerns: {'; '.join(sk.concerns[:2])}")
+
+        if context.get("founder_fit_output"):
+            ff = context["founder_fit_output"]
+            lines.append(f"FOUNDER-FIT (canonical score {ff.score}/10): {ff.analysis[:200]}")
+            lines.append(f"  Use {ff.score}/10 as the founder_fit_score for every idea.")
 
         return "\n".join(lines) if lines else "No agent outputs available."
 
