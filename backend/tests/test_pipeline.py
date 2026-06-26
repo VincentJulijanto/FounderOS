@@ -94,10 +94,105 @@ def test_all_seven_agents_appear_in_output(cs_founder):
     assert expected == names, f"Missing or extra agents: {expected ^ names}"
 
 
-def test_mock_mode_skips_debate(cs_founder):
-    # Mock conflict detector returns no conflicts → debate rounds = 0
+# ── Debate & consensus engine (Phase 4) ──────────────────────────────────────
+
+import json
+import pytest
+from backend.consensus import debate_engine
+from backend.consensus.debate_engine import DebateEngine
+
+
+def test_debate_runs_in_mock(cs_founder):
+    """Mock now produces a representative negotiation — debate is exercised keyless."""
     rec = run_agent_society(cs_founder)
-    assert rec.debate_rounds == []
+    assert len(rec.debate_rounds) == 2          # 2-round fixture
+    assert rec.consensus is not None
+    assert rec.debate_summary == rec.consensus.summary  # mirrored, not divergent
+
+
+def test_conflict_parsing():
+    """Detector parses the three fixture conflicts with correct severities/parties."""
+    conflicts, has_conflicts, summary = DebateEngine().detect_conflicts({})
+    assert has_conflicts is True
+    assert summary                                # conflict_summary surfaced
+    assert len(conflicts) == 3
+    topics = {c.topic for c in conflicts}
+    assert "Paid acquisition vs zero ad budget" in topics
+    severities = sorted(c.severity for c in conflicts)
+    assert severities == ["high", "low", "medium"]
+    # Two conflicts involve the Skeptic (willingness-to-pay, timeline).
+    skeptic_involved = [
+        c for c in conflicts
+        if "skeptic" in c.agent_a.lower() or "skeptic" in c.agent_b.lower()
+    ]
+    assert len(skeptic_involved) == 2
+
+
+def test_per_round_subset():
+    """Each round debates only the conflicts still open — round 2 ⊂ round 1."""
+    rounds, _ = DebateEngine().run_debate(
+        {}, DebateEngine().detect_conflicts({})[0], "ctx"
+    )
+    assert len(rounds) == 2
+    r1_topics = {c.topic for c in rounds[0].conflicts_identified}
+    r2_topics = {c.topic for c in rounds[1].conflicts_identified}
+    assert len(r1_topics) == 3
+    assert r2_topics == {"Willingness to pay"}    # only the unresolved one carries forward
+    assert r2_topics < r1_topics
+
+
+def test_early_resolution_break(monkeypatch):
+    """If a round resolves everything, the loop stops there (no spinning)."""
+    all_resolved = json.dumps({
+        "debate_exchanges": [
+            {"conflict_topic": "Paid acquisition vs zero ad budget", "resolved": True,
+             "agent_a_rebuttal": "", "agent_b_rebuttal": "", "moderator_verdict": ""},
+            {"conflict_topic": "Willingness to pay", "resolved": True,
+             "agent_a_rebuttal": "", "agent_b_rebuttal": "", "moderator_verdict": ""},
+            {"conflict_topic": "Launch timeline realism", "resolved": True,
+             "agent_a_rebuttal": "", "agent_b_rebuttal": "", "moderator_verdict": ""},
+        ],
+        "revised_positions": {},
+        "overall_resolution_achieved": True,
+        "round_summary": "All conflicts resolved in one round.",
+    })
+    monkeypatch.setattr(debate_engine, "_MOCK_ROUNDS", [all_resolved])
+
+    rounds, report = DebateEngine().run(({}), "ctx")
+    assert len(rounds) == 1
+    assert report.consensus_score == 10.0
+    assert report.resolved_conflicts == 3
+    assert report.unresolved_conflicts == []
+
+
+def test_consensus_score_value():
+    """The worked example: 4.5 / 7.5 → 6.0, Moderate, 1 unresolved (medium, Skeptic)."""
+    _, report = DebateEngine().run({}, "ctx")
+    assert report.consensus_score == 6.0
+    assert report.label == "Moderate consensus"
+    assert report.total_conflicts == 3
+    assert report.resolved_conflicts == 2
+    assert len(report.unresolved_conflicts) == 1
+    unresolved = report.unresolved_conflicts[0]
+    assert unresolved.topic == "Willingness to pay"
+    assert unresolved.severity == "medium"
+    assert unresolved.resolved is False
+    assert "skeptic" in (unresolved.agent_a + unresolved.agent_b).lower()
+
+
+def test_consensus_no_conflicts(monkeypatch):
+    """No conflicts detected → full consensus, score 10.0, zero rounds."""
+    monkeypatch.setattr(debate_engine, "_MOCK_CONFLICTS", json.dumps({
+        "conflicts": [],
+        "has_significant_conflicts": False,
+        "conflict_summary": "Agents aligned.",
+    }))
+    rounds, report = DebateEngine().run({}, "ctx")
+    assert rounds == []
+    assert report.consensus_score == 10.0
+    assert report.label == "Full consensus (no conflicts)"
+    assert report.total_conflicts == 0
+    assert report.rounds_used == 0
 
 
 # ── Pipeline is deterministic in mock mode ───────────────────────────────────
