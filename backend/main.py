@@ -25,6 +25,7 @@ from .agents import (
     FinanceAgent,
     SkepticAgent,
     GrowthAgent,
+    FounderFitAgent,
     VenturePartnerAgent,
 )
 from .consensus.debate_engine import DebateEngine
@@ -58,7 +59,7 @@ recommendations_store: dict[str, dict] = {}
 def run_agent_society(profile, memory_context: str = "") -> VentureRecommendation:
     """
     Orchestrate the full agent society pipeline:
-    Scout → Trend + Finance + Growth (parallel) → Skeptic → Debate → Venture Partner
+    Scout → Trend + Finance + Growth (parallel) → Skeptic → Founder-Fit → Debate → Venture Partner
     """
 
     # --- Step 1: Scout opportunities ---
@@ -92,13 +93,18 @@ def run_agent_society(profile, memory_context: str = "") -> VentureRecommendatio
         },
     )
 
-    # --- Step 4: Debate Engine ---
+    # --- Step 4: Founder-Fit checks the human side (Skeptic → Founder-Fit → Venture Partner) ---
+    founder_fit = FounderFitAgent()
+    founder_fit_output = founder_fit.analyze(profile, context)
+
+    # --- Step 5: Debate Engine ---
     all_outputs: dict[str, AgentOutput] = {
         "Opportunity Scout": scout_output,
         "Trend Analyst": trend_output,
         "Finance Agent": finance_output,
         "Growth Agent": growth_output,
         "Skeptic Agent": skeptic_output,
+        "Founder-Fit Agent": founder_fit_output,
     }
 
     debate_engine = DebateEngine()
@@ -109,7 +115,7 @@ def run_agent_society(profile, memory_context: str = "") -> VentureRecommendatio
     )
     debate_rounds, debate_summary = debate_engine.run(all_outputs, profile_context)
 
-    # --- Step 5: Venture Partner makes final call ---
+    # --- Step 6: Venture Partner makes final call ---
     vp = VenturePartnerAgent()
     vp_context = {
         "scout_output": scout_output,
@@ -117,6 +123,7 @@ def run_agent_society(profile, memory_context: str = "") -> VentureRecommendatio
         "finance_output": finance_output,
         "growth_output": growth_output,
         "skeptic_output": skeptic_output,
+        "founder_fit_output": founder_fit_output,
         "debate_summary": debate_summary,
         "memory_context": memory_context,
     }
@@ -143,7 +150,13 @@ def run_agent_society(profile, memory_context: str = "") -> VentureRecommendatio
 
 @app.get("/")
 def root():
-    return {"message": "FounderOS API is running 🚀", "version": "1.0.0"}
+    return {
+        "message": "FounderOS API is running",
+        "version": "1.0.0",
+        "llm_mode": "live" if settings.is_live else "mock",
+        "model": settings.qwen_model if settings.is_live else "mock-fixture",
+        "tip": None if settings.is_live else "Set QWEN_API_KEY and USE_MOCK_LLM=false in .env to go live.",
+    }
 
 
 @app.post("/api/analyze", response_model=VentureRecommendation)

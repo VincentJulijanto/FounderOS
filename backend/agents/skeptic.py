@@ -1,6 +1,24 @@
+import json
 from typing import Dict, Any
 from .base import BaseAgent
+from ..llm.provider import DEEP_MODEL
 from ..models import UserProfile, AgentOutput
+
+_MOCK = json.dumps({
+    "risk_reports": [
+        {
+            "opportunity_name": "AI Study Buddy",
+            "failure_risks": [
+                {"risk": "API cost scaling", "probability": "Medium", "mitigation": "Implement per-user limits"},
+                {"risk": "Student churn after exam season", "probability": "Medium", "mitigation": "Year-round content"},
+            ],
+            "risk_score": 4,
+            "verdict": "PROCEED_WITH_CAUTION",
+        }
+    ],
+    "least_risky": "AI Study Buddy",
+    "overall_concern": "[MOCK] Skeptic analysis. Add QWEN_API_KEY for real results.",
+})
 
 
 SYSTEM_PROMPT = """
@@ -47,6 +65,10 @@ Output format:
 class SkepticAgent(BaseAgent):
     name = "Skeptic Agent"
     role = "Risk Analysis & Devil's Advocate"
+    llm_model = DEEP_MODEL  # needs careful reasoning to challenge assumptions
+
+    def _mock_response(self) -> str:
+        return _MOCK
 
     def analyze(self, profile: UserProfile, context: Dict[str, Any] = {}) -> AgentOutput:
         opportunities = context.get("opportunities", [])
@@ -75,7 +97,7 @@ class SkepticAgent(BaseAgent):
             "Be specific about risks. Don't hold back."
         )
 
-        raw = self._call_claude(SYSTEM_PROMPT, user_message)
+        raw = self._call_llm(SYSTEM_PROMPT, user_message)
         data = self._parse_json(raw)
 
         risk_reports = data.get("risk_reports", [])

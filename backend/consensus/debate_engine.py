@@ -11,10 +11,11 @@ This demonstrates true Agent Society behaviour.
 """
 
 import json
-import anthropic
+import re
 from typing import Dict, Any
 from ..config import settings
 from ..models import AgentOutput, ConflictPoint, DebateRound
+from ..llm.provider import QwenProvider, DEEP_MODEL
 
 
 MAX_DEBATE_ROUNDS = 3
@@ -85,21 +86,27 @@ Respond in JSON:
 }}
 """
 
+_MOCK_NO_CONFLICT = json.dumps({
+    "conflicts": [],
+    "has_significant_conflicts": False,
+    "conflict_summary": "Mock mode — no conflicts evaluated. Add QWEN_API_KEY for real debate.",
+})
+
+
+_DEBATE_SYSTEM = "You are a debate moderator at an AI Venture Studio. Respond with valid JSON only."
+
 
 class DebateEngine:
     def __init__(self):
-        self.client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+        self.mock = settings.use_mock_llm or not settings.qwen_api_key
+        self.provider = QwenProvider(model=DEEP_MODEL)
 
-    def _call_claude(self, prompt: str, max_tokens: int = 2000) -> str:
-        response = self.client.messages.create(
-            model=settings.claude_model,
-            max_tokens=max_tokens,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        return response.content[0].text
+    def _call_llm(self, prompt: str, max_tokens: int = 2000) -> str:
+        if self.mock:
+            return _MOCK_NO_CONFLICT
+        return self.provider.chat(_DEBATE_SYSTEM, prompt, max_tokens)
 
     def _parse_json(self, text: str) -> Dict[str, Any]:
-        import re
         fence_match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text)
         if fence_match:
             text = fence_match.group(1)
@@ -127,14 +134,11 @@ class DebateEngine:
         self,
         agent_outputs: Dict[str, AgentOutput],
     ) -> tuple[list[ConflictPoint], bool]:
-        """
-        Compare agent outputs and identify significant disagreements.
-        Returns (list of ConflictPoints, has_significant_conflicts).
-        """
+        """Compare agent outputs and identify significant disagreements."""
         formatted = self._format_agent_outputs(agent_outputs)
         prompt = CONFLICT_DETECTION_PROMPT.format(agent_outputs=formatted)
 
-        raw = self._call_claude(prompt)
+        raw = self._call_llm(prompt)
         data = self._parse_json(raw)
 
         conflicts = [
@@ -162,10 +166,7 @@ class DebateEngine:
         conflicts: list[ConflictPoint],
         profile_context: str,
     ) -> tuple[list[DebateRound], str]:
-        """
-        Run up to MAX_DEBATE_ROUNDS rounds of debate.
-        Returns (list of DebateRounds, final consensus summary).
-        """
+        """Run up to MAX_DEBATE_ROUNDS rounds of debate."""
         debate_rounds: list[DebateRound] = []
         current_positions = {
             name: output.analysis for name, output in agent_outputs.items()
@@ -188,7 +189,7 @@ class DebateEngine:
                 max_rounds=MAX_DEBATE_ROUNDS,
             )
 
-            raw = self._call_claude(prompt, max_tokens=2500)
+            raw = self._call_llm(prompt, max_tokens=2500)
             data = self._parse_json(raw)
 
             round_result = DebateRound(
@@ -200,14 +201,12 @@ class DebateEngine:
             )
             debate_rounds.append(round_result)
 
-            # Update running positions
             current_positions.update(data.get("revised_positions", {}))
 
             if data.get("overall_resolution_achieved", False):
                 resolution_achieved = True
                 break
 
-        # Build consensus summary for Venture Partner
         consensus_summary = self._build_consensus_summary(debate_rounds, resolution_achieved)
         return debate_rounds, consensus_summary
 
@@ -240,9 +239,7 @@ class DebateEngine:
         agent_outputs: Dict[str, AgentOutput],
         profile_context: str,
     ) -> tuple[list[DebateRound], str]:
-        """
-        Full debate pipeline: detect conflicts → debate → return rounds + summary.
-        """
+        """Full debate pipeline: detect conflicts → debate → return rounds + summary."""
         conflicts, has_conflicts = self.detect_conflicts(agent_outputs)
 
         if not has_conflicts or not conflicts:

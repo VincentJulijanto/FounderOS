@@ -1,6 +1,24 @@
+import json
 from typing import Dict, Any
 from .base import BaseAgent
 from ..models import UserProfile, AgentOutput
+
+_MOCK = json.dumps({
+    "opportunities": [
+        {
+            "name": "AI Study Buddy",
+            "tagline": "Your AI tutor, always available",
+            "description": "Personalised AI tutoring app for university students",
+            "skills_required": ["Python", "web development"],
+            "budget_required": "SGD 200",
+            "time_to_first_revenue": "3 weeks",
+            "revenue_model": "Monthly subscription",
+            "competitive_landscape": "Medium",
+        }
+    ],
+    "top_pick": "AI Study Buddy",
+    "scout_rationale": "[MOCK] Scout analysis. Add QWEN_API_KEY for real results.",
+})
 
 
 SYSTEM_PROMPT = """
@@ -40,6 +58,9 @@ class OpportunityScoutAgent(BaseAgent):
     name = "Opportunity Scout"
     role = "Market Opportunity Discovery"
 
+    def _mock_response(self) -> str:
+        return _MOCK
+
     def analyze(self, profile: UserProfile, context: Dict[str, Any] = {}) -> AgentOutput:
         profile_text = self._format_profile(profile)
 
@@ -50,7 +71,7 @@ class OpportunityScoutAgent(BaseAgent):
             "within their budget and weekly hours."
         )
 
-        raw = self._call_claude(SYSTEM_PROMPT, user_message)
+        raw = self._call_llm(SYSTEM_PROMPT, user_message)
         data = self._parse_json(raw)
 
         opportunities = data.get("opportunities", [])

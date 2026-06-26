@@ -1,6 +1,21 @@
+import json
 from typing import Dict, Any
 from .base import BaseAgent
 from ..models import UserProfile, AgentOutput
+
+_MOCK = json.dumps({
+    "growth_plans": [
+        {
+            "opportunity_name": "AI Study Buddy",
+            "primary_channel": "Campus ambassador program",
+            "time_to_first_customer_days": 14,
+            "growth_score": 7,
+            "estimated_cac_sgd": 8,
+        }
+    ],
+    "easiest_to_grow": "AI Study Buddy",
+    "growth_summary": "[MOCK] Growth analysis. Add QWEN_API_KEY for real results.",
+})
 
 
 SYSTEM_PROMPT = """
@@ -54,6 +69,9 @@ class GrowthAgent(BaseAgent):
     name = "Growth Agent"
     role = "Customer Acquisition & Go-To-Market Strategy"
 
+    def _mock_response(self) -> str:
+        return _MOCK
+
     def analyze(self, profile: UserProfile, context: Dict[str, Any] = {}) -> AgentOutput:
         opportunities = context.get("opportunities", [])
         profile_text = self._format_profile(profile)
@@ -70,7 +88,7 @@ class GrowthAgent(BaseAgent):
             f"{profile.weekly_hours} hours/week. Keep it executable."
         )
 
-        raw = self._call_claude(SYSTEM_PROMPT, user_message)
+        raw = self._call_llm(SYSTEM_PROMPT, user_message)
         data = self._parse_json(raw)
 
         growth_plans = data.get("growth_plans", [])

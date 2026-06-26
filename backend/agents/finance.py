@@ -1,6 +1,23 @@
+import json
 from typing import Dict, Any
 from .base import BaseAgent
 from ..models import UserProfile, AgentOutput
+
+_MOCK = json.dumps({
+    "financial_analysis": [
+        {
+            "opportunity_name": "AI Study Buddy",
+            "startup_cost_sgd": 300,
+            "revenue_month_3_sgd": 2000,
+            "break_even_months": 2,
+            "feasibility_score": 7,
+            "verdict": "FEASIBLE",
+            "funding_gap_sgd": 0,
+        }
+    ],
+    "top_financial_pick": "AI Study Buddy",
+    "financial_summary": "[MOCK] Finance analysis. Add QWEN_API_KEY for real results.",
+})
 
 
 SYSTEM_PROMPT = """
@@ -52,6 +69,9 @@ class FinanceAgent(BaseAgent):
     name = "Finance Agent"
     role = "Financial Feasibility Analysis"
 
+    def _mock_response(self) -> str:
+        return _MOCK
+
     def analyze(self, profile: UserProfile, context: Dict[str, Any] = {}) -> AgentOutput:
         opportunities = context.get("opportunities", [])
         profile_text = self._format_profile(profile)
@@ -68,7 +88,7 @@ class FinanceAgent(BaseAgent):
             "Be realistic and conservative in projections."
         )
 
-        raw = self._call_claude(SYSTEM_PROMPT, user_message)
+        raw = self._call_llm(SYSTEM_PROMPT, user_message)
         data = self._parse_json(raw)
 
         analysis = data.get("financial_analysis", [])

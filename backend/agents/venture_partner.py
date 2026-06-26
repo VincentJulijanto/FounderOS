@@ -1,6 +1,64 @@
+import json
 from typing import Dict, Any, List
 from .base import BaseAgent
+from ..llm.provider import DEEP_MODEL
 from ..models import UserProfile, AgentOutput, StartupIdea, ExecutionPlan, LeanCanvas
+
+_MOCK = json.dumps({
+    "top_ideas": [
+        {
+            "name": "AI Study Buddy",
+            "tagline": "Your AI tutor, always available",
+            "description": "Personalised AI tutoring app for university students",
+            "target_market": "University students in Singapore",
+            "startup_score": 7.5,
+            "feasibility_score": 8.0,
+            "market_attractiveness_score": 7.8,
+            "founder_fit_score": 8.2,
+            "risk_score": 3.5,
+            "revenue_potential": "SGD 2,000–5,000/month by month 3",
+            "estimated_monthly_revenue": "SGD 2000 by month 3",
+            "time_to_launch": "3 weeks",
+            "initial_investment": "SGD 300",
+            "risk_level": "Low",
+        }
+    ],
+    "execution_plan": {
+        "startup_name": "StudyAI",
+        "value_proposition": "Instant personalised academic help — any subject, any time",
+        "customer_persona": "Alex, 20, NUS CS student. Pain: expensive tutors. Goal: ace exams affordably.",
+        "lean_canvas": {
+            "problem": "Tutors are expensive. Office hours are limited.",
+            "solution": "AI tutor trained on university syllabi, available 24/7",
+            "unique_value_proposition": "Your personal AI tutor at SGD 9/month",
+            "unfair_advantage": "Deep integration with NUS/NTU module structures",
+            "customer_segments": "University students in Singapore",
+            "key_metrics": "DAU, session length, module coverage %",
+            "channels": "Campus ambassadors, TikTok, Reddit communities",
+            "cost_structure": "API costs SGD 50/mo, hosting SGD 20/mo",
+            "revenue_streams": "Monthly subscription SGD 9/student",
+        },
+        "mvp_scope": "Web app: upload lecture notes, ask questions, get AI answers with citations",
+        "landing_page_copy": "Struggling with your modules? Get instant AI help tailored to your syllabus.",
+        "marketing_strategy": "Week 1-2: Campus ambassador at NUS/NTU. Week 3-4: TikTok study-tip content.",
+        "customer_acquisition_plan": "Offer 7-day free trial via QR codes placed at university libraries.",
+        "elevator_pitch": "StudyAI gives every student a personal AI tutor for less than a coffee per week.",
+        "customer_outreach_templates": {
+            "cold_email": "Hi [Name], struggling with [Module]? StudyAI gives instant explanations tailored to your syllabus.",
+            "linkedin_dm": "Hey! I built an AI tutor for NUS/NTU students. Want free access for a week?",
+            "cold_call_script": "Hi, I am building an AI study tool for students — can I get 2 minutes of your time?",
+        },
+        "thirty_day_roadmap": [
+            "Week 1: Build MVP — note upload + Q&A interface",
+            "Week 2: Recruit 10 beta testers from your own faculty",
+            "Week 3: Collect feedback, fix top 3 issues, launch campus ambassador program",
+            "Week 4: First paid conversion push — email beta users with limited-time discount",
+        ],
+    },
+    "final_memo": "MOCK MODE ACTIVE — Add QWEN_API_KEY to .env and set USE_MOCK_LLM=false for real AI recommendations.",
+    "founder_fit_rationale": "Technical background aligns well with AI tool development.",
+    "key_risks_to_watch": ["API cost scaling", "Student willingness to pay", "Competition from free tools"],
+})
 
 
 SYSTEM_PROMPT = """
@@ -84,6 +142,10 @@ Output format:
 class VenturePartnerAgent(BaseAgent):
     name = "Venture Partner"
     role = "Consensus & Final Recommendation"
+    llm_model = DEEP_MODEL  # synthesis + full execution plan requires best model
+
+    def _mock_response(self) -> str:
+        return _MOCK
 
     def analyze(self, profile: UserProfile, context: Dict[str, Any] = {}) -> AgentOutput:
         profile_text = self._format_profile(profile)
@@ -99,7 +161,7 @@ class VenturePartnerAgent(BaseAgent):
             "Based on ALL of the above, produce your final recommendation."
         )
 
-        raw = self._call_claude(SYSTEM_PROMPT, user_message, max_tokens=4000)
+        raw = self._call_llm(SYSTEM_PROMPT, user_message, max_tokens=4000)
         data = self._parse_json(raw)
 
         return AgentOutput(

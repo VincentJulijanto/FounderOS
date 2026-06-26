@@ -1,57 +1,51 @@
 import json
 import re
-import anthropic
 from typing import Dict, Any
 from ..config import settings
 from ..models import UserProfile, AgentOutput
+from ..llm.provider import QwenProvider, FAST_MODEL
 
 
 class BaseAgent:
     """
     Base class for all FounderOS agents.
-    Provides shared Claude API access and JSON parsing utilities.
+
+    Subclasses set `llm_model` to control model tiering:
+      - FAST_MODEL (qwen-turbo)  — Scout, Trend, Finance, Growth
+      - DEEP_MODEL (qwen-plus)   — Skeptic, Venture Partner
     """
 
     name: str = "Base Agent"
     role: str = "Base"
+    llm_model: str = FAST_MODEL  # override in subclass for reasoning-heavy agents
 
     def __init__(self):
-        self.client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
-        self.model = settings.claude_model
+        self.mock = settings.use_mock_llm or not settings.qwen_api_key
+        self.provider = QwenProvider(model=self.llm_model)
 
     # ──────────────────────────────────────────
     # Core LLM Call
     # ──────────────────────────────────────────
 
-    def _call_claude(
-        self,
-        system_prompt: str,
-        user_message: str,
-        max_tokens: int = 2000,
-    ) -> str:
-        """Call Claude and return the raw text response."""
-        response = self.client.messages.create(
-            model=self.model,
-            max_tokens=max_tokens,
-            system=system_prompt,
-            messages=[{"role": "user", "content": user_message}],
-        )
-        return response.content[0].text
+    def _call_llm(self, system: str, user: str, max_tokens: int = 2000) -> str:
+        """Return mock fixture or live Qwen response depending on config."""
+        if self.mock:
+            return self._mock_response()
+        return self.provider.chat(system, user, max_tokens)
+
+    def _mock_response(self) -> str:
+        """Override in each subclass with a realistic fixture for mock mode."""
+        return json.dumps({"mock": True, "agent": self.name})
 
     # ──────────────────────────────────────────
     # JSON Parsing
     # ──────────────────────────────────────────
 
     def _parse_json(self, text: str) -> Dict[str, Any]:
-        """
-        Extract and parse JSON from a Claude response.
-        Handles raw JSON and ```json ... ``` code blocks.
-        """
-        # Strip markdown fences if present
+        """Extract and parse JSON from a Qwen response, handling markdown fences."""
         fence_match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text)
         if fence_match:
             text = fence_match.group(1)
-
         try:
             return json.loads(text.strip())
         except json.JSONDecodeError as e:

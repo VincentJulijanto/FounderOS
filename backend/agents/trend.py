@@ -1,6 +1,22 @@
+import json
 from typing import Dict, Any
 from .base import BaseAgent
 from ..models import UserProfile, AgentOutput
+
+_MOCK = json.dumps({
+    "market_analysis": [
+        {
+            "opportunity_name": "AI Study Buddy",
+            "market_size": "SGD 50M Singapore edtech",
+            "growth_rate": "35% YoY",
+            "demand_signals": ["Rising AI tool adoption", "Student cost pressures"],
+            "market_attractiveness_score": 8,
+            "verdict": "STRONG",
+        }
+    ],
+    "top_market_pick": "AI Study Buddy",
+    "trending_now": "[MOCK] Trend analysis. Add QWEN_API_KEY for real results.",
+})
 
 
 SYSTEM_PROMPT = """
@@ -43,6 +59,9 @@ class TrendAnalystAgent(BaseAgent):
     name = "Trend Analyst"
     role = "Market Trend & Demand Evaluation"
 
+    def _mock_response(self) -> str:
+        return _MOCK
+
     def analyze(self, profile: UserProfile, context: Dict[str, Any] = {}) -> AgentOutput:
         opportunities = context.get("opportunities", [])
         profile_text = self._format_profile(profile)
@@ -58,7 +77,7 @@ class TrendAnalystAgent(BaseAgent):
             "Provide detailed trend analysis and scores for each."
         )
 
-        raw = self._call_claude(SYSTEM_PROMPT, user_message)
+        raw = self._call_llm(SYSTEM_PROMPT, user_message)
         data = self._parse_json(raw)
 
         market_analysis = data.get("market_analysis", [])
