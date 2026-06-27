@@ -73,6 +73,11 @@ You have access to outputs from: Scout, Trend Analyst, Finance, Growth, and Skep
 Your job is to weigh all perspectives fairly — including the Skeptic's concerns — and make
 a balanced, high-conviction recommendation tailored to THIS specific founder.
 
+You are also given the founder's MEMORY — their past FounderOS sessions and the insights
+learned from them. Treat it as decisive context: do not re-recommend ideas the founder has
+already abandoned, respect learned constraints/preferences, and adjust ambition to their
+demonstrated execution track record. If memory says there is no prior history, ignore it.
+
 Also assess Founder Fit:
 - How well do their skills match the opportunity?
 - Can they realistically execute given their constraints?
@@ -154,11 +159,21 @@ class VenturePartnerAgent(BaseAgent):
         agent_summary = self._compile_agent_summary(context)
         debate_summary = context.get("debate_summary", "No debate conflicts identified.")
 
+        # Memory loop (Phase 5): fold this founder's history + learned insights into
+        # the prompt so prior outcomes actually steer the recommendation. Empty for
+        # first-time founders, in which case we tell the VP there is no prior history.
+        memory_context = (context.get("memory_context") or "").strip()
+        memory_block = memory_context if memory_context else (
+            "No prior FounderOS history for this founder — treat as a first session."
+        )
+
         user_message = (
             f"{profile_text}\n\n"
+            f"=== Founder Memory (past sessions & learned insights) ===\n{memory_block}\n\n"
             f"=== Agent Analysis Summary ===\n{agent_summary}\n\n"
             f"=== Debate Outcome ===\n{debate_summary}\n\n"
-            "Based on ALL of the above, produce your final recommendation."
+            "Based on ALL of the above — and explicitly accounting for the founder's "
+            "memory above — produce your final recommendation."
         )
 
         raw = self._call_llm(SYSTEM_PROMPT, user_message, max_tokens=4000)

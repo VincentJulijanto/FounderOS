@@ -19,6 +19,7 @@ from .models import (
     VentureRecommendation,
 )
 from .graph import run_graph
+from .memory import memory_store
 
 # ─────────────────────────────────────────────
 # App Setup
@@ -95,11 +96,28 @@ async def analyze(request: AnalyzeRequest):
     This is the main endpoint — runs the full agent society pipeline (LangGraph).
     """
     try:
-        recommendation = await build_recommendation(request.profile)
+        profile = request.profile
 
-        # Persist in memory store
+        # Memory loop (Phase 5) — load this founder's prior sessions + learned
+        # insights and feed them to the agent society (the VP folds them into its
+        # synthesis). Empty string for a first-time founder.
+        memory_context = memory_store.build_context(profile.user_id)
+
+        recommendation = await build_recommendation(profile, memory_context)
+
+        # Persist in the request store (kept for /api/recommendation/{id})
         recommendations_store[recommendation.recommendation_id] = (
             recommendation.model_dump()
+        )
+
+        # Record this session as an episodic memory so the next analysis can learn.
+        rec_idea = recommendation.recommended_idea
+        memory_store.record_session(
+            user_id=profile.user_id,
+            recommendation_id=recommendation.recommendation_id,
+            recommended_idea=rec_idea.name if rec_idea else "Unknown",
+            startup_score=rec_idea.startup_score if rec_idea else 0.0,
+            top_idea_names=[i.name for i in recommendation.top_ideas],
         )
 
         return recommendation
@@ -127,41 +145,38 @@ def submit_feedback(request: FeedbackRequest):
     if not rec:
         raise HTTPException(status_code=404, detail="Recommendation not found")
 
-    # Update in memory store (in production: update DB)
+    # Update the request store snapshot.
     rec["outcome"] = request.outcome
     rec["user_feedback"] = request.notes
     recommendations_store[request.recommendation_id] = rec
 
+    # Memory loop (Phase 5) — record the real outcome and re-derive semantic
+    # insights so the next analysis for this founder learns from it.
+    user_id = request.user_id or rec.get("user_profile", {}).get("user_id", "")
+    memory_store.update_outcome(
+        user_id=user_id,
+        recommendation_id=request.recommendation_id,
+        outcome=request.outcome,
+        feedback=request.notes,
+    )
+
     return {
         "status": "ok",
         "message": "Feedback recorded. Memory will improve future recommendations.",
+        "insights": memory_store.format_semantic(user_id),
     }
 
 
 @app.get("/api/memory/{user_id}")
 def get_memory(user_id: str):
     """
-    Get a user's memory summary (episodic + semantic).
-    In production, this reads from PostgreSQL.
+    Get a user's memory summary — real episodic history + learned semantic insights
+    from the in-process Memory Loop (Phase 5). Swap memory_store for the Postgres
+    services in production.
     """
-    # Filter recommendations for this user (hackathon version)
-    user_recs = [
-        {
-            "recommendation_id": rid,
-            "idea": r.get("recommended_idea", {}).get("name", "Unknown"),
-            "score": r.get("recommended_idea", {}).get("startup_score", 0),
-            "outcome": r.get("outcome", "pending"),
-        }
-        for rid, r in recommendations_store.items()
-        if r.get("user_profile", {}).get("user_id") == user_id
-    ]
-
-    return {
-        "user_id": user_id,
-        "session_count": len(user_recs),
-        "history": user_recs,
-        "note": "Connect PostgreSQL for full episodic + semantic memory.",
-    }
+    summary = memory_store.summary(user_id)
+    summary["note"] = "Connect PostgreSQL (EpisodicMemory/SemanticMemory) for durable memory."
+    return summary
 
 
 # ─────────────────────────────────────────────

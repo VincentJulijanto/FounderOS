@@ -6,14 +6,14 @@
 >
 > **PRD / source of truth for phases:** `docs/blueprint.html` (Build Blueprint v1.0) — 10 phases (0–9).
 
-**Last updated:** 2026-06-25
-**Current phase:** Phase 5 — Memory Loop (NEXT — start only now that Sprints A/B/C are handled).
-Phase 4 (Debate) built earlier; Phase 7 (Frontend) now wired to real data.
-**Overall completion:** ~74% (Phases 0–3 done; Phase 4 debate functional; Phase 7 frontend wired)
+**Last updated:** 2026-06-27
+**Current phase:** Phase 5 — Memory Loop ✅ DONE (this session). Phase 6 (MCP) is NEXT.
+Phase 4 (Debate) and Phase 3 (LangGraph) done earlier; Phase 7 (Frontend) wired to real data.
+**Overall completion:** ~82% (Phases 0–5 done; Phase 7 frontend wired; 6/8/9 remaining)
 **LLM mode:** mock (no API key yet — `USE_MOCK_LLM=true`)
-**Tests:** 12/12 passing (`python -m pytest -q` from repo root, inside `.venv`)
-**Branch:** `phase-3-langgraph` (branched off `phase-2-agents`, NOT merged to main — awaiting
-partner discussion on the phase-2 branch)
+**Tests:** 33/33 passing (`python -m pytest -q` from repo root, inside `.venv`) — +16 Phase 5 memory tests
+**Branch:** `phase-5-memory-loop` (branched off `main`, which now contains the merged
+Phase 3/4 work). Not yet merged — open a PR when partner-reviewed.
 
 ---
 
@@ -61,15 +61,41 @@ partner discussion on the phase-2 branch)
 | 2 | Agent Abstraction + 7 Agents | ✅ Done (all 7 agents) |
 | 3 | LangGraph Orchestration | ✅ Done (parallel analyst fan-out) |
 | 4 | Debate & Consensus Engine | 🟡 Built & wired as a graph node |
-| 5 | Memory Loop (episodic + semantic) | 🟡 Modules written, NOT wired ← NEXT |
-| 6 | MCP Integration | ⬜ Not started (placeholder pkg only) |
+| 5 | Memory Loop (episodic + semantic) | ✅ Done — wired end-to-end, in-process store, VP consumes it |
+| 6 | MCP Integration | ⬜ Not started (placeholder pkg only) ← NEXT |
 | 7 | Frontend | 🟡 Wired to real data (AgentDebate live); not browser-smoke-tested with a key |
 | 8 | Benchmark Harness | ⬜ Not started (placeholder pkg only) |
 | 9 | Go Live (insert keys) | ⬜ Not started |
 
 ---
 
-## What we JUST did (Phase 3 — COMPLETE, on branch `phase-3-langgraph`)
+## What we JUST did (Phase 5 — COMPLETE, on branch `phase-5-memory-loop`)
+
+- **Built `backend/memory/store.py`** — an in-process `MemoryStore` (singleton `memory_store`)
+  that backs the memory loop with **no Postgres / no API key** required. Holds episodic
+  `Episode`s + semantic `Insight`s per `user_id`, thread-safe. This is the active hackathon
+  backing; the Postgres `EpisodicMemory`/`SemanticMemory` modules remain as the production schema.
+- **`backend/memory/__init__.py` now lazy-imports the Postgres services** via `__getattr__`
+  (sqlalchemy/asyncpg are NOT installed) so `memory_store` is always importable keyless.
+- **Wired the full loop into `main.py`:**
+  - `/api/analyze` → `memory_store.build_context(user_id)` → passed to `build_recommendation`
+    → graph → VP. After the run it records an episodic entry (`record_session`).
+  - `/api/feedback` → `memory_store.update_outcome(...)` records the real outcome AND re-derives
+    semantic insights; the response now returns the refreshed `insights` block.
+  - `/api/memory/{user_id}` → returns real episodic history + learned semantic insights.
+- **MANDATORY VP fix DONE:** `venture_partner.py` now folds `memory_context` into its user
+  message (a `=== Founder Memory ===` block) and the SYSTEM_PROMPT instructs the VP to treat it
+  as decisive (don't re-recommend abandoned ideas, respect learned constraints). Empty history →
+  "treat as a first session." Verified by a test that captures the prompt.
+- **Semantic extraction is heuristic/rule-based** (deterministic, keyless) so learning actually
+  happens in mock mode: ≥2 abandonments → constraint, ≥2 launches → track-record pattern,
+  score baseline, recurring idea-name theme. Swap for the Qwen `SemanticMemory.extract_and_store`
+  when a key is available — same `[LABEL] value` output shape, no caller change.
+- **Tests:** added `backend/tests/test_memory.py` (16 tests) — store unit tests, insight
+  extraction, VP-prompt-uses-memory, two-user isolation, and HTTP end-to-end
+  (analyze→feedback→memory grows). **33/33 passing**, isolation/ordering verified.
+
+## What we did earlier (Phase 3 — COMPLETE, on branch `phase-3-langgraph`)
 
 - Installed `langgraph==0.1.9` into `.venv` (was in requirements.txt but never installed).
 - **Built `backend/graph.py`** — a LangGraph `StateGraph`. Nodes: scout → analysts → skeptic →
@@ -102,13 +128,12 @@ partner discussion on the phase-2 branch)
 
 ## What's NOT working / known gaps
 
-- Memory modules (`memory/episodic.py`, `memory/semantic.py`) are written but **not wired** into
-  the graph — recommendations use an in-memory dict; nothing learns yet. `run_graph` already
-  threads a `memory_context` param end-to-end, so Phase 5 is mostly integration. (NEXT.)
-  - **REQUIRED Phase 5 fix (do not defer):** even though `memory_context` is threaded into the
-    graph and into `vp_context["memory_context"]`, the **VP prompt never uses it** — once memory
-    is wired, the VP must actually fold `memory_context` into its user message / synthesis, or
-    learning won't influence recommendations. This is part of Phase 5, not a later cleanup.
+- ~~Memory modules not wired~~ ✅ RESOLVED in Phase 5. Memory loop runs end-to-end via the
+  in-process `memory_store`; the VP now consumes `memory_context`. **Known limitation:** the
+  active store is **in-process (per-process, resets on restart)** — durable Postgres
+  (`EpisodicMemory`/`SemanticMemory`) is written but needs sqlalchemy+asyncpg installed and a
+  running DB to activate. Semantic extraction is heuristic in mock mode; the Qwen extractor needs
+  a key (ties to Sprint B). Frontend does not yet surface memory (no feedback UI / memory panel).
 - `mcp/` and `benchmark/` are placeholder packages only. (Phases 6, 8.)
 - **Sprint B not run** — real-model JSON parsing / debate-firing unverified (see audit section).
 - ~~Doc drift~~ ✅ fixed in Sprint A (Claude→Qwen, 6→7 agents, LangGraph fan-out, real memory stack).
@@ -139,15 +164,22 @@ partner discussion on the phase-2 branch)
 - `backend/agents/venture_partner.py` — DEEP agent; contains the founder-fit prompt fragment to promote
 - `backend/agents/__init__.py` — agent registry/exports
 - `backend/graph.py` — **LangGraph orchestrator** (`GraphState`, nodes, `run_graph()`); parallel analysts
+- `backend/memory/store.py` — **in-process Memory Loop** (`MemoryStore`, `memory_store` singleton)
+- `backend/memory/episodic.py` / `semantic.py` — Postgres production schema (lazy-imported; not active)
 - `backend/main.py` — `build_recommendation()` (async) + `run_agent_society()` sync wrapper + endpoints
+  (now load/save memory around `/api/analyze`, learn on `/api/feedback`)
+- `backend/tests/test_memory.py` — Phase 5 memory-loop tests (16)
 - `backend/models.py` — `UserProfile`, `AgentOutput`, `StartupIdea`, etc.
 - `backend/tests/test_pipeline.py` — existing tests
 
 ## Next session should start by
 
 1. Reading this file.
-2. Running `python -m pytest -q` to confirm baseline is green (12/12) before changing anything.
-3. **Begin Phase 5 (Memory Loop)** — Sprints A & C are done; B is deferred (no key). When wiring
-   memory, the **VP-uses-`memory_context` fix is mandatory inside Phase 5** (see gaps above).
-4. **Run Sprint B** (live smoke test) whenever a `QWEN_API_KEY` becomes available — it is still
-   outstanding and blocks any confidence in live-mode JSON parsing + debate firing.
+2. Running `python -m pytest -q` to confirm baseline is green (33/33) before changing anything.
+3. **Begin Phase 6 (MCP Integration)** — `backend/mcp/` is a placeholder package only.
+4. Optional Phase 5 follow-ups: surface memory in the frontend (feedback UI + memory panel
+   hitting `/api/feedback` and `/api/memory/{user_id}`); activate durable Postgres memory
+   (install sqlalchemy+asyncpg, run a DB, swap `memory_store` for the Postgres services).
+5. **Run Sprint B** (live smoke test) whenever a `QWEN_API_KEY` becomes available — still
+   outstanding; blocks confidence in live-mode JSON parsing, debate firing, AND the Qwen
+   semantic-insight extractor (heuristic extraction is what runs keyless today).

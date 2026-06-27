@@ -103,6 +103,14 @@ Step 4: Pass to Venture Partner
 
 ## Memory Architecture
 
+> **Active backing (Phase 5):** the memory loop runs end-to-end through an **in-process
+> `MemoryStore`** (`backend/memory/store.py`) — no Postgres or API key required. Semantic
+> insights are extracted with deterministic rules so learning works keyless. The PostgreSQL
+> schema below is the **production** target (`EpisodicMemory`/`SemanticMemory`, lazy-imported);
+> the Qwen-based semantic extractor activates when a key is present. The loop wires into
+> `/api/analyze` (load context → feed Venture Partner → record episode) and `/api/feedback`
+> (record outcome → re-derive insights).
+
 ### Episodic Memory (PostgreSQL)
 ```
 Table: episodic_memory
