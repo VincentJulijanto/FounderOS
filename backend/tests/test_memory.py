@@ -6,6 +6,8 @@ insights → next analyze receives that memory → the Venture Partner prompt
 actually uses it.
 """
 
+import json
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -165,6 +167,64 @@ def test_vp_prompt_handles_empty_memory(founder, monkeypatch):
     monkeypatch.setattr(VenturePartnerAgent, "_call_llm", fake_call_llm)
     VenturePartnerAgent().analyze(founder, {})  # no memory_context key
     assert "first session" in captured["user"].lower()
+
+
+# ── Memory OBSERVABLY changes the recommendation (item-3 deliverable, keyless) ──
+# The prompt-level tests above prove memory reaches the VP. These prove it changes
+# the OUTPUT: same founder, empty vs seeded memory → different recommendation
+# CONTENT, not just an echoed memory string. This is the real keyless proof.
+
+
+def _seeded_abandonment_context() -> str:
+    """A realistic memory_context block for a founder who abandoned 2 ventures."""
+    store = MemoryStore()
+    store.record_session("u", "r1", "AI Tutor", 6.0)
+    store.record_session("u", "r2", "AI Study Coach", 6.5)
+    store.update_outcome("u", "r1", "abandoned")
+    store.update_outcome("u", "r2", "abandoned")
+    return store.build_context("u")
+
+
+def test_vp_output_shifts_when_memory_has_abandonment(founder):
+    vp = VenturePartnerAgent()
+    no_mem = vp.analyze(founder, {}).raw_data
+    seeded = vp.analyze(
+        founder, {"memory_context": _seeded_abandonment_context()}
+    ).raw_data
+
+    # Ranking shifts: the #1 pick moves away from the abandoned AI-tutor direction.
+    assert no_mem["top_ideas"][0]["name"] == "AI Study Buddy"
+    assert seeded["top_ideas"][0]["name"] != no_mem["top_ideas"][0]["name"]
+
+    # Meaningful fields differ — memo + execution plan, not just a timestamp.
+    assert seeded["final_memo"] != no_mem["final_memo"]
+    assert (
+        seeded["execution_plan"]["startup_name"]
+        != no_mem["execution_plan"]["startup_name"]
+    )
+
+    # And it reflects the SPECIFIC abandoned ideas, not a generic echo.
+    assert "AI Tutor" in seeded["final_memo"]
+    assert seeded.get("memory_informed") is True
+
+
+def test_vp_output_byte_identical_for_empty_memory(founder):
+    """Guard: with no memory the output is unchanged, so any diff above is the
+    memory loop's doing and nothing else."""
+    vp = VenturePartnerAgent()
+    a = vp.analyze(founder, {}).raw_data
+    b = vp.analyze(founder, {"memory_context": ""}).raw_data
+    assert json.dumps(a, sort_keys=True) == json.dumps(b, sort_keys=True)
+
+
+def test_agent_output_recommendations_reflect_memory(founder):
+    """The AgentOutput surface (what the graph/API consume) reflects the shift too."""
+    vp = VenturePartnerAgent()
+    no_mem = vp.analyze(founder, {})
+    seeded = vp.analyze(founder, {"memory_context": _seeded_abandonment_context()})
+
+    assert no_mem.recommendations[0] != seeded.recommendations[0]
+    assert no_mem.analysis != seeded.analysis  # final_memo surfaced as analysis
 
 
 # ── End-to-end through the HTTP API ───────────────────────────────────────────
