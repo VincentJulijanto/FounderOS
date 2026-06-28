@@ -157,6 +157,11 @@ class VentureRecommendation(BaseModel):
     recommended_idea: Optional[StartupIdea] = None  # None only if model returned no ideas
     execution_plan: Optional[ExecutionPlan] = None
     final_memo: str                         # investment-style write-up
+
+    # MCP (Phase 6) — provenance of the live market signals used this run.
+    mcp_used: bool = False                   # True if any MCP call returned live data
+    mcp_sources: List[str] = []              # deduped union of all agents' mcp_sources
+
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 

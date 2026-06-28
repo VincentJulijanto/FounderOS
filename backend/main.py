@@ -55,10 +55,19 @@ async def build_recommendation(profile, memory_context: str = "") -> VentureReco
     """
     state = await run_graph(profile, memory_context)
     top_ideas = state.get("top_ideas", [])
+    agent_outputs = list(state["agent_outputs"].values())
+
+    # MCP (Phase 6) — collect the provenance every agent attached to its output.
+    # mock sources are prefixed "[MOCK] "; any non-mock source means live data ran.
+    mcp_sources: list[str] = []
+    for out in agent_outputs:
+        mcp_sources.extend(out.raw_data.get("mcp_sources", []))
+    mcp_sources = list(dict.fromkeys(mcp_sources))  # dedupe, order-preserving
+    mcp_used = any(not s.startswith("[MOCK] ") for s in mcp_sources)
 
     return VentureRecommendation(
         user_profile=profile,
-        agent_outputs=list(state["agent_outputs"].values()),
+        agent_outputs=agent_outputs,
         debate_rounds=state.get("debate_rounds", []),
         debate_summary=state.get("debate_summary", ""),
         consensus=state.get("consensus"),
@@ -66,6 +75,8 @@ async def build_recommendation(profile, memory_context: str = "") -> VentureReco
         recommended_idea=top_ideas[0] if top_ideas else None,
         execution_plan=state.get("execution_plan"),
         final_memo=state.get("final_memo", ""),
+        mcp_used=mcp_used,
+        mcp_sources=mcp_sources,
     )
 
 
