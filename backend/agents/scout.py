@@ -2,6 +2,7 @@ import json
 from typing import Dict, Any
 from .base import BaseAgent
 from ..models import UserProfile, AgentOutput
+from ..mcp.client import mcp_client, run_sync
 
 _MOCK = json.dumps({
     "opportunities": [
@@ -64,8 +65,19 @@ class OpportunityScoutAgent(BaseAgent):
     def analyze(self, profile: UserProfile, context: Dict[str, Any] = {}) -> AgentOutput:
         profile_text = self._format_profile(profile)
 
+        # ── MCP (Phase 6): ground the scout in live market data before reasoning.
+        # The founder's primary interest stands in for the sector to probe; pre-scout
+        # there is no concrete startup name yet. Mock-safe — falls back to fixtures.
+        industry = profile.interests[0] if profile.interests else "technology startups"
+        crunchbase = run_sync(mcp_client.search_crunchbase(industry))
+        news = run_sync(mcp_client.fetch_news(industry))
+        mcp_sources = _dedupe(crunchbase.get("sources", []) + news.get("sources", []))
+        market_data_block = _format_market_data(crunchbase, news)
+
         user_message = (
             f"{profile_text}\n\n"
+            "## Live Market Data\n"
+            f"{market_data_block}\n\n"
             "Scout 5 startup opportunities for this founder. "
             "Prioritize opportunities that play to their strengths and can be launched "
             "within their budget and weekly hours."
@@ -89,5 +101,22 @@ class OpportunityScoutAgent(BaseAgent):
             raw_data={
                 "opportunities": opportunities,
                 "top_pick": top_pick,
+                "mcp_sources": mcp_sources,
             },
         )
+
+
+def _dedupe(items: list[str]) -> list[str]:
+    """Order-preserving de-duplication."""
+    return list(dict.fromkeys(items))
+
+
+def _format_market_data(crunchbase: Dict[str, Any], news: Dict[str, Any]) -> str:
+    """Render MCP results into a compact prompt block."""
+    lines = ["Comparable companies (Crunchbase):"]
+    for c in crunchbase.get("results", []):
+        lines.append(f"- {c.get('name')} — {c.get('funding_total')} ({c.get('last_round')}): {c.get('description')}")
+    lines.append("Recent news:")
+    for a in news.get("articles", []):
+        lines.append(f"- {a.get('headline')} ({a.get('source')}): {a.get('summary')}")
+    return "\n".join(lines)

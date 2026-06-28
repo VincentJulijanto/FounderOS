@@ -2,6 +2,7 @@ import json
 from typing import Dict, Any
 from .base import BaseAgent
 from ..models import UserProfile, AgentOutput
+from ..mcp.client import mcp_client, run_sync
 
 _MOCK = json.dumps({
     "market_analysis": [
@@ -71,14 +72,27 @@ class TrendAnalystAgent(BaseAgent):
             for opp in opportunities
         ) if opportunities else "No opportunities provided — generate general analysis."
 
+        # ── MCP (Phase 6): pull current web signals for the founder's sector.
+        # Mock-safe — falls back to deterministic fixtures with no credentials.
+        industry = profile.interests[0] if profile.interests else "technology"
+        web = run_sync(mcp_client.search_web(f"{industry} trends 2026"))
+        mcp_sources = list(dict.fromkeys(web.get("sources", [])))
+        signals_block = "\n".join(
+            f"- {r.get('title')}: {r.get('snippet')}"
+            for r in web.get("results", [])
+        ) or "No live signals available."
+
         user_message = (
             f"{profile_text}\n\n"
+            "## Current Signals\n"
+            f"{signals_block}\n\n"
             f"Evaluate market attractiveness for these opportunities:\n{opp_list}\n\n"
             "Provide detailed trend analysis and scores for each."
         )
 
         raw = self._call_llm(SYSTEM_PROMPT, user_message)
         data = self._parse_json(raw)
+        data["mcp_sources"] = mcp_sources
 
         market_analysis = data.get("market_analysis", [])
         top_pick = data.get("top_market_pick", "")
