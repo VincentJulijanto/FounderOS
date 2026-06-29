@@ -7,15 +7,16 @@
 > **PRD / source of truth for phases:** `docs/blueprint.html` (Build Blueprint v1.0) — 10 phases (0–9).
 
 **Last updated:** 2026-06-28
-**Current phase:** Phase 6 — MCP Integration ✅ DONE. Sprint B (live smoke test) RAN 2026-06-28 →
-🟠 **PARTIAL/BLOCKED: live mode is broken** (Skeptic truncates at `max_tokens=2000`; `/api/analyze`
-500s). Phase 7 (Frontend) + Phase 8 (Benchmark) remain; Phase 9 (Go Live) blocked on the Skeptic fix.
+**Current phase:** Phase 6 — MCP Integration ✅ DONE. Sprint B (live smoke test) ✅ **DONE 2026-06-28
+— live mode works, all 7 checks pass** (fixed max_tokens ceiling, output-model type coercion, and a
+cache-key collision; debate fires + memory influences output in live mode). Phase 7 (Frontend) +
+Phase 8 (Benchmark) remain; Phase 9 (Go Live) now unblocked.
 Phase 5 (Memory), Phase 4 (Debate), Phase 3 (LangGraph) done earlier.
 **Overall completion:** ~88% (Phases 0–6 done; Phase 7 frontend wired; 8/9 remaining)
 **LLM mode:** mock for the test suite (forced via `backend/tests/conftest.py`). A real `QWEN_API_KEY`
-exists in `.env` with `USE_MOCK_LLM=false`, so the **app boots in LIVE mode** and DashScope IS now
-reachable (direct call ~1s) — BUT the full pipeline 500s in live mode (see Sprint B). The test suite
-is hermetic (conftest pins mock) so `python -m pytest` works regardless. To demo keyless, set
+exists in `.env` with `USE_MOCK_LLM=false`, so the **app boots in LIVE mode**, DashScope is reachable,
+and the **full pipeline now works live end-to-end** (Sprint B ✅ — HTTP 200, ~90–240s/run). The test
+suite is hermetic (conftest pins mock) so `python -m pytest` works regardless. To demo keyless, set
 `USE_MOCK_LLM=true` in `.env`.
 **Tests:** 44/44 passing (`python -m pytest -q` from repo root, inside `.venv`) — +8 Phase 6 MCP tests
 **Branch:** `phase-6-mcp` (branched off `phase-5-memory-loop`). Not yet merged — open a PR when
@@ -37,8 +38,36 @@ partner-reviewed. Do NOT merge to main.
   (not 6), LangGraph parallel fan-out, real memory stack (PostgreSQL+Qwen, no Chroma/Qdrant).
   Frontend "6 agents" text + icon rosters → 7 everywhere.
 
-### Sprint B — live smoke test 🟠 RUN 2026-06-28 — **PARTIAL / BLOCKED** (live mode broken)
-- **Now ran with a real key** (`QWEN_API_KEY` present, `USE_MOCK_LLM=false`, DashScope reachable —
+### Sprint B — live smoke test ✅ **DONE 2026-06-28** — all 7 checks pass after 3 live-mode fixes
+- **RE-RUN RESULT (after fixes):** `POST /api/analyze` returns **HTTP 200** in live mode. Two
+  back-to-back runs for the same founder (`sprintb-mem2`, EdTech/EduPath profile):
+  - **Run 1 (empty memory):** 200 in 236s. 7 agents present, no `[MOCK]` in real output,
+    **debate fired: 1 round / 4 conflicts** (first time ever verified live), founder-fit aligned
+    (agent 7.0 == top-idea 7.0), `mcp_used=False` (correct), recommended **"ExamPrep Hub"** (8.2).
+  - **Run 2 (memory populated):** 200 in **91s** (Scout/analysts/Skeptic/Founder-Fit were cache
+    hits — identical prompts; **only VP + debate re-ran** because the memory block changed their
+    prompts). Output **differs**: recommended **"ExamPrep Hub (O-Level Math Only)"** — a memory-aware
+    refinement; `final_memo`, `top_ideas` order, and `debate_summary` all differ and the memo
+    references prior work. Memory grew to `session_count=2`. ✅ Step 4 (memory influences output).
+- **The 7 checks — ALL PASS:** 1 HTTP 200 ✅ · 2 all 7 agents, no truncation ✅ · 3 no `[MOCK]` in
+  agent outputs ✅ (mcp_sources `[MOCK]` labels excluded — by design) · 4 `debate_rounds=1 (>0)` ✅ ·
+  5 founder_fit aligned (7.0==7.0) ✅ · 6 `mcp_used=False` ✅ (correct — no live MCP creds) ·
+  7 VP `=== Founder Memory ===` block present (the "first session" note on run 1; the real session-1
+  history on run 2, proven by the memory-aware refined output) ✅.
+- **THREE live-mode bugs found & fixed (each invisible in mock mode):**
+  1. **`max_tokens=2000` ceiling** → Skeptic JSON truncated (`finish_reason='length'`). Fix: per-agent
+     `max_tokens` class attr on `BaseAgent`; Skeptic + VP → 6000. (commit `fix: raise max_tokens…`)
+  2. **Output-model type variance** → live Qwen returns text fields as lists/dicts/ints/null and score
+     fields as `'8/10'`-style strings. Fix: `mode='before'` coercion validators on `LeanCanvas`/
+     `StartupIdea`/`ExecutionPlan` (`_to_str`, `_to_float`, list/dict normalizers). (2 commits)
+  3. **Cache-key truncation** → `_cache_key` hashed only `system[:120]|user[:300]`; the VP memory block
+     sits past char 300, so run 2 collided with run 1's cached VP output (returned in ~0.03s),
+     silently defeating the memory loop. Fix: hash the full prompt. (commit `fix: hash full prompt…`)
+  All fixes are no-ops in mock mode → **44/44 tests still pass.**
+
+<details><summary>Original PARTIAL findings (2026-06-28, pre-fix) — kept for history</summary>
+
+- **Ran with a real key** (`QWEN_API_KEY` present, `USE_MOCK_LLM=false`, DashScope reachable —
   direct provider call returned valid JSON in ~1s). Ran `uvicorn backend.main:app` (live, no mock
   warnings) and `POST /api/analyze`. **Result: HTTP 500 — live mode does NOT work end-to-end.**
 - **ROOT CAUSE — Skeptic agent truncates at the token ceiling.** `BaseAgent` calls the LLM with
@@ -88,9 +117,10 @@ partner-reviewed. Do NOT merge to main.
     }'
   ```
   (`user_id` is optional — auto-generated if omitted; reuse the same one to exercise the memory loop.)
-- **FIX (deferred — not applied this sprint):** raise `max_tokens` for deep/large-output agents
-  (Skeptic, and likely VP next) to ~4000–8000, and/or cap per-opportunity verbosity / opportunity
-  count. Then re-run Sprint B and re-check items 1–7 + Step 4. No code changed in this commit.
+- **FIX (deferred at the time):** raise `max_tokens` for deep agents, coerce output-model types,
+  fix the cache key. **All applied in the re-run above — Sprint B now DONE.**
+
+</details>
 
 ### Sprint C — AgentDebate wired to real data ✅ (commit `c779f1f`)
 - Removed the hardcoded "AI Study Buddy / NUS" debate fixture and the fake
@@ -225,10 +255,9 @@ partner-reviewed. Do NOT merge to main.
 - ~~`mcp/` placeholder~~ ✅ RESOLVED in Phase 6 — real `MCPClient`, Scout/Trend wired, API surfaces
   `mcp_used`/`mcp_sources`. Live HTTP path unexercised (no `mcp_server_url`/network — see flags above).
 - `benchmark/` is a placeholder package only. (Phase 8.)
-- **🔴 LIVE MODE BROKEN (Sprint B, 2026-06-28):** `/api/analyze` 500s in live mode — the **Skeptic
-  agent** truncates its JSON at `max_tokens=2000` (`finish_reason='length'`). 6/7 agents work live;
-  Skeptic crashes; VP/debate never run. `debate_rounds>0` and the VP memory block remain UNVERIFIED.
-  Fix (deferred): raise `max_tokens` for deep agents. See Sprint B section for the full check-by-check report.
+- ~~🔴 LIVE MODE BROKEN~~ ✅ RESOLVED (Sprint B re-run, 2026-06-28). `/api/analyze` now returns 200
+  in live mode; all 7 checks pass; debate fires (1 round/4 conflicts) and memory influences the VP
+  across runs. Fixed: max_tokens ceiling, output-model type coercion, cache-key collision. See Sprint B.
 - ~~Doc drift~~ ✅ fixed in Sprint A (Claude→Qwen, 6→7 agents, LangGraph fan-out, real memory stack).
 
 ## Phase 2 notes / deviations
@@ -274,11 +303,11 @@ partner-reviewed. Do NOT merge to main.
 2. Running `python -m pytest -q` to confirm baseline is green (44/44) before changing anything.
 3. **Begin Phase 8 (Benchmark Harness)** — `backend/benchmark/` is a placeholder package only.
    (Phase 7 frontend is wired; consider surfacing `mcp_used`/`mcp_sources` + memory in the UI.)
-4. **Run Sprint B + MCP live verification together** now that a `QWEN_API_KEY` is present — but
-   ONLY on a host with network egress to DashScope (this sandbox has none). Confirms live-mode
-   JSON parsing, debate firing, the Qwen semantic extractor, AND the MCP live HTTP path
-   (needs `mcp_server_url` + MCP tokens — currently unset, so MCP runs mock).
-5. Decide on `.env`: it currently boots LIVE (`USE_MOCK_LLM=false` + key) but live calls hang
-   here. Set `USE_MOCK_LLM=true` to demo keyless, or keep live for a networked host.
+4. **Sprint B is DONE** (live mode verified ✅). Still outstanding for full live confidence:
+   the **MCP live HTTP path** (needs `mcp_server_url` + MCP tokens — currently unset, so MCP runs
+   mock) and the **Qwen semantic-insight extractor** (heuristic extraction runs keyless today).
+5. `.env` currently boots LIVE (`USE_MOCK_LLM=false` + key) and works. Set `USE_MOCK_LLM=true`
+   to demo keyless. NOTE: a full live run is slow (~90–240s) — the deep agents now emit up to
+   6000 tokens; budget client timeouts accordingly (the UI/curl needs a long timeout).
 6. Optional follow-ups: surface memory in the frontend (feedback UI + memory panel); activate
    durable Postgres memory (install sqlalchemy+asyncpg, run a DB, swap `memory_store`).
