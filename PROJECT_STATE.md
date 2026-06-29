@@ -61,15 +61,33 @@ partner-reviewed. Do NOT merge to main.
      Unverified since Phase 3.
   5. founder_fit alignment — **BLOCKED** (the alignment fix lives in the VP, which never runs;
      the Founder-Fit *agent* itself did produce a score in live mode).
-  6. `mcp_used` true — **BLOCKED + SEMANTIC MISMATCH**: no response to inspect, AND the Phase-6
-     implementation sets `mcp_used=True` only for *live* MCP data; with mock MCP fixtures it is
-     `False` (verified False in the keyless run). The check's "should always be true" expectation
-     contradicts the implemented semantics.
+  6. `mcp_used` true — **BLOCKED at the time; spec was WRONG, code is CORRECT.** Correct semantics:
+     `mcp_used=True` only when at least one *live* MCP HTTP call succeeded; `mcp_used=False` in mock
+     mode (no `mcp_server_url` / no live MCP). So with mock MCP fixtures `False` is the right answer
+     — the original check's "should always be true for mock fixtures" was a spec error, not a bug.
+     (`mcp_sources` still lists the `[MOCK] …` labels so provenance is visible.)
   7. `=== Founder Memory ===` block — **BLOCKED** (injected in the VP prompt; VP never runs).
 - **Step 4 (second run / memory influence)** — **BLOCKED**: first run 500s, so no baseline to diff.
-- **Process note:** the Sprint B payload (`startup_name`/`industry`/`description`/`founder_background`)
-  does NOT match the real `/api/analyze` contract (`{"profile": UserProfile}` with name/background/
-  skills/budget/weekly_hours/interests/goals). It was translated faithfully to a `UserProfile` to run.
+- **Payload schema (CORRECTED):** the original Sprint B payload
+  (`startup_name`/`industry`/`description`/`founder_background`) does NOT match the real
+  `/api/analyze` contract. The endpoint expects a nested `UserProfile`. Correct smoke-test curl:
+  ```bash
+  curl -s -X POST http://127.0.0.1:8000/api/analyze \
+    -H "Content-Type: application/json" \
+    -d '{
+      "profile": {
+        "user_id": "sprintb-edupath",
+        "name": "EduPath Founder",
+        "background": "Ex-MOE teacher, 3 years product at Grab, NUS CS grad",
+        "skills": ["Product Management", "Software Engineering", "EdTech", "Teaching"],
+        "budget": 5000,
+        "weekly_hours": 25,
+        "interests": ["EdTech", "AI", "Education"],
+        "goals": "Launch EduPath, an AI personalised learning platform for SEA secondary students"
+      }
+    }'
+  ```
+  (`user_id` is optional — auto-generated if omitted; reuse the same one to exercise the memory loop.)
 - **FIX (deferred — not applied this sprint):** raise `max_tokens` for deep/large-output agents
   (Skeptic, and likely VP next) to ~4000–8000, and/or cap per-opportunity verbosity / opportunity
   count. Then re-run Sprint B and re-check items 1–7 + Step 4. No code changed in this commit.
