@@ -14,12 +14,21 @@ import uuid
 # (Sprint B). Mock fixtures are already strings, so these are no-ops in mock mode.
 
 def _to_str(v: Any) -> Any:
-    """Coerce a list/dict into a readable string; pass scalars through unchanged."""
+    """Coerce live-LLM values into a string for str-typed fields.
+
+    Real Qwen is nondeterministic about types: a field declared as str may come
+    back as a bullet list, a dict, a number (e.g. initial_investment=4850), or
+    null. Normalize them all; leave actual strings untouched.
+    """
+    if v is None:
+        return ""
+    if isinstance(v, str):
+        return v
     if isinstance(v, list):
         return "\n".join(str(x) for x in v)
     if isinstance(v, dict):
         return "\n".join(f"{k}: {val}" for k, val in v.items())
-    return v
+    return str(v)  # int / float / bool
 
 
 def _items_to_str(v: Any) -> Any:
