@@ -85,5 +85,9 @@ class QwenProvider:
 
 
 def _cache_key(model: str, system: str, user: str) -> str:
-    payload = f"{model}|{system[:120]}|{user[:300]}"
+    # Hash the FULL prompt — truncating (was system[:120]|user[:300]) made
+    # different prompts collide. The VP's memory block sits past char 300, so a
+    # second run for the same founder returned the first run's cached output,
+    # silently defeating the memory loop (Sprint B).
+    payload = f"{model}|{system}|{user}"
     return hashlib.md5(payload.encode()).hexdigest()
