@@ -7,15 +7,16 @@
 > **PRD / source of truth for phases:** `docs/blueprint.html` (Build Blueprint v1.0) — 10 phases (0–9).
 
 **Last updated:** 2026-06-28
-**Current phase:** Phase 6 — MCP Integration ✅ DONE (this session). Phase 7 (Frontend polish)
-+ Phase 8 (Benchmark) remain; Phase 9 (Go Live) pending Sprint B + MCP credential verification.
+**Current phase:** Phase 6 — MCP Integration ✅ DONE. Sprint B (live smoke test) RAN 2026-06-28 →
+🟠 **PARTIAL/BLOCKED: live mode is broken** (Skeptic truncates at `max_tokens=2000`; `/api/analyze`
+500s). Phase 7 (Frontend) + Phase 8 (Benchmark) remain; Phase 9 (Go Live) blocked on the Skeptic fix.
 Phase 5 (Memory), Phase 4 (Debate), Phase 3 (LangGraph) done earlier.
 **Overall completion:** ~88% (Phases 0–6 done; Phase 7 frontend wired; 8/9 remaining)
-**LLM mode:** mock for the test suite (forced via `backend/tests/conftest.py`). ⚠️ NOTE: a real
-`QWEN_API_KEY` now exists in `.env` with `USE_MOCK_LLM=false`, so the **app boots in LIVE mode** —
-but this sandbox has no network route to DashScope, so live LLM calls block/hang. The test suite
-is hermetic (conftest pins mock) so `python -m pytest` works regardless. To run the app keyless,
-set `USE_MOCK_LLM=true` in `.env`.
+**LLM mode:** mock for the test suite (forced via `backend/tests/conftest.py`). A real `QWEN_API_KEY`
+exists in `.env` with `USE_MOCK_LLM=false`, so the **app boots in LIVE mode** and DashScope IS now
+reachable (direct call ~1s) — BUT the full pipeline 500s in live mode (see Sprint B). The test suite
+is hermetic (conftest pins mock) so `python -m pytest` works regardless. To demo keyless, set
+`USE_MOCK_LLM=true` in `.env`.
 **Tests:** 44/44 passing (`python -m pytest -q` from repo root, inside `.venv`) — +8 Phase 6 MCP tests
 **Branch:** `phase-6-mcp` (branched off `phase-5-memory-loop`). Not yet merged — open a PR when
 partner-reviewed. Do NOT merge to main.
@@ -36,12 +37,42 @@ partner-reviewed. Do NOT merge to main.
   (not 6), LangGraph parallel fan-out, real memory stack (PostgreSQL+Qwen, no Chroma/Qdrant).
   Frontend "6 agents" text + icon rosters → 7 everywhere.
 
-### Sprint B — live smoke test ⏸ DEFERRED, NOT RUN (no API key)
-- **No `.env` / no `QWEN_API_KEY` available** at audit time (user chose "proceed to C, defer B").
-- **Still required before trusting live mode.** Nothing about real-model behaviour is verified:
-  whether all 7 agents return parseable JSON, whether `_parse_json` survives real Qwen output,
-  whether the debate engine actually fires (`debate_rounds > 0`) on real conflicts. **Run this
-  before relying on live mode or demoing with a key.**
+### Sprint B — live smoke test 🟠 RUN 2026-06-28 — **PARTIAL / BLOCKED** (live mode broken)
+- **Now ran with a real key** (`QWEN_API_KEY` present, `USE_MOCK_LLM=false`, DashScope reachable —
+  direct provider call returned valid JSON in ~1s). Ran `uvicorn backend.main:app` (live, no mock
+  warnings) and `POST /api/analyze`. **Result: HTTP 500 — live mode does NOT work end-to-end.**
+- **ROOT CAUSE — Skeptic agent truncates at the token ceiling.** `BaseAgent` calls the LLM with
+  `max_tokens=2000` for every agent. In live mode the Skeptic's full per-opportunity JSON over 5
+  opportunities exceeds that. Confirmed directly: `finish_reason='length'`, `completion_tokens=2000`,
+  `char_len≈9056`, JSON unparseable (`Unterminated string ... char 9045`). The 3-attempt retry
+  cannot help — every attempt hits the same ceiling. Mock mode never exposed this (short complete
+  fixtures). API error: `Agent pipeline failed: Qwen returned invalid JSON after 3 attempts on
+  model qwen-plus. Last error: Unterminated string starting at: line 96 column 19 (char 8953)`.
+- **Per-agent live verification (isolated):** Scout ✅, Trend ✅, Finance ✅, Growth ✅, Founder-Fit ✅
+  all called the real LLM and returned **valid parseable JSON** (8–14s each). **Skeptic ❌** (fails
+  after 110s / 3 retries). **Venture Partner — never reached** (pipeline aborts at Skeptic).
+- **The 7 checks (PASS/FAIL/BLOCKED):**
+  1. HTTP 200 — **FAIL** (HTTP 500).
+  2. All 7 agents present — **FAIL** (6/7 proven to work in live mode; Skeptic crashes; VP unreached).
+  3. No `[MOCK]` in agent output — **PARTIAL**: the 6 agents that ran used real LLM output.
+     ⚠️ Caveat: by Phase-6 design `mcp_sources` always carries `"[MOCK] …"` labels until real MCP
+     creds exist, so a literal `[MOCK]` substring search on the response is NOT a valid mock detector.
+  4. `debate_rounds > 0` — **BLOCKED / STILL UNVERIFIED** (debate runs after Skeptic; never reached).
+     Unverified since Phase 3.
+  5. founder_fit alignment — **BLOCKED** (the alignment fix lives in the VP, which never runs;
+     the Founder-Fit *agent* itself did produce a score in live mode).
+  6. `mcp_used` true — **BLOCKED + SEMANTIC MISMATCH**: no response to inspect, AND the Phase-6
+     implementation sets `mcp_used=True` only for *live* MCP data; with mock MCP fixtures it is
+     `False` (verified False in the keyless run). The check's "should always be true" expectation
+     contradicts the implemented semantics.
+  7. `=== Founder Memory ===` block — **BLOCKED** (injected in the VP prompt; VP never runs).
+- **Step 4 (second run / memory influence)** — **BLOCKED**: first run 500s, so no baseline to diff.
+- **Process note:** the Sprint B payload (`startup_name`/`industry`/`description`/`founder_background`)
+  does NOT match the real `/api/analyze` contract (`{"profile": UserProfile}` with name/background/
+  skills/budget/weekly_hours/interests/goals). It was translated faithfully to a `UserProfile` to run.
+- **FIX (deferred — not applied this sprint):** raise `max_tokens` for deep/large-output agents
+  (Skeptic, and likely VP next) to ~4000–8000, and/or cap per-opportunity verbosity / opportunity
+  count. Then re-run Sprint B and re-check items 1–7 + Step 4. No code changed in this commit.
 
 ### Sprint C — AgentDebate wired to real data ✅ (commit `c779f1f`)
 - Removed the hardcoded "AI Study Buddy / NUS" debate fixture and the fake
@@ -176,7 +207,10 @@ partner-reviewed. Do NOT merge to main.
 - ~~`mcp/` placeholder~~ ✅ RESOLVED in Phase 6 — real `MCPClient`, Scout/Trend wired, API surfaces
   `mcp_used`/`mcp_sources`. Live HTTP path unexercised (no `mcp_server_url`/network — see flags above).
 - `benchmark/` is a placeholder package only. (Phase 8.)
-- **Sprint B not run** — real-model JSON parsing / debate-firing unverified (see audit section).
+- **🔴 LIVE MODE BROKEN (Sprint B, 2026-06-28):** `/api/analyze` 500s in live mode — the **Skeptic
+  agent** truncates its JSON at `max_tokens=2000` (`finish_reason='length'`). 6/7 agents work live;
+  Skeptic crashes; VP/debate never run. `debate_rounds>0` and the VP memory block remain UNVERIFIED.
+  Fix (deferred): raise `max_tokens` for deep agents. See Sprint B section for the full check-by-check report.
 - ~~Doc drift~~ ✅ fixed in Sprint A (Claude→Qwen, 6→7 agents, LangGraph fan-out, real memory stack).
 
 ## Phase 2 notes / deviations
