@@ -31,6 +31,21 @@ def _to_str(v: Any) -> Any:
     return str(v)  # int / float / bool
 
 
+def _to_float(v: Any) -> Any:
+    """Extract a float from messy live-LLM score values ('8/10', '7.5', 'high').
+
+    Returns the first number found; falls back to None so the field default (or
+    Pydantic's own error) applies if nothing numeric is present.
+    """
+    if isinstance(v, (int, float)):
+        return v
+    if isinstance(v, str):
+        import re
+        m = re.search(r"-?\d+(?:\.\d+)?", v)
+        return float(m.group()) if m else None
+    return v
+
+
 def _items_to_str(v: Any) -> Any:
     """Coerce each element of a list to a string (for List[str] fields)."""
     if isinstance(v, list):
@@ -159,6 +174,15 @@ class StartupIdea(BaseModel):
     @classmethod
     def _coerce_text(cls, v):
         return _to_str(v)
+
+    @field_validator(
+        "startup_score", "feasibility_score", "market_attractiveness_score",
+        "founder_fit_score", "risk_score", mode="before",
+    )
+    @classmethod
+    def _coerce_score(cls, v):
+        coerced = _to_float(v)
+        return coerced if coerced is not None else 0.0
 
 
 # ─────────────────────────────────────────────
