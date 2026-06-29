@@ -1,9 +1,39 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 import uuid
+
+
+# ─────────────────────────────────────────────
+# Live-LLM coercion helpers
+# ─────────────────────────────────────────────
+# Real Qwen output sometimes returns a list (or dict) where the schema expects a
+# single string — e.g. LeanCanvas fields came back as bullet lists in live mode
+# (Sprint B). Mock fixtures are already strings, so these are no-ops in mock mode.
+
+def _to_str(v: Any) -> Any:
+    """Coerce a list/dict into a readable string; pass scalars through unchanged."""
+    if isinstance(v, list):
+        return "\n".join(str(x) for x in v)
+    if isinstance(v, dict):
+        return "\n".join(f"{k}: {val}" for k, val in v.items())
+    return v
+
+
+def _items_to_str(v: Any) -> Any:
+    """Coerce each element of a list to a string (for List[str] fields)."""
+    if isinstance(v, list):
+        return [_to_str(x) if isinstance(x, (list, dict)) else str(x) for x in v]
+    return v
+
+
+def _values_to_str(v: Any) -> Any:
+    """Coerce each value of a dict to a string (for Dict[str, str] fields)."""
+    if isinstance(v, dict):
+        return {str(k): _to_str(val) for k, val in v.items()}
+    return v
 
 
 # ─────────────────────────────────────────────
@@ -111,6 +141,16 @@ class StartupIdea(BaseModel):
     initial_investment: str
     risk_level: str     # "Low" | "Medium" | "High"
 
+    # Live Qwen sometimes returns lists/dicts for text fields — coerce to str.
+    @field_validator(
+        "name", "tagline", "description", "target_market", "revenue_potential",
+        "estimated_monthly_revenue", "time_to_launch", "initial_investment", "risk_level",
+        mode="before",
+    )
+    @classmethod
+    def _coerce_text(cls, v):
+        return _to_str(v)
+
 
 # ─────────────────────────────────────────────
 # Execution Plan Models
@@ -127,6 +167,12 @@ class LeanCanvas(BaseModel):
     cost_structure: str
     revenue_streams: str
 
+    # All fields are text; live Qwen often returns bullet lists here (Sprint B).
+    @field_validator("*", mode="before")
+    @classmethod
+    def _coerce_text(cls, v):
+        return _to_str(v)
+
 
 class ExecutionPlan(BaseModel):
     startup_name: str
@@ -140,6 +186,26 @@ class ExecutionPlan(BaseModel):
     elevator_pitch: str
     customer_outreach_templates: Dict[str, str]   # e.g. {"cold_email": "...", "dm": "..."}
     thirty_day_roadmap: List[str]                 # list of daily/weekly milestones
+
+    # Coerce live Qwen lists/dicts into the declared shapes.
+    @field_validator(
+        "startup_name", "value_proposition", "customer_persona", "mvp_scope",
+        "landing_page_copy", "marketing_strategy", "customer_acquisition_plan",
+        "elevator_pitch", mode="before",
+    )
+    @classmethod
+    def _coerce_text(cls, v):
+        return _to_str(v)
+
+    @field_validator("customer_outreach_templates", mode="before")
+    @classmethod
+    def _coerce_templates(cls, v):
+        return _values_to_str(v)
+
+    @field_validator("thirty_day_roadmap", mode="before")
+    @classmethod
+    def _coerce_roadmap(cls, v):
+        return _items_to_str(v)
 
 
 # ─────────────────────────────────────────────
