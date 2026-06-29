@@ -92,7 +92,7 @@ export default function ProfileForm({ onSubmit }: Props) {
         </div>
 
         <div>
-          <label className="label">What's your goal? *</label>
+          <label className="label">What&apos;s your goal? *</label>
           <textarea
             className="input min-h-[80px] resize-none"
             placeholder="e.g. Earn $1,000/month side income within 3 months with minimal upfront investment"

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ExecutionPlanData } from '@/app/page'
+import { ExecutionPlanData } from '@/app/studio/page'
 
 interface Props {
   plan: ExecutionPlanData
@@ -49,7 +49,7 @@ export default function ExecutionPlan({ plan }: Props) {
         </div>
         <div className="text-right">
           <div className="text-xs text-gray-500 mb-1">Elevator Pitch</div>
-          <div className="text-sm text-gray-300 max-w-xs italic">"{plan.elevator_pitch}"</div>
+          <div className="text-sm text-gray-300 max-w-xs italic">&ldquo;{plan.elevator_pitch}&rdquo;</div>
         </div>
       </div>
 

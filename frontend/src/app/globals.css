@@ -50,6 +50,19 @@
   .agent-bubble {
     @apply flex items-start gap-3 p-4 rounded-xl border animate-slide-up;
   }
+
+  /* Landing: soft glass surface in the FounderOS palette */
+  .glass {
+    @apply bg-white/[0.04] backdrop-blur-md border border-white/10 rounded-2xl;
+  }
+
+  /* Landing: outline CTA, complements .btn-primary */
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 border border-gray-700
+           hover:border-brand-500 hover:bg-white/[0.03] text-gray-200 font-medium
+           px-6 py-3 rounded-lg transition-all duration-200
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500;
+  }
 }
 
 /* Scrollbar styling */

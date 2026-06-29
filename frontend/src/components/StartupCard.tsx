@@ -1,6 +1,6 @@
 'use client'
 
-import { StartupIdea } from '@/app/page'
+import { StartupIdea } from '@/app/studio/page'
 
 interface Props {
   idea: StartupIdea

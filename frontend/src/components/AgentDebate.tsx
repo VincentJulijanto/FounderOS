@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import type { AgentOutput, DebateRound, ConsensusReport } from '@/app/page'
+import type { AgentOutput, DebateRound, ConsensusReport } from '@/app/studio/page'
 
 interface Props {
   phase: 'analyzing' | 'debating'
