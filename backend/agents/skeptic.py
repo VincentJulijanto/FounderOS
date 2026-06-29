@@ -66,6 +66,7 @@ class SkepticAgent(BaseAgent):
     name = "Skeptic Agent"
     role = "Risk Analysis & Devil's Advocate"
     llm_model = DEEP_MODEL  # needs careful reasoning to challenge assumptions
+    max_tokens = 6000       # per-opportunity risk JSON over 5 opps truncated at 2000 in live mode (Sprint B)
 
     def _mock_response(self) -> str:
         return _MOCK
