@@ -2,10 +2,14 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { ChevronRight, AlertTriangle, ScrollText, ArrowLeft, Copy, Check, Download } from 'lucide-react'
+import Logo from '@/components/Logo'
 import ProfileForm from '@/components/ProfileForm'
 import AgentDebate from '@/components/AgentDebate'
 import StartupCard from '@/components/StartupCard'
 import ExecutionPlan from '@/components/ExecutionPlan'
+import CouncilReasoning from '@/components/CouncilReasoning'
+import { recommendationToMarkdown, downloadTextFile } from '@/lib/planMarkdown'
 
 type Phase = 'input' | 'analyzing' | 'debating' | 'results'
 
@@ -104,6 +108,7 @@ export default function Home() {
   const [recommendation, setRecommendation] = useState<VentureRecommendation | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [selectedIdeaIndex, setSelectedIdeaIndex] = useState(0)
+  const [copiedPlan, setCopiedPlan] = useState(false)
 
   const handleSubmit = async (profileData: Record<string, unknown>) => {
     setPhase('analyzing')
@@ -136,28 +141,23 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       {/* Header */}
-      <header className="border-b border-gray-800 bg-gray-950/80 backdrop-blur sticky top-0 z-50">
+      <header className="bg-canvas/80 backdrop-blur sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="flex items-center gap-3 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
-              aria-label="FounderOS home"
-            >
-              <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-accent-500 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                F
-              </div>
-              <span className="font-semibold text-lg">FounderOS</span>
-            </Link>
-            <span className="badge bg-accent-500/20 text-accent-500 border border-accent-500/30">
-              AI Venture Studio
-            </span>
-          </div>
-          <nav className="flex items-center gap-2 text-sm text-gray-500">
+          <Link
+            href="/"
+            className="rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            aria-label="FounderOS home"
+          >
+            <Logo idSuffix="studio-nav" size={32} />
+          </Link>
+          <nav className="hidden sm:flex items-center gap-2 text-sm text-muted" aria-label="Progress">
             {(['input', 'analyzing', 'debating', 'results'] as Phase[]).map((p, i) => (
               <div key={p} className="flex items-center gap-2">
-                {i > 0 && <span className="text-gray-700">→</span>}
-                <span className={phase === p ? 'text-brand-400 font-medium' : ''}>
+                {i > 0 && <ChevronRight className="w-4 h-4 text-hairline" aria-hidden="true" />}
+                <span
+                  className={phase === p ? 'text-graphite font-medium' : ''}
+                  aria-current={phase === p ? 'step' : undefined}
+                >
                   {PHASE_LABELS[p]}
                 </span>
               </div>
@@ -169,23 +169,28 @@ export default function Home() {
       {/* Content */}
       <div className="max-w-6xl mx-auto px-6 py-12">
 
-        {/* Hero — only on input phase */}
+        {/* Hero — only on input phase. One outcome line (Beat 1). */}
         {phase === 'input' && (
-          <div className="text-center mb-12 animate-fade-in">
-            <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-brand-400 to-accent-400 bg-clip-text text-transparent">
-              Your AI Venture Studio
+          <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-5xl font-semibold tracking-[-0.02em] leading-[1.12] text-graphite mb-4">
+              In a few minutes, a complete startup plan
+              <span className="block text-muted font-normal text-2xl md:text-3xl mt-2">
+                scouted, debated, and built for you
+              </span>
             </h1>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              A society of 7 specialized AI agents will scout, debate, and build
-              your complete startup execution plan — tailored to your skills and budget.
+            <p className="text-lg text-muted max-w-2xl mx-auto">
+              Seven specialized agents analyse your profile and debate the best path —
+              then hand you a ranked shortlist and an execution-ready plan, tailored to
+              your skills and budget.
             </p>
           </div>
         )}
 
         {/* Error */}
         {error && (
-          <div className="mb-6 p-4 bg-red-900/30 border border-red-700 rounded-xl text-red-300">
-            ⚠️ {error}
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 flex items-center gap-2" role="alert">
+            <AlertTriangle className="w-5 h-5 shrink-0" aria-hidden="true" />
+            {error}
           </div>
         )}
 
@@ -207,20 +212,40 @@ export default function Home() {
         )}
 
         {/* Phase: Results */}
-        {phase === 'results' && recommendation && (
-          <div className="space-y-8 animate-fade-in">
-            {/* Final Memo */}
-            <div className="card border-brand-800 bg-gradient-to-br from-brand-950/50 to-gray-900">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-2xl">📋</span>
-                <h2 className="text-xl font-bold">Venture Partner Memo</h2>
+        {phase === 'results' && recommendation && (() => {
+          const selectedIdea =
+            recommendation.top_ideas[selectedIdeaIndex] ?? recommendation.recommended_idea
+
+          const copyPlan = () => {
+            const md = recommendationToMarkdown(recommendation, selectedIdea)
+            navigator.clipboard.writeText(md)
+            setCopiedPlan(true)
+            setTimeout(() => setCopiedPlan(false), 2000)
+          }
+
+          const downloadPlan = () => {
+            const md = recommendationToMarkdown(recommendation, selectedIdea)
+            const slug = (recommendation.execution_plan?.startup_name ?? selectedIdea.name)
+              .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+            downloadTextFile(`founderos-plan-${slug || 'startup'}.md`, md)
+          }
+
+          return (
+          <div className="space-y-10 animate-fade-in">
+            {/* Final Memo — the Venture Partner's synthesis. */}
+            <div className="card">
+              <div className="flex items-center gap-2.5 mb-3">
+                <span className="w-9 h-9 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-600">
+                  <ScrollText className="w-5 h-5" aria-hidden="true" />
+                </span>
+                <h2 className="text-xl font-semibold">Venture Partner Memo</h2>
               </div>
-              <p className="text-gray-300 leading-relaxed">{recommendation.final_memo}</p>
+              <p className="text-graphite/80 leading-relaxed">{recommendation.final_memo}</p>
             </div>
 
             {/* Top Ideas */}
             <div>
-              <h2 className="text-2xl font-bold mb-4">Top Startup Opportunities</h2>
+              <h2 className="text-2xl font-semibold tracking-[-0.01em] mb-4">Top startup opportunities</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {recommendation.top_ideas.map((idea, i) => (
                   <StartupCard
@@ -234,22 +259,50 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Beat 5 — council reasoning, attributed */}
+            <CouncilReasoning outputs={recommendation.agent_outputs} />
+
             {/* Execution Plan for selected idea */}
             {recommendation.execution_plan && (
               <ExecutionPlan plan={recommendation.execution_plan} />
             )}
 
+            {/* Beat 6 — close the loop: export + clear next action */}
+            <div className="card flex flex-col sm:flex-row sm:items-center gap-4 sm:justify-between">
+              <div>
+                <h2 className="text-base font-semibold">Take your plan with you</h2>
+                <p className="text-sm text-muted mt-0.5">
+                  Next: open the 30-day roadmap above and start Day 1.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <button className="btn-secondary" onClick={copyPlan}>
+                  {copiedPlan ? (
+                    <><Check className="w-4 h-4 text-brand-600" aria-hidden="true" /> Copied</>
+                  ) : (
+                    <><Copy className="w-4 h-4" aria-hidden="true" /> Copy plan</>
+                  )}
+                </button>
+                <button className="btn-primary" onClick={downloadPlan}>
+                  <Download className="w-4 h-4" aria-hidden="true" />
+                  Download .md
+                </button>
+              </div>
+            </div>
+
             {/* Restart */}
-            <div className="text-center pt-4">
+            <div className="text-center pt-2">
               <button
-                className="btn-secondary"
+                className="link-quiet mx-auto"
                 onClick={() => { setPhase('input'); setRecommendation(null) }}
               >
-                ← Start Over with New Profile
+                <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+                Start over with a new profile
               </button>
             </div>
           </div>
-        )}
+          )
+        })()}
       </div>
     </main>
   )

@@ -10,7 +10,7 @@ const ITEMS = [
     a: 'A ranked shortlist of startup opportunities plus a full execution plan for the recommended one: lean canvas, MVP scope, a 30-day roadmap, marketing and acquisition notes, and outreach templates.',
   },
   {
-    q: 'How are the seven agents different from one chatbot?',
+    q: 'How is the council different from one chatbot?',
     a: 'Each agent has a distinct mandate and scoring lens, and they actively debate where they disagree. You see the conflicts and how they were resolved — not a single averaged opinion.',
   },
   {
@@ -31,36 +31,36 @@ export default function FAQ() {
   const [open, setOpen] = useState<number | null>(0)
 
   return (
-    <section id="faq" className="max-w-3xl mx-auto px-6 py-20 md:py-28 scroll-mt-24">
-      <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-100 text-center">
+    <section id="faq" className="max-w-3xl mx-auto px-6 py-24 md:py-28 scroll-mt-24">
+      <h2 className="text-3xl md:text-[2.5rem] font-semibold tracking-[-0.02em] leading-[1.12] text-graphite">
         Frequently asked questions
       </h2>
 
-      <dl className="mt-12 divide-y divide-white/5 rounded-2xl border border-white/10 bg-white/[0.02]">
+      <dl className="mt-12">
         {ITEMS.map((item, i) => {
           const isOpen = open === i
           return (
-            <div key={item.q} className="px-5">
+            <div key={item.q} className="border-b border-hairline">
               <dt>
                 <button
                   type="button"
                   onClick={() => setOpen(isOpen ? null : i)}
                   aria-expanded={isOpen}
-                  className="w-full flex items-center gap-4 py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded-lg"
+                  className="w-full flex items-center gap-4 py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                 >
-                  <span className="font-mono text-sm text-brand-400 w-6 shrink-0">
+                  <span className="font-mono text-sm text-brand-500 w-7 shrink-0 tabular-nums">
                     {String(i + 1).padStart(2, '0')}
                   </span>
-                  <span className="flex-1 font-medium text-gray-100">{item.q}</span>
+                  <span className="flex-1 font-medium text-graphite">{item.q}</span>
                   {isOpen ? (
-                    <Minus className="w-5 h-5 text-gray-500 shrink-0" aria-hidden="true" />
+                    <Minus className="w-5 h-5 text-muted shrink-0" aria-hidden="true" />
                   ) : (
-                    <Plus className="w-5 h-5 text-gray-500 shrink-0" aria-hidden="true" />
+                    <Plus className="w-5 h-5 text-muted shrink-0" aria-hidden="true" />
                   )}
                 </button>
               </dt>
               {isOpen && (
-                <dd className="pb-5 pl-10 text-sm text-gray-400 leading-relaxed">
+                <dd className="pb-5 pl-11 text-sm text-muted leading-relaxed">
                   {item.a}
                 </dd>
               )}

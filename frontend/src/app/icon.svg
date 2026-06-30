@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="FounderOS">
+  <rect width="64" height="64" rx="14" fill="#0B0C14"/>
+  <defs>
+    <linearGradient id="fos-icon" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#A78BFA"/>
+      <stop offset="1" stop-color="#E0A845"/>
+    </linearGradient>
+  </defs>
+  <g stroke="#7C6FF0" stroke-width="1.2" opacity="0.55">
+    <line x1="32" y1="32" x2="54" y2="32"/><line x1="32" y1="32" x2="43" y2="51"/>
+    <line x1="32" y1="32" x2="21" y2="51"/><line x1="32" y1="32" x2="10" y2="32"/>
+    <line x1="32" y1="32" x2="21" y2="13"/><line x1="32" y1="32" x2="43" y2="13"/>
+  </g>
+  <g fill="url(#fos-icon)">
+    <circle cx="54" cy="32" r="3.5"/><circle cx="43" cy="51" r="3.5"/><circle cx="21" cy="51" r="3.5"/>
+    <circle cx="10" cy="32" r="3.5"/><circle cx="21" cy="13" r="3.5"/><circle cx="43" cy="13" r="3.5"/>
+    <circle cx="32" cy="32" r="5.5"/>
+  </g>
+</svg>

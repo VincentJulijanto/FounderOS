@@ -10,8 +10,10 @@ import ClosingCTA from '@/components/landing/ClosingCTA'
 import Footer from '@/components/landing/Footer'
 
 export default function LandingPage() {
+  // The whole app is one light editorial system (set on <body>); the studio
+  // shares it so the Enter-studio hand-off has no seam.
   return (
-    <>
+    <div className="min-h-screen">
       <LandingNav />
       <main>
         <Hero />
@@ -24,6 +26,6 @@ export default function LandingPage() {
         <ClosingCTA />
       </main>
       <Footer />
-    </>
+    </div>
   )
 }

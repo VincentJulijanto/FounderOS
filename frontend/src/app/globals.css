@@ -4,35 +4,62 @@
 
 @layer base {
   :root {
-    --background: 3 7 18;
-    --foreground: 248 250 252;
+    --background: 247 245 241; /* canvas   #F7F5F1 */
+    --foreground: 20 21 26;    /* graphite #14151A */
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 }
 
 @layer components {
+  /* Padded white card — the studio's primary surface. */
   .card {
-    @apply bg-gray-900 border border-gray-800 rounded-xl p-6;
+    @apply bg-white border border-hairline rounded-xl p-6
+           shadow-[0_1px_2px_rgba(20,21,26,0.04),0_12px_32px_-12px_rgba(20,21,26,0.10)];
   }
 
-  .btn-primary {
-    @apply bg-brand-600 hover:bg-brand-700 text-white font-semibold 
-           px-6 py-3 rounded-lg transition-all duration-200 
+  /* Unpadded white card — marketing sections add their own padding. */
+  .card-light {
+    @apply bg-white border border-hairline rounded-2xl
+           shadow-[0_1px_2px_rgba(20,21,26,0.04),0_12px_32px_-12px_rgba(20,21,26,0.10)];
+  }
+
+  /* Primary CTA — solid ink, never a gradient. */
+  .btn-primary,
+  .btn-ink {
+    @apply inline-flex items-center justify-center gap-2
+           bg-graphite hover:bg-black text-canvas font-medium
+           px-6 py-3 rounded-full transition-colors duration-200
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
+  /* Secondary — quiet white button with hairline border. */
   .btn-secondary {
-    @apply bg-gray-800 hover:bg-gray-700 text-gray-200 font-medium 
-           px-4 py-2 rounded-lg border border-gray-700 transition-all duration-200;
+    @apply inline-flex items-center justify-center gap-2
+           bg-white hover:bg-canvas text-graphite font-medium
+           px-4 py-2 rounded-full border border-hairline transition-colors duration-200
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500;
+  }
+
+  /* Quiet text-link CTA. */
+  .link-quiet {
+    @apply inline-flex items-center gap-1.5 text-graphite/80 hover:text-graphite
+           font-medium transition-colors
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded;
   }
 
   .input {
-    @apply bg-gray-800 border border-gray-700 text-gray-100 rounded-lg px-4 py-3
-           placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500
+    @apply bg-white border border-hairline text-graphite rounded-lg px-4 py-3
+           placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-brand-500
            focus:border-transparent w-full;
   }
 
   .label {
-    @apply block text-sm font-medium text-gray-400 mb-2;
+    @apply block text-sm font-medium text-muted mb-2;
   }
 
   .badge {
@@ -40,7 +67,7 @@
   }
 
   .score-bar {
-    @apply h-2 rounded-full bg-gray-700 overflow-hidden;
+    @apply h-2 rounded-full bg-graphite/[0.06] overflow-hidden;
   }
 
   .score-fill {
@@ -48,25 +75,12 @@
   }
 
   .agent-bubble {
-    @apply flex items-start gap-3 p-4 rounded-xl border animate-slide-up;
-  }
-
-  /* Landing: soft glass surface in the FounderOS palette */
-  .glass {
-    @apply bg-white/[0.04] backdrop-blur-md border border-white/10 rounded-2xl;
-  }
-
-  /* Landing: outline CTA, complements .btn-primary */
-  .btn-outline {
-    @apply inline-flex items-center justify-center gap-2 border border-gray-700
-           hover:border-brand-500 hover:bg-white/[0.03] text-gray-200 font-medium
-           px-6 py-3 rounded-lg transition-all duration-200
-           focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500;
+    @apply flex items-start gap-3 p-4 rounded-xl border;
   }
 }
 
 /* Scrollbar styling */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #111827; }
-::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #F7F5F1; }
+::-webkit-scrollbar-thumb { background: #DAD7CF; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #C7C3B8; }

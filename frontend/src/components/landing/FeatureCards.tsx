@@ -3,7 +3,7 @@ import { Users, MessagesSquare, FileCheck2 } from 'lucide-react'
 const FEATURES = [
   {
     icon: Users,
-    title: 'A society of specialists',
+    title: 'A council of specialists',
     body: 'Seven agents — Scout, Trend Analyst, Finance, Growth, Skeptic, Founder-Fit, and Venture Partner — each examine your idea from their own angle.',
   },
   {
@@ -20,30 +20,27 @@ const FEATURES = [
 
 export default function FeatureCards() {
   return (
-    <section id="features" className="max-w-6xl mx-auto px-6 py-20 md:py-28 scroll-mt-24">
+    <section id="features" className="max-w-6xl mx-auto px-6 py-24 md:py-28 scroll-mt-24">
       <div className="max-w-2xl">
-        <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-100">
+        <h2 className="text-3xl md:text-[2.5rem] font-semibold tracking-[-0.02em] leading-[1.12] text-graphite">
           One idea in, a full team&rsquo;s thinking out
         </h2>
-        <p className="mt-4 text-gray-400 text-lg">
+        <p className="mt-5 text-muted text-lg leading-relaxed">
           FounderOS replaces the blank page with a coordinated panel of agents that
           do the analysis a founding team would.
         </p>
       </div>
 
-      <div className="mt-12 grid md:grid-cols-3 gap-6">
+      <div className="mt-14 grid md:grid-cols-3 gap-6">
         {FEATURES.map((f) => {
           const Icon = f.icon
           return (
-            <article
-              key={f.title}
-              className="glass p-7 hover:border-white/20 transition-colors"
-            >
-              <span className="inline-flex w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500/20 to-accent-500/20 border border-white/10 items-center justify-center text-brand-300">
-                <Icon className="w-6 h-6" aria-hidden="true" />
+            <article key={f.title} className="card-light p-7">
+              <span className="inline-flex w-11 h-11 rounded-xl bg-brand-500/10 items-center justify-center text-brand-600">
+                <Icon className="w-5 h-5" aria-hidden="true" />
               </span>
-              <h3 className="mt-5 text-lg font-semibold text-gray-100">{f.title}</h3>
-              <p className="mt-2 text-sm text-gray-400 leading-relaxed">{f.body}</p>
+              <h3 className="mt-5 text-lg font-semibold text-graphite">{f.title}</h3>
+              <p className="mt-2.5 text-sm text-muted leading-relaxed">{f.body}</p>
             </article>
           )
         })}

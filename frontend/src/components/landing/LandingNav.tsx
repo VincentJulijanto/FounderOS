@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, ArrowRight } from 'lucide-react'
+import Logo from '@/components/Logo'
 
 const LINKS = [
   { label: 'Features', href: '#features' },
@@ -14,47 +15,43 @@ export default function LandingNav() {
   const [open, setOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/5 bg-gray-950/70 backdrop-blur">
+    <header className="sticky top-0 z-50 bg-canvas/80 backdrop-blur">
       <nav
-        className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between"
+        className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between"
         aria-label="Primary"
       >
-        {/* Logo → home */}
+        {/* Logo → home (no category pill — descriptor lives in the hero) */}
         <Link
           href="/"
-          className="flex items-center gap-3 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+          className="rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
           aria-label="FounderOS home"
         >
-          <span className="w-8 h-8 bg-gradient-to-br from-brand-500 to-accent-500 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-            F
-          </span>
-          <span className="font-semibold text-lg text-gray-100">FounderOS</span>
+          <Logo idSuffix="landing-nav" size={30} />
         </Link>
 
         {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-8 text-sm text-gray-400">
+        <div className="hidden md:flex items-center gap-9 text-sm text-muted">
           {LINKS.map((l) => (
             <a
               key={l.href}
               href={l.href}
-              className="hover:text-gray-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+              className="hover:text-graphite transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
             >
               {l.label}
             </a>
           ))}
         </div>
 
-        {/* Desktop CTA */}
-        <div className="hidden md:flex items-center gap-3">
-          <Link href="/studio" className="btn-primary !px-5 !py-2 text-sm">
-            Open the Studio
-          </Link>
-        </div>
+        {/* Desktop CTA — one quiet link */}
+        <Link href="/studio" className="hidden md:inline-flex link-quiet text-sm">
+          Enter studio
+          <ArrowRight className="w-4 h-4" aria-hidden="true" />
+        </Link>
 
         {/* Mobile toggle */}
         <button
           type="button"
-          className="md:hidden p-2 -mr-2 text-gray-300 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+          className="md:hidden p-2 -mr-2 text-graphite rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
           aria-expanded={open}
           aria-controls="mobile-menu"
           aria-label={open ? 'Close menu' : 'Open menu'}
@@ -66,13 +63,13 @@ export default function LandingNav() {
 
       {/* Mobile menu */}
       {open && (
-        <div id="mobile-menu" className="md:hidden border-t border-white/5 px-6 py-4 space-y-3">
+        <div id="mobile-menu" className="md:hidden px-6 pb-5 space-y-4">
           {LINKS.map((l) => (
             <a
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              className="block text-gray-300 hover:text-gray-100 transition-colors"
+              className="block text-muted hover:text-graphite transition-colors"
             >
               {l.label}
             </a>
@@ -80,9 +77,10 @@ export default function LandingNav() {
           <Link
             href="/studio"
             onClick={() => setOpen(false)}
-            className="btn-primary w-full !py-2 text-sm"
+            className="link-quiet text-sm"
           >
-            Open the Studio
+            Enter studio
+            <ArrowRight className="w-4 h-4" aria-hidden="true" />
           </Link>
         </div>
       )}

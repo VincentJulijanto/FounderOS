@@ -8,21 +8,38 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Dark surfaces + text (the Studio)
+        ink: '#0B0C14',      // page base
+        surface: '#161A26',  // raised cards / panels
+        paper: '#F4F5FA',    // primary text on dark
+
+        // Light surfaces + text (the Marketing page). Additive — does not
+        // affect the dark studio, which never references these.
+        canvas: '#F7F5F1',   // warm paper background
+        hairline: '#ECEAE4', // light card border
+        graphite: '#14151A', // solid ink headline / text on light
+        muted: '#6B6B72',    // secondary copy on light
+
+        // Brand primary = Violet. Retires the old sky-blue to kill the
+        // generic-SaaS-blue feel. 400 = violet-soft, 500 = violet-primary.
         brand: {
-          50:  '#f0f9ff',
-          100: '#e0f2fe',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
-          950: '#082f49',
+          300: '#C9BEFA',
+          400: '#A78BFA', // violet soft
+          500: '#7C6FF0', // violet primary
+          600: '#6A5CE0',
+          700: '#574AC2',
+          800: '#3D3590',
+          900: '#29245E',
+          950: '#18142F',
         },
+
+        // Accent = Gold. Used sparingly — primary CTAs, success, the plan reveal.
         accent: {
-          400: '#a78bfa',
-          500: '#8b5cf6',
-          600: '#7c3aed',
+          300: '#F0CE8E',
+          400: '#E9BD6C',
+          500: '#E0A845', // gold
+          600: '#C8902F', // gold darkened for contrast on light surfaces
+          700: '#9E6E22',
         },
       },
       fontFamily: {
