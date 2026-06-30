@@ -1,10 +1,17 @@
+import copy
 import json
+import re
 from typing import Dict, Any, List
 from .base import BaseAgent
 from ..llm.provider import DEEP_MODEL
 from ..models import UserProfile, AgentOutput, StartupIdea, ExecutionPlan, LeanCanvas
 
-_MOCK = json.dumps({
+# ── Base mock — the no-memory (first-session) recommendation ───────────────────
+# Kept as a plain dict so the memory-aware path can derive variants from it via
+# deepcopy. json.dumps(_BASE_RECOMMENDATION) is the exact byte-for-byte output a
+# first-time founder gets, so anything the memory loop changes is provably the
+# memory's doing and nothing else.
+_BASE_RECOMMENDATION = {
     "top_ideas": [
         {
             "name": "AI Study Buddy",
@@ -58,7 +65,176 @@ _MOCK = json.dumps({
     "final_memo": "MOCK MODE ACTIVE — Add QWEN_API_KEY to .env and set USE_MOCK_LLM=false for real AI recommendations.",
     "founder_fit_rationale": "Technical background aligns well with AI tool development.",
     "key_risks_to_watch": ["API cost scaling", "Student willingness to pay", "Competition from free tools"],
-})
+}
+
+_MOCK = json.dumps(_BASE_RECOMMENDATION)
+
+
+# ── Memory-aware mock fixtures (Phase 5 memory loop) ───────────────────────────
+# Mirrors Phase 4's stage-specific mock-conflict path: in mock mode the VP output
+# must OBSERVABLY change when the founder has prior history, or the memory loop is
+# invisible without a live key. The headline behaviour: when memory shows an
+# ABANDONED venture, steer the #1 pick AWAY from that heavy build toward a
+# service-first, faster-time-to-value, lower-commitment idea — and say so in the
+# memo. The abandoned AI study-app direction is demoted to a #2 fallback, not
+# re-recommended. This is the keyless proof of the loop influencing recommendations.
+
+_LEAN_PIVOT_IDEA = {
+    "name": "Cohort Cram Sessions",
+    "tagline": "Paid live exam-prep cohorts — earn before you build",
+    "description": (
+        "Service-first exam prep: run small paid live cram cohorts for specific "
+        "NUS/NTU modules. No app to build, revenue in week one — a deliberately "
+        "lower-commitment direction after a heavier build was abandoned."
+    ),
+    "target_market": "Exam-stressed NUS/NTU students in high-fail-rate modules",
+    "startup_score": 7.0,
+    "feasibility_score": 9.2,
+    "market_attractiveness_score": 7.0,
+    "founder_fit_score": 8.2,
+    "risk_score": 2.0,
+    "revenue_potential": "SGD 1,500–3,000/month by month 2",
+    "estimated_monthly_revenue": "SGD 1500 by month 2",
+    "time_to_launch": "1 week",
+    "initial_investment": "SGD 50",
+    "risk_level": "Low",
+}
+
+_LEAN_PIVOT_PLAN = {
+    "startup_name": "CramCohort",
+    "value_proposition": "Pass your hardest module with a small paid live cohort — no software required to start",
+    "customer_persona": "Priya, 21, NTU engineering student. Pain: panics before finals, generic YouTube misses her syllabus. Goal: structured, accountable prep.",
+    "lean_canvas": {
+        "problem": "Students cram alone and panic; 1-on-1 tutoring is expensive.",
+        "solution": "Small paid live cram cohorts per module over video, capped at 8 seats.",
+        "unique_value_proposition": "Module-specific group cram for the price of one coffee per session.",
+        "unfair_advantage": "You've taken these exact modules and know what gets tested.",
+        "customer_segments": "NUS/NTU students in high-fail-rate modules.",
+        "key_metrics": "Seats sold per cohort, repeat-booking rate, referral rate.",
+        "channels": "Course Telegram groups, faculty WhatsApp, word of mouth.",
+        "cost_structure": "Zoom SGD 20/mo; near-zero variable cost.",
+        "revenue_streams": "Per-seat ticket SGD 25–40 per cram session.",
+    },
+    "mvp_scope": "A Telegram post + payment link + one scheduled Zoom cohort for a single module.",
+    "landing_page_copy": "Finals in 2 weeks? Join a small live cram cohort for your exact module. 8 seats only.",
+    "marketing_strategy": "Week 1: post in 5 module Telegram groups, fill one cohort. Then repeat per module and collect testimonials.",
+    "customer_acquisition_plan": "DM classmates in your hardest module; offer the first cohort at SGD 15 to seed reviews.",
+    "elevator_pitch": "CramCohort runs small paid live cram sessions for the exact modules students fear — revenue in week one, no app required.",
+    "customer_outreach_templates": {
+        "cold_email": "Hi [Name], running a live cram cohort for [Module] before finals — 8 seats, SGD 25. Want in?",
+        "linkedin_dm": "Hey! Hosting a small live cram session for [Module]. Keen to join or share with your cohort?",
+        "cold_call_script": "Hi, I run focused live cram sessions for [Module] — can I tell you about the next one in 60 seconds?",
+    },
+    "thirty_day_roadmap": [
+        "Week 1: Pick the highest-pain module; sell 8 seats; run cohort 1.",
+        "Week 2: Collect testimonials; open 2 more module cohorts.",
+        "Week 3: Add a second time slot; introduce a 3-session bundle.",
+        "Week 4: Decide which modules to productise into recorded mini-courses.",
+    ],
+}
+
+
+def _read_memory_signals(memory_block: str) -> Dict[str, Any]:
+    """
+    Pull the few signals the keyless mock acts on out of the memory_context block
+    (the same string MemoryStore.build_context produces). Deterministic, no LLM.
+    """
+    text = memory_block.lower()
+    # Episodic lines: "Recommended 'X' (score 7.5). Outcome: abandoned."
+    abandoned_ideas = re.findall(
+        r"Recommended '([^']+)'.*?Outcome:\s*abandoned", memory_block
+    )
+    return {
+        "present": bool(memory_block.strip()),
+        "has_abandonment": "abandon" in text,
+        "abandoned_ideas": abandoned_ideas,
+        "launched": "has launched" in text or "outcome: launched" in text,
+        "prefers_b2b": "b2b" in text,
+    }
+
+
+def _apply_abandonment_steer(data: Dict[str, Any], sig: Dict[str, Any]) -> Dict[str, Any]:
+    """Promote the lean service-first pivot to #1; demote the abandoned direction."""
+    names = sig["abandoned_ideas"]
+    abandoned_str = ", ".join(f"'{n}'" for n in names) if names else "a prior venture"
+
+    demoted = copy.deepcopy(data["top_ideas"][0])
+    demoted["description"] = (
+        "Deprioritised to #2 — the heavier AI study-app direction the founder has "
+        "tried before; pursue only after the leaner pick proves demand. "
+        + demoted["description"]
+    )
+    data["top_ideas"] = [copy.deepcopy(_LEAN_PIVOT_IDEA), demoted]
+    data["execution_plan"] = copy.deepcopy(_LEAN_PIVOT_PLAN)
+    data["final_memo"] = (
+        f"Memory-informed recommendation. This founder previously abandoned "
+        f"{abandoned_str}, so FounderOS deliberately does NOT re-recommend another "
+        f"heavy build in that direction. The #1 pick is now a service-first "
+        f"'{_LEAN_PIVOT_IDEA['name']}' that earns revenue in week one with minimal "
+        f"upfront commitment — matching the learned pattern that this founder favours "
+        f"faster time-to-value. The earlier AI study-app idea is retained only as a "
+        f"#2 fallback. [MOCK MODE — memory loop active]"
+    )
+    data["founder_fit_rationale"] = (
+        "Service-first model ships in days and reuses the founder's lived exam "
+        "experience — a deliberate fit for someone who has walked away from heavier "
+        "builds before."
+    )
+    data["key_risks_to_watch"] = [
+        "Seat fill rate per cohort",
+        "Time cost of running live sessions",
+        "Converting one-off attendees into repeat bookings",
+    ]
+    data["memory_informed"] = True
+    data["memory_adjustments"] = [
+        f"Steered #1 away from previously abandoned direction ({abandoned_str}).",
+        f"Promoted lower-commitment '{_LEAN_PIVOT_IDEA['name']}' to the #1 slot.",
+        "Demoted the AI study-app idea to a #2 fallback.",
+    ]
+    return data
+
+
+def _apply_history_ack(data: Dict[str, Any], sig: Dict[str, Any]) -> Dict[str, Any]:
+    """Memory present but no abandonment — lighter, still-observable adjustments."""
+    notes: List[str] = []
+    idea = data["top_ideas"][0]
+    if sig["launched"]:
+        idea["startup_score"] = 8.3
+        idea["time_to_launch"] = "5 weeks"
+        idea["initial_investment"] = "SGD 800"
+        idea["risk_level"] = "Medium"
+        data["execution_plan"]["mvp_scope"] = (
+            "Expanded MVP: note upload + Q&A + spaced-repetition quizzes — scoped up "
+            "to match a founder with a proven launch track record."
+        )
+        notes.append("Raised ambition/scope to match a proven launch track record.")
+    if sig["prefers_b2b"]:
+        idea["target_market"] = "University departments & student-org budgets (B2B)"
+        data["execution_plan"]["lean_canvas"]["customer_segments"] = (
+            "University departments and student organisations (B2B buyers)"
+        )
+        notes.append("Shifted target market toward the founder's demonstrated B2B preference.")
+    if not notes:
+        notes.append("Prior FounderOS history was taken into account.")
+    data["final_memo"] = "Memory-informed recommendation. " + " ".join(notes) + " " + data["final_memo"]
+    data["memory_informed"] = True
+    data["memory_adjustments"] = notes
+    return data
+
+
+def _memory_aware_mock(memory_block: str) -> str:
+    """
+    Mock-mode VP output that visibly reflects the founder's memory. With no memory
+    it returns the exact base fixture; with memory it returns a content-shifted
+    recommendation. This is what makes the memory loop demonstrable keyless.
+    """
+    sig = _read_memory_signals(memory_block)
+    if not sig["present"]:
+        return _MOCK
+    data = copy.deepcopy(_BASE_RECOMMENDATION)
+    if sig["has_abandonment"]:
+        return json.dumps(_apply_abandonment_steer(data, sig))
+    return json.dumps(_apply_history_ack(data, sig))
 
 
 SYSTEM_PROMPT = """
@@ -72,6 +248,11 @@ Your mission: Synthesize all agent analyses, incorporate debate outcomes, and pr
 You have access to outputs from: Scout, Trend Analyst, Finance, Growth, and Skeptic agents.
 Your job is to weigh all perspectives fairly — including the Skeptic's concerns — and make
 a balanced, high-conviction recommendation tailored to THIS specific founder.
+
+You are also given the founder's MEMORY — their past FounderOS sessions and the insights
+learned from them. Treat it as decisive context: do not re-recommend ideas the founder has
+already abandoned, respect learned constraints/preferences, and adjust ambition to their
+demonstrated execution track record. If memory says there is no prior history, ignore it.
 
 Also assess Founder Fit:
 - How well do their skills match the opportunity?
@@ -145,7 +326,9 @@ class VenturePartnerAgent(BaseAgent):
     llm_model = DEEP_MODEL  # synthesis + full execution plan requires best model
 
     def _mock_response(self) -> str:
-        return _MOCK
+        # Memory-aware in mock mode: the recommendation shifts when prior history
+        # exists. _memory_block is set by analyze() just before the LLM call.
+        return _memory_aware_mock(getattr(self, "_memory_block", ""))
 
     def analyze(self, profile: UserProfile, context: Dict[str, Any] = {}) -> AgentOutput:
         profile_text = self._format_profile(profile)
@@ -154,11 +337,24 @@ class VenturePartnerAgent(BaseAgent):
         agent_summary = self._compile_agent_summary(context)
         debate_summary = context.get("debate_summary", "No debate conflicts identified.")
 
+        # Memory loop (Phase 5): fold this founder's history + learned insights into
+        # the prompt so prior outcomes actually steer the recommendation. Empty for
+        # first-time founders, in which case we tell the VP there is no prior history.
+        memory_context = (context.get("memory_context") or "").strip()
+        memory_block = memory_context if memory_context else (
+            "No prior FounderOS history for this founder — treat as a first session."
+        )
+        # Drive the keyless mock path: empty when there is no real history so the
+        # mock returns the unchanged baseline; the raw memory_context otherwise.
+        self._memory_block = memory_context
+
         user_message = (
             f"{profile_text}\n\n"
+            f"=== Founder Memory (past sessions & learned insights) ===\n{memory_block}\n\n"
             f"=== Agent Analysis Summary ===\n{agent_summary}\n\n"
             f"=== Debate Outcome ===\n{debate_summary}\n\n"
-            "Based on ALL of the above, produce your final recommendation."
+            "Based on ALL of the above — and explicitly accounting for the founder's "
+            "memory above — produce your final recommendation."
         )
 
         raw = self._call_llm(SYSTEM_PROMPT, user_message, max_tokens=4000)
