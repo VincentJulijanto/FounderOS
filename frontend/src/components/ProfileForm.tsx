@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { ArrowRight } from 'lucide-react'
+import { ROSTER } from '@/components/agentRoster'
 
 interface Props {
   onSubmit: (data: Record<string, unknown>) => void
@@ -49,22 +51,28 @@ export default function ProfileForm({ onSubmit }: Props) {
   return (
     <div className="max-w-2xl mx-auto space-y-8 animate-slide-up">
 
-      {/* Agent preview */}
-      <div className="grid grid-cols-4 md:grid-cols-7 gap-3 mb-8">
-        {[
-          { icon: '🔭', name: 'Scout' },
-          { icon: '📈', name: 'Trend' },
-          { icon: '💰', name: 'Finance' },
-          { icon: '🚀', name: 'Growth' },
-          { icon: '🎯', name: 'Skeptic' },
-          { icon: '🧩', name: 'Founder-Fit' },
-          { icon: '🤝', name: 'Partner' },
-        ].map(agent => (
-          <div key={agent.name} className="card text-center py-3 px-2 opacity-60 hover:opacity-100 transition-opacity">
-            <div className="text-2xl mb-1">{agent.icon}</div>
-            <div className="text-xs text-gray-400">{agent.name}</div>
-          </div>
-        ))}
+      {/* Beat 1 — meet your council before you commit */}
+      <div className="card">
+        <h2 className="text-lg font-semibold">Meet your council</h2>
+        <p className="text-sm text-muted mt-0.5 mb-5">
+          Seven specialized agents will analyse your brief — here&rsquo;s who&rsquo;s working for you.
+        </p>
+        <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-3.5">
+          {ROSTER.map(agent => {
+            const Icon = agent.Icon
+            return (
+              <li key={agent.name} className="flex items-start gap-3">
+                <span className="mt-0.5 shrink-0 w-8 h-8 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-600">
+                  <Icon className="w-4 h-4" aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <div className="text-sm font-medium text-graphite">{agent.name}</div>
+                  <div className="text-xs text-muted leading-snug">{agent.role}</div>
+                </div>
+              </li>
+            )
+          })}
+        </ul>
       </div>
 
       {/* Basic Info */}
@@ -92,7 +100,7 @@ export default function ProfileForm({ onSubmit }: Props) {
         </div>
 
         <div>
-          <label className="label">What's your goal? *</label>
+          <label className="label">What&apos;s your goal? *</label>
           <textarea
             className="input min-h-[80px] resize-none"
             placeholder="e.g. Earn $1,000/month side income within 3 months with minimal upfront investment"
@@ -104,7 +112,10 @@ export default function ProfileForm({ onSubmit }: Props) {
 
       {/* Budget & Time */}
       <div className="card">
-        <h2 className="text-lg font-semibold mb-4">Resources</h2>
+        <h2 className="text-lg font-semibold">Resources</h2>
+        <p className="text-sm text-muted mt-0.5 mb-4">
+          This is what tailors the council — Finance models against your budget, Founder-Fit against your time.
+        </p>
         <div className="grid grid-cols-2 gap-6">
           <div>
             <label className="label">Budget (SGD)</label>
@@ -115,7 +126,7 @@ export default function ProfileForm({ onSubmit }: Props) {
                 onChange={e => setForm(p => ({ ...p, budget: Number(e.target.value) }))}
                 className="flex-1 accent-brand-500"
               />
-              <span className="text-brand-400 font-mono font-bold w-20 text-right">
+              <span className="text-brand-600 font-mono font-semibold w-20 text-right">
                 SGD {form.budget.toLocaleString()}
               </span>
             </div>
@@ -129,7 +140,7 @@ export default function ProfileForm({ onSubmit }: Props) {
                 onChange={e => setForm(p => ({ ...p, weekly_hours: Number(e.target.value) }))}
                 className="flex-1 accent-brand-500"
               />
-              <span className="text-brand-400 font-mono font-bold w-16 text-right">
+              <span className="text-brand-600 font-mono font-semibold w-16 text-right">
                 {form.weekly_hours}h
               </span>
             </div>
@@ -139,17 +150,17 @@ export default function ProfileForm({ onSubmit }: Props) {
 
       {/* Skills */}
       <div className="card">
-        <h2 className="text-lg font-semibold mb-1">Your Skills *</h2>
-        <p className="text-sm text-gray-500 mb-4">Select all that apply</p>
+        <h2 className="text-lg font-semibold mb-1">Your skills *</h2>
+        <p className="text-sm text-muted mb-4">Founder-Fit scores every idea against these — select all that apply.</p>
         <div className="flex flex-wrap gap-2">
           {SKILL_OPTIONS.map(skill => (
             <button
               key={skill}
               onClick={() => toggleItem('skills', skill)}
-              className={`px-3 py-1.5 rounded-full text-sm border transition-all ${
+              className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
                 form.skills.includes(skill)
-                  ? 'bg-brand-600 border-brand-500 text-white'
-                  : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-500'
+                  ? 'bg-graphite border-graphite text-canvas'
+                  : 'bg-white border-hairline text-muted hover:border-graphite/40'
               }`}
             >
               {skill}
@@ -160,17 +171,17 @@ export default function ProfileForm({ onSubmit }: Props) {
 
       {/* Interests */}
       <div className="card">
-        <h2 className="text-lg font-semibold mb-1">Your Interests</h2>
-        <p className="text-sm text-gray-500 mb-4">What sectors excite you?</p>
+        <h2 className="text-lg font-semibold mb-1">Your interests</h2>
+        <p className="text-sm text-muted mb-4">What sectors excite you?</p>
         <div className="flex flex-wrap gap-2">
           {INTEREST_OPTIONS.map(interest => (
             <button
               key={interest}
               onClick={() => toggleItem('interests', interest)}
-              className={`px-3 py-1.5 rounded-full text-sm border transition-all ${
+              className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
                 form.interests.includes(interest)
-                  ? 'bg-accent-600 border-accent-500 text-white'
-                  : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-500'
+                  ? 'bg-graphite border-graphite text-canvas'
+                  : 'bg-white border-hairline text-muted hover:border-graphite/40'
               }`}
             >
               {interest}
@@ -181,11 +192,12 @@ export default function ProfileForm({ onSubmit }: Props) {
 
       {/* Submit */}
       <button onClick={handleSubmit} className="btn-primary w-full text-lg py-4">
-        Launch Agent Society →
+        Launch Agent Society
+        <ArrowRight className="w-5 h-5" aria-hidden="true" />
       </button>
 
-      <p className="text-center text-xs text-gray-600">
-        7 AI agents will analyse your profile and debate the best startup for you.
+      <p className="text-center text-xs text-muted">
+        Seven agents will analyse your profile and debate the best startup for you.
         This typically takes 30–90 seconds.
       </p>
     </div>
