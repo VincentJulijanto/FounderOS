@@ -18,6 +18,8 @@ class BaseAgent:
     name: str = "Base Agent"
     role: str = "Base"
     llm_model: str = FAST_MODEL  # override in subclass for reasoning-heavy agents
+    max_tokens: int = 2000       # override for agents whose JSON output is large
+                                 # (Skeptic, VP) — too low truncates JSON in live mode
 
     def __init__(self):
         self.mock = settings.use_mock_llm or not settings.qwen_api_key
@@ -27,11 +29,15 @@ class BaseAgent:
     # Core LLM Call
     # ──────────────────────────────────────────
 
-    def _call_llm(self, system: str, user: str, max_tokens: int = 2000) -> str:
-        """Return mock fixture or live Qwen response depending on config."""
+    def _call_llm(self, system: str, user: str, max_tokens: int | None = None) -> str:
+        """Return mock fixture or live Qwen response depending on config.
+
+        max_tokens defaults to the agent's class-level `max_tokens` so each agent
+        controls its own ceiling; pass an explicit value to override per call.
+        """
         if self.mock:
             return self._mock_response()
-        return self.provider.chat(system, user, max_tokens)
+        return self.provider.chat(system, user, max_tokens or self.max_tokens)
 
     def _mock_response(self) -> str:
         """Override in each subclass with a realistic fixture for mock mode."""

@@ -66,6 +66,7 @@ class SkepticAgent(BaseAgent):
     name = "Skeptic Agent"
     role = "Risk Analysis & Devil's Advocate"
     llm_model = DEEP_MODEL  # needs careful reasoning to challenge assumptions
+    max_tokens = 6000       # per-opportunity risk JSON over 5 opps truncated at 2000 in live mode (Sprint B)
 
     def _mock_response(self) -> str:
         return _MOCK
@@ -97,9 +98,9 @@ class SkepticAgent(BaseAgent):
             "Be specific about risks. Don't hold back."
         )
 
-        # 4500 cap: 5 detailed risk reports overflow the 2000 default and truncate the JSON;
-        # 4500 leaves realistic headroom for longer/more complex founder profiles.
-        raw = self._call_llm(SYSTEM_PROMPT, user_message, max_tokens=4500)
+        # Cap comes from the class-level max_tokens (6000) — 5 detailed risk reports
+        # overflow the 2000 default and truncate the JSON in live mode.
+        raw = self._call_llm(SYSTEM_PROMPT, user_message)
         data = self._parse_json(raw)
 
         risk_reports = data.get("risk_reports", [])

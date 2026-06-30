@@ -324,6 +324,7 @@ class VenturePartnerAgent(BaseAgent):
     name = "Venture Partner"
     role = "Consensus & Final Recommendation"
     llm_model = DEEP_MODEL  # synthesis + full execution plan requires best model
+    max_tokens = 6000       # full ranked ideas + execution plan JSON is large (was 4000; Sprint B)
 
     def _mock_response(self) -> str:
         # Memory-aware in mock mode: the recommendation shifts when prior history
@@ -357,7 +358,7 @@ class VenturePartnerAgent(BaseAgent):
             "memory above — produce your final recommendation."
         )
 
-        raw = self._call_llm(SYSTEM_PROMPT, user_message, max_tokens=4000)
+        raw = self._call_llm(SYSTEM_PROMPT, user_message)  # uses class max_tokens (6000)
         data = self._parse_json(raw)
 
         # Founder-Fit is owned by the dedicated FounderFitAgent. Defer to its score
