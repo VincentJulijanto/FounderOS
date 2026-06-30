@@ -99,7 +99,8 @@ class FounderFitAgent(BaseAgent):
             "Score all 5 dimensions and give an overall fit score grounded in their profile."
         )
 
-        raw = self._call_llm(SYSTEM_PROMPT, user_message)
+        # 4500 cap: same exposure as Skeptic — long structured output truncates at 2000.
+        raw = self._call_llm(SYSTEM_PROMPT, user_message, max_tokens=4500)
         data = self._parse_json(raw)
 
         dimensions = data.get("dimensions", {})

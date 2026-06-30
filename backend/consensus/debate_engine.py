@@ -255,7 +255,8 @@ class DebateEngine:
         formatted = self._format_agent_outputs(agent_outputs)
         prompt = CONFLICT_DETECTION_PROMPT.format(agent_outputs=formatted)
 
-        raw = self._call_llm(prompt, mock_fixture=_MOCK_CONFLICTS)
+        # 4500 cap: same exposure as Skeptic — conflict list truncates at the 2000 default.
+        raw = self._call_llm(prompt, mock_fixture=_MOCK_CONFLICTS, max_tokens=4500)
         data = self._parse_json(raw)
 
         conflicts = [

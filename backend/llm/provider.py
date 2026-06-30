@@ -11,7 +11,17 @@ Features:
 
 import json
 import hashlib
+import os
+import time
+import traceback
 from ..config import settings
+
+# Diagnostic log: one JSONL line per JSON *parse failure* (not per call). Persisted in-repo
+# under logs/ so it survives restarts. Override the location with QWEN_DEBUG_LOG.
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_DEBUG_LOG_PATH = os.environ.get(
+    "QWEN_DEBUG_LOG", os.path.join(_PROJECT_ROOT, "logs", "qwen_json_failures.jsonl")
+)
 
 # Model tiering — assign per agent class via `llm_model` class variable
 FAST_MODEL = "qwen-turbo"          # Scout, Trend, Finance, Growth — cheap parallel fan-out
@@ -77,11 +87,70 @@ class QwenProvider:
                 return text
             except json.JSONDecodeError as e:
                 last_error = str(e)
+                _log_parse_failure(self.model, max_tokens, attempt, resp, text, last_error)
 
         raise ValueError(
             f"Qwen returned invalid JSON after 3 attempts on model {self.model}. "
             f"Last error: {last_error}"
         )
+
+
+def _call_site() -> str:
+    """Best-effort: first stack frame outside this provider module (e.g. the agent)."""
+    here = os.path.basename(__file__)
+    for frame in reversed(traceback.extract_stack()[:-1]):
+        if os.path.basename(frame.filename) != here:
+            return f"{os.path.basename(frame.filename)}:{frame.lineno} in {frame.name}"
+    return "unknown"
+
+
+def _usage_dict(resp) -> dict | None:
+    """Serialize resp.usage, preserving completion_tokens_details if the SDK exposes it."""
+    usage = getattr(resp, "usage", None)
+    if usage is None:
+        return None
+    for attr in ("model_dump", "to_dict", "dict"):
+        fn = getattr(usage, attr, None)
+        if callable(fn):
+            try:
+                return fn()
+            except Exception:
+                pass
+    # Fallback: pull common fields by hand.
+    out = {}
+    for f in ("prompt_tokens", "completion_tokens", "total_tokens", "completion_tokens_details"):
+        if hasattr(usage, f):
+            out[f] = getattr(usage, f)
+    return out or None
+
+
+def _log_parse_failure(model, max_tokens, attempt, resp, text, error) -> None:
+    """Append one diagnostic JSONL line per failed parse. Never raises (best-effort)."""
+    try:
+        message = resp.choices[0].message
+        reasoning = getattr(message, "reasoning_content", None)
+        record = {
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+            "call_site": _call_site(),
+            "model": model,
+            "max_tokens": max_tokens,
+            "attempt": attempt,  # 0-indexed retry attempt
+            "parse_error": error,
+            "content_len": len(text) if text is not None else 0,
+            "raw_text": text,
+            "reasoning_content_len": len(reasoning) if reasoning else 0,
+            "reasoning_content": reasoning if reasoning else None,
+            "usage": _usage_dict(resp),
+        }
+        os.makedirs(os.path.dirname(_DEBUG_LOG_PATH), exist_ok=True)
+        with open(_DEBUG_LOG_PATH, "a") as fh:
+            fh.write(json.dumps(record, default=str) + "\n")
+    except Exception as log_err:  # diagnostics must never break the pipeline
+        try:
+            with open(_DEBUG_LOG_PATH, "a") as fh:
+                fh.write(json.dumps({"log_error": str(log_err)}) + "\n")
+        except Exception:
+            pass
 
 
 def _cache_key(model: str, system: str, user: str) -> str:

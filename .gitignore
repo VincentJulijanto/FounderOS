@@ -24,3 +24,6 @@ out/
 # Next.js / TS build artifacts
 frontend/tsconfig.tsbuildinfo
 frontend/.next/
+
+# Diagnostic LLM failure logs
+logs/

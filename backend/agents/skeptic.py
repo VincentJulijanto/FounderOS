@@ -97,7 +97,9 @@ class SkepticAgent(BaseAgent):
             "Be specific about risks. Don't hold back."
         )
 
-        raw = self._call_llm(SYSTEM_PROMPT, user_message)
+        # 4500 cap: 5 detailed risk reports overflow the 2000 default and truncate the JSON;
+        # 4500 leaves realistic headroom for longer/more complex founder profiles.
+        raw = self._call_llm(SYSTEM_PROMPT, user_message, max_tokens=4500)
         data = self._parse_json(raw)
 
         risk_reports = data.get("risk_reports", [])
