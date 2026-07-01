@@ -11,13 +11,19 @@ import {
 } from 'lucide-react'
 
 export interface AgentMeta {
-  /** Canonical name — must match the backend agent_name exactly. */
+  /**
+   * Canonical name — must match the backend `agent_name` EXACTLY. This is the
+   * join key for agent_outputs, debate positions, and dissent. It is the string
+   * scout · trend · finance · growth · skeptic · capability · venture_partner.
+   */
   name: string
+  /** Human-facing display name (e.g. venture_partner → "Chair"). */
+  label: string
   /** Short label for compact tiles. */
   short: string
   /** Distinct line glyph (lucide). No emoji. */
   Icon: LucideIcon
-  /** One-line role, present tense (used in the "meet your council" preview). */
+  /** One-line role, present tense (used in the "meet your board" preview). */
   role: string
   /** Working status line shown while the agent runs. */
   status: string
@@ -26,64 +32,74 @@ export interface AgentMeta {
 }
 
 /**
- * The canonical 7-agent council. Single source of truth for icons, roles, and
- * tints across ProfileForm (preview) and AgentDebate (live + debate attribution).
+ * The canonical 7-agent board. Single source of truth for icons, labels, and
+ * tints across the intake preview and the debate view. Keyed on the canonical
+ * backend strings; `label` carries the human-facing name (venture_partner is the
+ * board's "Chair"). `capability` is the rebuilt `founder_fit` — organisational
+ * readiness, not a person's skills.
  */
 export const ROSTER: AgentMeta[] = [
   {
-    name: 'Opportunity Scout',
+    name: 'scout',
+    label: 'Opportunity Scout',
     short: 'Scout',
     Icon: Telescope,
-    role: 'Hunts for underserved market gaps worth building in.',
-    status: 'Scouting market gaps...',
+    role: 'Frames the options on the table for this decision.',
+    status: 'Framing the options...',
     tone: 'border-brand-700/60 bg-brand-950/40',
   },
   {
-    name: 'Trend Analyst',
+    name: 'trend',
+    label: 'Trend Analyst',
     short: 'Trend',
     Icon: TrendingUp,
-    role: 'Reads demand signals and timing for each opportunity.',
-    status: 'Analysing market demand...',
+    role: 'Reads market and demand signals for this decision.',
+    status: 'Reading market signals...',
     tone: 'border-emerald-700/60 bg-emerald-950/30',
   },
   {
-    name: 'Finance Agent',
+    name: 'finance',
+    label: 'Finance Agent',
     short: 'Finance',
     Icon: Wallet,
-    role: 'Models unit economics against your budget.',
-    status: 'Running financial models...',
+    role: "Models the decision against the company's economics.",
+    status: 'Modelling the economics...',
     tone: 'border-accent-600/60 bg-accent-700/10',
   },
   {
-    name: 'Growth Agent',
+    name: 'growth',
+    label: 'Growth Agent',
     short: 'Growth',
     Icon: Rocket,
-    role: 'Maps how the first customers are won.',
-    status: 'Building acquisition strategy...',
+    role: 'Maps how the company executes and goes to market.',
+    status: 'Mapping execution...',
     tone: 'border-violet-700/60 bg-brand-950/40',
   },
   {
-    name: 'Skeptic Agent',
+    name: 'skeptic',
+    label: 'Skeptic',
     short: 'Skeptic',
     Icon: ShieldQuestion,
-    role: 'Attacks the weakest assumptions before you do.',
-    status: 'Challenging assumptions...',
+    role: "Attacks the decision's weakest assumptions and failure modes.",
+    status: 'Attacking the assumptions...',
     tone: 'border-rose-700/60 bg-rose-950/30',
   },
   {
-    name: 'Founder-Fit Agent',
-    short: 'Founder-Fit',
+    name: 'capability',
+    label: 'Capability Agent',
+    short: 'Capability',
     Icon: Puzzle,
-    role: 'Scores each idea against your skills and time.',
-    status: 'Scoring founder–opportunity fit...',
+    role: "Scores the organisation's readiness to execute.",
+    status: 'Scoring organisational readiness...',
     tone: 'border-teal-700/60 bg-teal-950/30',
   },
   {
-    name: 'Venture Partner',
-    short: 'Partner',
+    name: 'venture_partner',
+    label: 'Chair',
+    short: 'Chair',
     Icon: Handshake,
-    role: 'Synthesises the council into one recommendation.',
-    status: 'Synthesising recommendation...',
+    role: 'Synthesises the debate into the board memo.',
+    status: 'Writing the board memo...',
     tone: 'border-accent-500/60 bg-accent-700/10',
   },
 ]
@@ -92,5 +108,11 @@ const BY_NAME: Record<string, AgentMeta> = Object.fromEntries(
   ROSTER.map((a) => [a.name, a]),
 )
 
-/** Resolve an agent's glyph by name, with a neutral fallback. */
+/** Resolve an agent's glyph by canonical name, with a neutral fallback. */
 export const iconFor = (name: string): LucideIcon => BY_NAME[name]?.Icon ?? Bot
+
+/** Resolve an agent's display label by canonical name (falls back to the raw name). */
+export const labelFor = (name: string): string => BY_NAME[name]?.label ?? name
+
+/** Resolve an agent's one-line role by canonical name. */
+export const roleFor = (name: string): string => BY_NAME[name]?.role ?? ''

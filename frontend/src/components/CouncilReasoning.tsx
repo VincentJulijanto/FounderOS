@@ -1,8 +1,8 @@
 'use client'
 
 import { Check, AlertTriangle } from 'lucide-react'
-import type { AgentOutput } from '@/app/studio/page'
-import { iconFor } from '@/components/agentRoster'
+import type { AgentOutput } from '@/lib/types'
+import { iconFor, labelFor } from '@/components/agentRoster'
 
 interface Props {
   outputs: AgentOutput[]
@@ -34,7 +34,7 @@ export default function CouncilReasoning({ outputs }: Props) {
                   <Icon className="w-4 h-4" aria-hidden="true" />
                 </span>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-graphite truncate">{a.agent_name}</h3>
+                  <h3 className="text-sm font-semibold text-graphite truncate">{labelFor(a.agent_name)}</h3>
                   <p className="text-xs text-muted truncate">{a.role}</p>
                 </div>
                 {a.score != null && (

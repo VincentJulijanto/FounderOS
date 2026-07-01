@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { Gavel, AlertTriangle, Check, ArrowRight } from 'lucide-react'
-import type { AgentOutput, DebateRound, ConsensusReport } from '@/app/studio/page'
-import { ROSTER, iconFor } from '@/components/agentRoster'
+import type { AgentOutput, DebateRound, ConsensusReport } from '@/lib/types'
+import { ROSTER, iconFor, labelFor, roleFor } from '@/components/agentRoster'
 
 interface Props {
   phase: 'analyzing' | 'debating'
@@ -14,15 +14,13 @@ interface Props {
   onContinue?: () => void
 }
 
-const SKEPTIC = 'Skeptic Agent'
+const SKEPTIC = 'skeptic' // canonical agent-name string
 
 // Consensus = resolution rate, NOT idea quality. Status colours only (not brand gold).
 const consensusTone = (score: number) =>
   score >= 8 ? 'border-green-200 bg-green-50 text-green-700'
     : score >= 5 ? 'border-amber-200 bg-amber-50 text-amber-700'
     : 'border-red-200 bg-red-50 text-red-700'
-
-const roleFor = (name: string) => ROSTER.find(a => a.name === name)?.role ?? ''
 
 // One readable turn in the debate transcript.
 interface Turn {
@@ -151,7 +149,7 @@ export default function AgentDebate({ phase, agentOutputs, debateRounds, debateS
               </span>
               <div className="min-w-0">
                 <div className="text-sm font-semibold flex items-center gap-2 text-graphite">
-                  {agent.name}
+                  {agent.label}
                   {done && output?.score != null && (
                     <span className="badge bg-brand-500/10 text-brand-700 font-mono">
                       {output.score}/10
@@ -226,7 +224,7 @@ export default function AgentDebate({ phase, agentOutputs, debateRounds, debateS
                       </span>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-graphite">{turn.speaker}</span>
+                          <span className="text-sm font-semibold text-graphite">{labelFor(turn.speaker)}</span>
                           <span className="badge bg-accent-500/20 text-accent-700 uppercase tracking-wide text-[10px]">
                             Challenge
                           </span>
@@ -261,7 +259,7 @@ export default function AgentDebate({ phase, agentOutputs, debateRounds, debateS
                   </span>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-baseline gap-x-2">
-                      <span className="text-sm font-semibold text-graphite">{turn.speaker}</span>
+                      <span className="text-sm font-semibold text-graphite">{labelFor(turn.speaker)}</span>
                       {turn.role && <span className="text-xs text-muted">{turn.role}</span>}
                       {turn.kind === 'rebuttal' && (
                         <span className="badge bg-brand-500/10 text-brand-700 text-[10px]">revised</span>
@@ -288,7 +286,7 @@ export default function AgentDebate({ phase, agentOutputs, debateRounds, debateS
                 {consensus.unresolved_conflicts.map((c, i) => (
                   <li key={i}>
                     <span className="font-medium">{c.topic}</span>{' '}
-                    <span className="text-xs text-muted">({c.severity})</span> — {c.agent_a} vs {c.agent_b}
+                    <span className="text-xs text-muted">({c.severity})</span> — {labelFor(c.agent_a)} vs {labelFor(c.agent_b)}
                   </li>
                 ))}
               </ul>

@@ -66,7 +66,7 @@ export default function ProfileForm({ onSubmit }: Props) {
                   <Icon className="w-4 h-4" aria-hidden="true" />
                 </span>
                 <div className="min-w-0">
-                  <div className="text-sm font-medium text-graphite">{agent.name}</div>
+                  <div className="text-sm font-medium text-graphite">{agent.label}</div>
                   <div className="text-xs text-muted leading-snug">{agent.role}</div>
                 </div>
               </li>
