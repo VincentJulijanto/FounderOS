@@ -6,23 +6,23 @@ import { ChevronDown, UserCog, Search, Scale, FileText } from 'lucide-react'
 const STEPS = [
   {
     icon: UserCog,
-    title: 'Share your profile',
-    body: 'Tell FounderOS your skills, budget, weekly hours, and goals. That context anchors every agent so recommendations fit you — not a generic founder.',
+    title: 'Bring a decision',
+    body: 'Tell FounderOS the call you are weighing and your company context — sector, stage, model, and the numbers that matter. The council pulls the rest from your saved history.',
   },
   {
     icon: Search,
     title: 'The council convenes',
-    body: 'The Scout surfaces market gaps; Trend, Finance, Growth, and Founder-Fit agents score each opportunity across their dimensions in parallel.',
+    body: 'The Scout frames the options on the table; Trend, Finance, Growth, and Capability agents pressure each one across their dimensions in parallel.',
   },
   {
     icon: Scale,
     title: 'Debate to consensus',
-    body: 'Agents identify where they disagree and argue it out over rounds. A moderator tracks conflicts until the council converges on a consensus.',
+    body: 'Agents identify where they disagree and argue it out over rounds. A moderator tracks conflicts until the council converges — and what stays unresolved becomes the dissent on record.',
   },
   {
     icon: FileText,
-    title: 'Get your execution plan',
-    body: 'The Venture Partner synthesizes everything into a ranked shortlist plus a full plan: lean canvas, MVP scope, 30-day roadmap, and outreach copy.',
+    title: 'Get your board memo',
+    body: 'The Chair weighs the debate into a clear recommendation — proceed, hold, or conditional — with the dissent, what is still missing, and a phased plan.',
   },
 ]
 
@@ -36,7 +36,7 @@ export default function HowItWorks() {
           How the model works
         </h2>
         <p className="mt-5 text-muted text-lg leading-relaxed">
-          From a short profile to a defensible plan in four steps.
+          From one decision to a board-ready memo in four steps.
         </p>
       </div>
 
@@ -78,16 +78,16 @@ export default function HowItWorks() {
         {/* Light dashboard-style mockup */}
         <div className="card-light p-6">
           <div className="flex items-center justify-between pb-4 border-b border-hairline">
-            <span className="text-sm font-medium text-graphite">Venture pipeline</span>
-            <span className="text-xs font-mono text-muted">3 ideas ranked</span>
+            <span className="text-sm font-medium text-graphite">Options assessed</span>
+            <span className="text-xs font-mono text-muted">3 options assessed</span>
           </div>
 
           {/* Ranked ideas — PLACEHOLDER illustrative data */}
           <ul className="mt-4 space-y-3">
             {[
-              { rank: 1, name: 'Niche B2B onboarding tool', score: 8.4, w: '84%' },
-              { rank: 2, name: 'Creator analytics dashboard', score: 7.6, w: '76%' },
-              { rank: 3, name: 'Local services marketplace', score: 6.9, w: '69%' },
+              { rank: 1, name: 'Enter Indonesia (pilot first)', score: 'High', w: '84%' },
+              { rank: 2, name: 'Deepen in the home market', score: 'Medium', w: '76%' },
+              { rank: 3, name: 'Acquire a regional competitor', score: 'Low', w: '69%' },
             ].map((idea) => (
               <li key={idea.rank} className="rounded-xl border border-hairline bg-canvas/60 px-4 py-3">
                 <div className="flex items-center justify-between gap-3">
@@ -107,7 +107,7 @@ export default function HowItWorks() {
           </ul>
 
           <div className="mt-4 rounded-xl border border-accent-600/30 bg-accent-500/[0.07] px-4 py-3 text-xs text-muted">
-            Recommended: <span className="text-graphite font-medium">Niche B2B onboarding tool</span> — execution plan ready
+            Recommended: <span className="text-graphite font-medium">Enter Indonesia (pilot first)</span> — board memo ready
           </div>
         </div>
       </div>

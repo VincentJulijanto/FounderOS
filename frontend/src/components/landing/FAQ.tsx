@@ -7,7 +7,7 @@ import { Plus, Minus } from 'lucide-react'
 const ITEMS = [
   {
     q: 'What exactly do I get at the end?',
-    a: 'A ranked shortlist of startup opportunities plus a full execution plan for the recommended one: lean canvas, MVP scope, a 30-day roadmap, marketing and acquisition notes, and outreach templates.',
+    a: 'A board-ready memo on the decision you brought: a clear recommendation (proceed, hold, or conditional), the reasoning, the dissent behind it, what inputs are still missing, and a phased plan to act on.',
   },
   {
     q: 'How is the council different from one chatbot?',
@@ -15,15 +15,15 @@ const ITEMS = [
   },
   {
     q: 'Do I need a technical background to use it?',
-    a: 'No. You describe your skills, budget, and time in plain language. FounderOS adapts its recommendations to your profile, including no-code paths when that fits you better.',
+    a: 'No. You describe your business and the decision in plain language. FounderOS adapts to your company context and its saved history — no jargon required.',
   },
   {
     q: 'How long does an analysis take?',
     a: 'Most runs complete in a few minutes. You can watch the agents work and the consensus form in real time before the plan is generated.',
   },
   {
-    q: 'Is my profile information kept private?',
-    a: 'Your inputs are used only to generate your recommendation. (Placeholder — confirm against the actual data and privacy policy before launch.)',
+    q: 'Is my company information kept private?',
+    a: 'Your company context and decision history are used only to inform your recommendations, and persist in your own company vault. (Placeholder — confirm against the actual data and privacy policy before launch.)',
   },
 ]
 

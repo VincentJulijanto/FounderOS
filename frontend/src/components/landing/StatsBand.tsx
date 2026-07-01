@@ -4,9 +4,9 @@
  * product (the backend runs a 7-agent council).
  */
 const STATS = [
-  { value: '7', label: 'specialized agents per analysis', verified: true },
+  { value: '7', label: 'specialized agents on every decision', verified: true },
   { value: '4', label: 'debate rounds to reach consensus', verified: false },
-  { value: '30-day', label: 'execution roadmap with every plan', verified: false },
+  { value: '30-day', label: 'phased execution plan with every memo', verified: false },
 ]
 
 export default function StatsBand() {

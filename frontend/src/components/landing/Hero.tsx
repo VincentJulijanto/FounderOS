@@ -19,7 +19,7 @@ export default function Hero() {
         {/* Left: copy */}
         <div>
           <h1 className="text-[2.75rem] sm:text-6xl lg:text-[4.25rem] font-semibold leading-[1.12] tracking-[-0.02em] text-graphite">
-            Build ventures with a
+            Bring your next big decision to a
             {/* the single violet word — color as punctuation */}
             <span className="text-brand-500"> council</span> of
             {/* thin gold underline accent under one phrase */}
@@ -33,9 +33,10 @@ export default function Hero() {
           </h1>
 
           <p className="mt-7 text-lg text-muted max-w-xl leading-relaxed">
-            FounderOS is an AI venture studio. Seven specialized agents scout
-            opportunities, debate the trade-offs, and hand you a complete,
-            execution-ready startup plan — tailored to your skills, budget, and time.
+            FounderOS is an AI board for your business. Seven specialized agents
+            pressure-test the decision you bring, debate the trade-offs, and hand you
+            a board-ready memo — a clear recommendation, the dissent behind it, and
+            what you&rsquo;re still missing.
           </p>
 
           {/* CTAs — solid ink primary, quiet secondary */}
@@ -64,8 +65,8 @@ export default function Hero() {
             </div>
             <p className="text-sm text-muted">
               {/* PLACEHOLDER STAT — replace with a real, verified number */}
-              <span className="font-semibold text-graphite">1,200+ founders</span> have
-              run their idea through the council
+              <span className="font-semibold text-graphite">1,200+ operators</span> have
+              pressure-tested a decision with the council
             </p>
           </div>
         </div>

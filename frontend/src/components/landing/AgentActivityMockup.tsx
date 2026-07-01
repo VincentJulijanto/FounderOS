@@ -7,7 +7,7 @@ import { Telescope, TrendingUp, Wallet, Rocket, Target, Check, Loader2 } from 'l
  */
 
 const AGENTS = [
-  { name: 'Opportunity Scout', icon: Telescope, status: 'done', note: 'Found 12 market gaps' },
+  { name: 'Opportunity Scout', icon: Telescope, status: 'done', note: 'Framed 4 options' },
   { name: 'Trend Analyst', icon: TrendingUp, status: 'done', note: 'Demand scored' },
   { name: 'Finance Agent', icon: Wallet, status: 'running', note: 'Modelling unit economics' },
   { name: 'Growth Agent', icon: Rocket, status: 'queued', note: 'Acquisition plan' },
@@ -25,7 +25,7 @@ export default function AgentActivityMockup() {
     <div
       className="card-light p-5"
       role="img"
-      aria-label="Illustration of the FounderOS agent council analysing a venture in real time"
+      aria-label="Illustration of the FounderOS agent council evaluating a business decision in real time"
     >
       {/* Window chrome */}
       <div className="flex items-center justify-between pb-4 border-b border-hairline">
@@ -67,8 +67,8 @@ export default function AgentActivityMockup() {
 
       {/* Consensus footer */}
       <div className="mt-4 flex items-center justify-between rounded-xl border border-hairline bg-canvas/60 px-4 py-3">
-        <span className="text-xs text-muted">Consensus forming</span>
-        <span className="text-sm font-mono font-semibold text-accent-700">7.8 / 10</span>
+        <span className="text-xs text-muted">Confidence</span>
+        <span className="text-sm font-mono font-semibold text-accent-700">Medium</span>
       </div>
     </div>
   )

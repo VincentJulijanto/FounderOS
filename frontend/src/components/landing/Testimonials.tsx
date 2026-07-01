@@ -7,23 +7,23 @@ import { Quote } from 'lucide-react'
 const QUOTES = [
   {
     quote:
-      'It felt like having a founding team in the room. The skeptic agent caught a pricing flaw I would have shipped.',
+      'It felt like having a real board in the room. The skeptic caught a risk in our expansion plan we would have missed.',
     name: 'Placeholder Name',
-    role: 'Solo founder, productivity tools',
+    role: 'Managing director, regional retail',
     initials: 'PN',
   },
   {
     quote:
-      'I went from a vague interest to a ranked shortlist and a 30-day plan in one afternoon. The debate is what sold me.',
+      'We went from "should we even do this?" to a clear recommendation and a phased plan in one afternoon. The debate is what sold me.',
     name: 'Placeholder Name',
-    role: 'First-time founder, EdTech',
+    role: 'GM, B2B services',
     initials: 'PN',
   },
   {
     quote:
-      'The plan was specific to my budget and skills, not generic advice. I started building the MVP the same week.',
+      'The memo was specific to our numbers and our market, not generic advice. We acted on it the same week.',
     name: 'Placeholder Name',
-    role: 'Indie maker, creator economy',
+    role: 'COO, logistics SaaS',
     initials: 'PN',
   },
 ]
@@ -37,7 +37,7 @@ export default function Testimonials() {
         </h2>
         <p className="mt-5 text-muted text-lg leading-relaxed">
           {/* PLACEHOLDER — quotes below are illustrative and not yet real. */}
-          Early reactions from founders who ran their idea through the council.
+          Early reactions from operators who brought a decision to the council.
         </p>
       </div>
 
