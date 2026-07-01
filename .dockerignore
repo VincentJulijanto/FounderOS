@@ -1,0 +1,17 @@
+# Keep the backend image slim — the frontend, envs, and dev cruft never ship in it.
+.git/
+.venv/
+venv/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+.env
+.env.local
+frontend/
+logs/
+*.log
+.DS_Store
+.idea/
+.vscode/
+backend/tests/
+backend/benchmark/

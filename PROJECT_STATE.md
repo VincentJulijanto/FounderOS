@@ -6,11 +6,12 @@
 > contract** lives in `docs/architecture.md`; the **standing brief** for both build lanes is `CLAUDE.md`.
 
 **Last updated:** 2026-07-01
-**Current phase:** **Phase 2: Backend pivot (Lane A) — contract, vault, agents, graph, API.** Code
-adapted to the evaluator/board contract; suite green (30 passed). Old founder-generator machinery
-reframed in place, not deleted.
-**Branch:** `phase-2-pivot-backend` (off `main` @ afb1839). Not committed/pushed; owner
-squash-merges after review.
+**Current phase:** **Phase 3: Deployment wiring (Lane A, Decision #8) — Dockerfile + seed vault.**
+The HF Spaces image, Space README, `.dockerignore`, seed vault (2 sample companies with `.md`
+history), and env-var wiring are done; suite still green (30 passed). Phase 2 (contract, vault,
+agents, graph, API) remains complete underneath.
+**Branch:** `phase-3-deployment` (off `phase-2-pivot-backend`). Not pushed; owner squash-merges
+after review. Phase 2 lives on `phase-2-pivot-backend` (off `main` @ afb1839).
 
 ---
 
@@ -26,6 +27,7 @@ by default), or **Joint**.
 | Day 2-3 | Vincent: company/decision intake rebuild + board-memo renderer scaffold vs mock fixtures. Steven: vault module (read/retrieval/write-back) + agent rebuilds (scout, finance, capability) | Split | **Steven: DONE** (vault + scout/finance/capability rebuilt). Vincent: not started |
 | Day 4-5 | Vincent: ExecutionPlan to board-memo sections, planMarkdown in lockstep, studio TS interfaces. Steven: graph rewire, Chair (venture_partner) synthesis, reframes (trend, growth, skeptic) | Split | **Steven: DONE** (graph rewired, Chair writes memo, trend/growth/skeptic reframed). Vincent: not started |
 | Day 6 | Vincent: landing + agentRoster. Steven: main.py endpoints, wire vault into the run, tests. (Backend assist window if Vincent is free) | Split | **Steven: DONE** (new endpoints, vault wired, tests green). Vincent: not started |
+| Day 6.5 | Steven: Decision #8 deploy wiring — Dockerfile + `.dockerignore` + Space README + seed vault | Steven (Lane A) | **DONE** (Phase 3, `phase-3-deployment`) |
 | Day 7 | Buffer / MCP connector stretch. Vincent: renderer polish. Steven: Xero or Shopify into Finance if ahead | Split | Not started |
 | Day 8 | Integration: real backend to real frontend, fix drift. Feature freeze end of day | Joint | Not started |
 | Day 9 | Demo prep + buffer | Joint | Not started |
@@ -176,11 +178,31 @@ structure preserved), not rewritten from scratch.
   added** (read/write/outcome loop + full HTTP flow); `test_memory.py` deleted (in-process memory
   loop retired — vault replaces it). Shared `company`/`decision` fixtures in `conftest.py`.
 
+## What Phase 3 (this session) built — Lane A deployment wiring (Decision #8)
+
+Suite still green (**30 passed**, mock mode). All additive — no backend logic changed.
+
+- **`Dockerfile`** (repo root) — `python:3.11-slim`; installs `backend/requirements.txt` as a cached
+  layer; copies `backend/`; **bakes the seed `vault/` into `/app/vault`**; sets non-secret defaults
+  (`VAULT_PATH=/app/vault`, `USE_MOCK_LLM=true`); `EXPOSE 7860`; `CMD uvicorn backend.main:app
+  --host 0.0.0.0 --port 7860`. (`backend` is a PEP 420 namespace package — no `__init__.py` needed.)
+- **`.dockerignore`** — keeps the image slim (excludes `.git`, `.venv`, `frontend/`, tests, logs).
+- **`SPACE_README.md`** (repo root) — the HF Space's own `README.md` with the required frontmatter
+  (`sdk: docker`, `app_port: 7860`) + Space secrets/variables table. Distinct from the project README.
+- **`vault/`** (repo root, = the `./vault` config default) — the **seed vault**: two sample
+  companies with real decision history and recorded outcomes, so "a returning company that
+  remembers" works on a cold instance. `harborline-logistics` (3 notes: Vietnam lane, own-fleet,
+  cold-chain) + `lumen-skincare` (2 notes: retail, CRM shift). Verified end-to-end against the real
+  `Vault` (index → date-sort → selective `read`).
+- **`.env.example`** — added `VAULT_PATH` + `ALLOWED_ORIGINS` (Decision #8 env contract).
+- **`docs/deployment.md`** — spec note flipped from "not implemented" to "implemented; see `Dockerfile`".
+
+> **Not done in Phase 3:** an actual `docker build` (Docker CLI unavailable in the session) — the
+> Dockerfile is validated by inspection + the app boots under the test suite. Build it on a machine
+> with Docker before the demo (checklist in `docs/deployment.md`).
+
 ## What's NOT built yet
 
-- **Seed vault baked into the image** (Decision #8) — a couple of sample company folders with `.md`
-  history for the "returning company that remembers" demo. Not created yet.
-- **Dockerfile + deployment wiring** (Lane A, Decision #8) — port 7860, `VAULT_PATH`/`ALLOWED_ORIGINS`.
 - **Lane B (frontend)** — everything: stubbed company picker, decision intake → board-memo renderer,
   `/studio → /boardroom` rename + copy sweep, roster to canonical strings, mirror `models.py` in TS.
 - **Postgres memory path** stays retired (Decision #1). `backend/memory/` + `benchmark/` remain
@@ -204,11 +226,12 @@ structure preserved), not rewritten from scratch.
 ## Next session should start by
 
 1. Reading this file, then `docs/architecture.md` (the contract) and `CLAUDE.md` (the brief).
-2. **Review + squash-merge `phase-2-pivot-backend`** — the backend now implements the frozen
-   contract end-to-end with a green suite. The contract in code IS the implementation of §Frozen
-   I/O Contract; treat any drift between them as a bug in the code, not the doc.
-3. **Lane A remaining:** seed vault (sample company `.md` history) + Dockerfile (port 7860,
-   `VAULT_PATH`/`ALLOWED_ORIGINS`) for Decision #8.
+2. **Review + squash-merge `phase-2-pivot-backend`, then `phase-3-deployment`** (it branches off
+   phase-2, so merge phase-2 first). The backend implements the frozen contract end-to-end with a
+   green suite; Phase 3 adds the HF Spaces image + seed vault. Treat any drift between the contract
+   in code and §Frozen I/O Contract as a bug in the code, not the doc.
+3. **Lane A remaining:** run a real `docker build` on a Docker-capable machine + do a live Space
+   deploy dry-run (checklist in `docs/deployment.md`). Optional Day-7 stretch: Xero/Shopify into Finance.
 4. **Lane B can now start against the real contract:** mirror `backend/models.py` shapes in TS,
    build the stubbed company picker → decision intake → board-memo renderer, do the
    `/studio → /boardroom` rename + copy sweep (one commit), point the roster at the canonical

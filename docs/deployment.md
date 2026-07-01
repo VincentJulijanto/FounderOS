@@ -4,8 +4,10 @@ The single deployment reference both lanes read. Records **Decision #8**: the ba
 **Hugging Face Spaces (Docker SDK)**, the frontend on **Vercel Hobby**. See the rationale in
 `docs/architecture.md` § Deployment; the standing ownership split is in `CLAUDE.md`.
 
-> **This is a reference, not an implementation.** The Dockerfile below is a **spec** — writing the
-> actual Dockerfile is a Lane A build task. This doc contains no code.
+> **Reference doc.** The Dockerfile spec below is now **implemented** at the repo root: `Dockerfile`
+> (+ `.dockerignore`), the Space README lives at `SPACE_README.md` (place it at the Space root as
+> `README.md`), and the baked seed vault is `vault/` (two sample companies with `.md` history). The
+> spec stays here as the rationale for what that file must do.
 
 ---
 
