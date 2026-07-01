@@ -71,10 +71,10 @@ scout · trend · finance · growth · skeptic · capability · venture_partner
 
 ## Lane split
 
-- **Lane A = `backend/`** — `models.py`, agents, `graph.py`, debate engine, the new **vault**
+- **Lane A = `backend/`** (Steven) — `models.py`, agents, `graph.py`, debate engine, the new **vault**
   interface, and the API **route names** (see watchlist). (The vault is on the critical path — do
   not let it hide inside general backend work.)
-- **Lane B = `frontend/`** — the app (decision intake → board memo; the "boardroom" surface),
+- **Lane B = `frontend/`** (Vincent) — the app (decision intake → board memo; the "boardroom" surface),
   roster, landing copy.
 
 ## Shared-file watchlist (coordinate — don't parallel-edit)

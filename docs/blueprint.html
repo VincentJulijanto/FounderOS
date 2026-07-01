@@ -2,136 +2,221 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>FounderOS — Build Blueprint</title>
+<title>FounderOS: Build Blueprint</title>
 <style>
   @page { size: A4; margin: 18mm 16mm 20mm 16mm; }
   * { box-sizing: border-box; }
+  /* Brand tokens (echoed from the read-only tailwind.config.js / globals.css sources):
+     canvas #F8F5EE · graphite #14151A · muted #6B6B72 · hairline #ECEAE4
+     violet(brand) 300 #C9BEFA · 500 #7C6FF0 · 700 #574AC2 · gold(accent) 500 #E0A845 · 600 #C8902F · 700 #9E6E22
+     Violet & gold are used as punctuation only (thin rules, markers), never as fills. */
   body {
     font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
-    color: #1a1f2e; font-size: 10.5pt; line-height: 1.5; margin: 0;
+    color: #14151A; font-size: 10.5pt; line-height: 1.62; margin: 0;
+    background: #F8F5EE;
   }
-  h1, h2, h3, h4 { color: #0f1626; line-height: 1.25; }
+  h1, h2, h3, h4 { color: #14151A; line-height: 1.3; font-weight: 600; letter-spacing: -0.01em; }
   h1 { font-size: 26pt; margin: 0 0 4px; }
   h2 {
-    font-size: 16pt; margin: 26px 0 10px; padding-bottom: 6px;
-    border-bottom: 2px solid #6366f1; color: #312e81;
+    font-size: 16.5pt; margin: 48px 0 14px; padding-bottom: 8px;
+    border-bottom: 1px solid #ECEAE4; color: #14151A; font-weight: 700;
   }
-  h3 { font-size: 12.5pt; margin: 18px 0 6px; color: #4338ca; }
-  h4 { font-size: 11pt; margin: 12px 0 4px; color: #1e293b; }
-  p { margin: 6px 0; }
-  ul, ol { margin: 6px 0 6px 0; padding-left: 20px; }
-  li { margin: 3px 0; }
+  h3 { font-size: 12.5pt; margin: 28px 0 8px; color: #29245E; }
+  h4 { font-size: 11pt; margin: 16px 0 5px; color: #3A3A42; }
+  p { margin: 9px 0; }
+  ul, ol { margin: 9px 0; padding-left: 20px; }
+  li { margin: 6px 0; }
   code {
     font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 9pt;
-    background: #eef0fb; color: #3730a3; padding: 1px 5px; border-radius: 4px;
+    background: #EFEDE7; color: #3A3A42; padding: 1px 5px; border-radius: 4px;
   }
   pre {
-    background: #0f1626; color: #e2e8f0; padding: 12px 14px; border-radius: 8px;
+    background: #FAF9F5; color: #2A2E3A; padding: 13px 16px; border-radius: 8px;
+    border: 1px solid #ECEAE4;
     font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 8.3pt;
-    line-height: 1.45; overflow-x: auto; white-space: pre; margin: 8px 0;
+    line-height: 1.55; overflow-x: auto; white-space: pre; margin: 12px 0;
   }
-  pre .c { color: #64748b; }      /* comment */
-  pre .k { color: #c4b5fd; }      /* keyword */
-  pre .s { color: #86efac; }      /* string */
-  pre .y { color: #fcd34d; }      /* highlight/placeholder */
+  pre .c { color: #8A8A90; }      /* comment (muted) */
+  pre .k { color: #574AC2; }      /* keyword (violet) */
+  pre .s { color: #3F7D55; }      /* string (green) */
+  pre .y { color: #9E6E22; }      /* highlight / placeholder (gold) */
   .cover {
     text-align: center; padding-top: 90px; page-break-after: always;
   }
-  .cover .logo {
-    width: 78px; height: 78px; margin: 0 auto 24px;
-    background: linear-gradient(135deg, #6366f1, #ec4899);
-    border-radius: 18px; color: #fff; font-size: 40pt; font-weight: 800;
-    line-height: 78px;
-  }
+  .cover .logo { margin: 0 auto 22px; width: 72px; height: 72px; line-height: 0; }
   .cover h1 { font-size: 38pt; }
-  .cover .sub { font-size: 14pt; color: #475569; margin-top: 6px; }
+  .cover .sub { font-size: 14pt; color: #6B6B72; margin-top: 6px; }
   .cover .track {
-    display: inline-block; margin-top: 26px; padding: 8px 18px;
-    background: #eef0fb; color: #4338ca; border-radius: 999px;
-    font-weight: 600; font-size: 11pt;
+    display: inline-block; margin-top: 26px; padding: 7px 17px;
+    background: transparent; color: #574AC2; border: 1px solid #C9BEFA;
+    border-radius: 999px; font-weight: 600; font-size: 10.5pt; letter-spacing: 0.02em;
   }
-  .cover .meta { margin-top: 40px; color: #64748b; font-size: 10pt; }
-  .lead {
-    font-size: 11.5pt; color: #334155; background: #f8fafc;
-    border-left: 4px solid #6366f1; padding: 10px 16px; border-radius: 0 8px 8px 0;
-    margin: 12px 0;
+  .cover .meta { margin-top: 40px; color: #6B6B72; font-size: 10pt; }
+  .pullquote {
+    font-size: 12.5pt; color: #3A3A42; line-height: 1.72; background: transparent;
+    border-left: 2px solid #7C6FF0; padding: 6px 0 6px 18px; margin: 18px 0;
+  }
+  .section-lead {
+    font-size: 11.5pt; color: #4A4A52; line-height: 1.55; margin: 4px 0 16px;
   }
   .grid2 { display: flex; gap: 14px; }
   .grid2 > div { flex: 1; }
   .card {
-    border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px;
-    margin: 8px 0; background: #fff;
+    border: 1px solid #ECEAE4; border-radius: 10px; padding: 14px 16px;
+    margin: 10px 0; background: #FFFFFF;
   }
-  .card.indigo { border-color: #c7d2fe; background: #f5f7ff; }
-  .card.amber  { border-color: #fde68a; background: #fffbeb; }
-  .card.green  { border-color: #bbf7d0; background: #f0fdf4; }
-  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 9.3pt; }
-  th, td { border: 1px solid #e2e8f0; padding: 6px 9px; text-align: left; vertical-align: top; }
-  th { background: #312e81; color: #fff; font-weight: 600; }
-  tr:nth-child(even) td { background: #f8fafc; }
+  .card.indigo { border-left: 3px solid #7C6FF0; }
+  .card.amber  { border-left: 3px solid #C8902F; }
+  .card.green  { border-left: 3px solid #7C6FF0; }
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 9.3pt; }
+  th, td { border: none; border-bottom: 1px solid #ECEAE4; padding: 10px 12px; text-align: left; vertical-align: top; }
+  th { background: transparent; color: #14151A; font-weight: 600; border-bottom: 1.5px solid #C7C3B8; }
+  tr:last-child td { border-bottom: none; }
   .badge {
-    display: inline-block; font-size: 7.8pt; font-weight: 700; padding: 2px 7px;
+    display: inline-block; font-size: 7.8pt; font-weight: 700; padding: 1px 7px;
     border-radius: 999px; text-transform: uppercase; letter-spacing: 0.3px;
+    background: transparent; border: 1px solid currentColor;
   }
-  .b-done { background: #dcfce7; color: #166534; }
-  .b-new  { background: #e0e7ff; color: #3730a3; }
-  .b-todo { background: #fee2e2; color: #991b1b; }
+  .b-done { color: #3F7D55; }
+  .b-new  { color: #574AC2; }
+  .b-todo { color: #A1421B; }
   .pagebreak { page-break-before: always; }
   .phase-tag {
-    display:inline-block; background:#6366f1; color:#fff; font-weight:700;
-    font-size:9pt; padding:3px 10px; border-radius:6px; margin-right:8px;
+    display:inline-block; background:transparent; color:#574AC2; font-weight:700;
+    font-size:9pt; padding:2px 9px; border:1px solid #C9BEFA; border-radius:6px; margin-right:10px;
   }
-  .small { font-size: 8.8pt; color: #64748b; }
-  .ascii {
-    background:#0f1626; color:#a5b4fc; font-family:"SF Mono",Menlo,monospace;
-    font-size:8pt; line-height:1.35; padding:14px; border-radius:8px; white-space:pre;
+  .small { font-size: 8.8pt; color: #6B6B72; }
+  .footer-note { color:#9A9AA0; font-size:8pt; margin-top:4px; }
+  /* Readable measure: main content sits in a centered column; the cover stays full-bleed. */
+  .container { max-width: 800px; margin: 0 auto; padding: 0 8px; }
+  /* Section numbers in gold; pull-quote & diagram rules stay violet, so both brand accents show. */
+  .sn { color: #C8902F; font-weight: 700; margin-right: 8px; }
+  @media print { .container { max-width: 100%; padding: 0; } }
+
+  /* ── Architecture diagram (§3): centered CSS boxes, print-safe (block + margin:auto, no flex) ── */
+  .diagram { margin: 18px auto 8px; max-width: 640px; }
+  .dg-io { text-align: center; color: #6B6B72; font-size: 9pt; margin: 4px 0; }
+  .dg-io strong { color: #14151A; }
+  .dg-box {
+    max-width: 480px; margin: 0 auto; background: #FFFFFF;
+    border: 1px solid #ECEAE4; border-radius: 10px;
+    padding: 11px 16px; text-align: center; font-size: 9pt; color: #14151A;
   }
-  .footer-note { color:#94a3b8; font-size:8pt; margin-top:4px; }
+  .dg-box.wide { max-width: 560px; }
+  .dg-box.violet { border-left: 3px solid #7C6FF0; text-align: left; }
+  .dg-box .sub, .dg-col .sub { display: block; color: #6B6B72; font-size: 8.1pt; font-weight: 400; margin-top: 3px; }
+  .dg-conn { text-align: center; margin: 3px 0; }
+  .dg-conn .rule { display: block; width: 1px; height: 15px; background: #C7C3B8; margin: 0 auto; }
+  .dg-conn .tri { display: block; color: #C7C3B8; font-size: 8pt; line-height: 0.7; }
+  .dg-row { max-width: 640px; margin: 0 auto; text-align: center; font-size: 0; }
+  .dg-row.two { max-width: 520px; }
+  .dg-col {
+    display: inline-block; vertical-align: top; width: 32%; margin: 0 0.6%;
+    background: #FFFFFF; border: 1px solid #ECEAE4; border-radius: 10px;
+    padding: 10px 12px; text-align: left; font-size: 8.5pt; color: #14151A;
+  }
+  .dg-row.two .dg-col { width: 47%; margin: 0 1%; }
+  .dg-col.main { border-left: 3px solid #C8902F; }
+  .dg-tag {
+    display: inline-block; margin-top: 5px; font-size: 6.8pt; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.4px; color: #9E6E22;
+    border: 1px solid #E9BD6C; border-radius: 999px; padding: 0 6px;
+  }
 </style>
 </head>
 <body>
 
 <!-- ════════════════ COVER ════════════════ -->
 <div class="cover">
-  <div class="logo">F</div>
+  <div class="logo">
+    <svg width="72" height="72" viewBox="0 0 64 64" role="img" aria-label="FounderOS council mark">
+      <defs>
+        <linearGradient id="fos-cover" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#A78BFA"/>
+          <stop offset="1" stop-color="#E0A845"/>
+        </linearGradient>
+      </defs>
+      <g stroke="#7C6FF0" stroke-width="1.2" opacity="0.55">
+        <line x1="32" y1="32" x2="54" y2="32"/>
+        <line x1="32" y1="32" x2="43" y2="51"/>
+        <line x1="32" y1="32" x2="21" y2="51"/>
+        <line x1="32" y1="32" x2="10" y2="32"/>
+        <line x1="32" y1="32" x2="21" y2="13"/>
+        <line x1="32" y1="32" x2="43" y2="13"/>
+      </g>
+      <g fill="url(#fos-cover)">
+        <circle cx="54" cy="32" r="3.5"/>
+        <circle cx="43" cy="51" r="3.5"/>
+        <circle cx="21" cy="51" r="3.5"/>
+        <circle cx="10" cy="32" r="3.5"/>
+        <circle cx="21" cy="13" r="3.5"/>
+        <circle cx="43" cy="13" r="3.5"/>
+        <circle cx="32" cy="32" r="5.5"/>
+      </g>
+    </svg>
+  </div>
   <h1>FounderOS</h1>
-  <div class="sub">AI Venture Studio — Multi-Agent Society</div>
+  <div class="sub">AI Board for Existing Businesses: a Multi-Agent Society</div>
   <div class="sub" style="font-size:11pt; margin-top:14px;">Build Blueprint &amp; Scaffolding Guide<br>(Start → Finish)</div>
-  <div class="track">🏆 Track 3: Agent Society</div>
+  <div class="track">Track 3: Agent Society</div>
   <div class="meta">
     Powered by QwenCloud APIs · FastAPI · Next.js · LangGraph<br>
-    Scaffolding-first build — API keys plugged in later<br><br>
+    Scaffolding-first build. API keys plugged in later.<br><br>
     Version 1.0
   </div>
 </div>
 
+<div class="container">
+
 <!-- ════════════════ 1. EXECUTIVE OVERVIEW ════════════════ -->
-<h2>1. Executive Overview</h2>
-<p class="lead">
-  FounderOS is a <strong>society of specialized AI agents</strong> that turns a founder's profile
-  (skills, budget, time, goals) into a validated startup idea and a complete execution plan.
-  Agents <strong>divide the task, debate, resolve conflicts, and reach consensus</strong> — exactly the
-  collaboration pattern Track 3 asks for.
+<h2><span class="sn">1.</span> Executive Overview</h2>
+<p class="pullquote">
+  FounderOS is an AI board for people who already run a business. The highest-stakes decisions
+  (enter a new market, hire a senior leader, take on debt, sunset a product line) usually get made
+  with whoever happens to be in the room. Co-founders share your blind spots. Direct reports won't
+  tell you an idea is bad. A real board meets quarterly and lacks the context. A consultant costs
+  six figures and takes weeks to hand back a slide deck instead of a decision. So the call gets
+  made on instinct and the loudest voice, and the risk no one considered only surfaces once the
+  capital is spent. FounderOS gives that operator a standing board of seven specialist agents. It
+  takes one decision ('is this sound, and what are we missing?'), decomposes it, argues it from
+  every angle, and returns a board-ready memo: a clear recommendation, the dissent behind it,
+  what's still unknown, and a phased plan. On demand, in minutes, at software cost.
+</p>
+
+<h3>Why a board, not a chatbot</h3>
+<p class="pullquote">
+  Ask a single AI 'should we expand into Indonesia?' and it gives a fluent, agreeable answer: it
+  pattern-matches toward yes and never argues with itself. That is the yes-man failure mode,
+  automated, and it is the same reason asking one advisor or a room that defers to the CEO is
+  dangerous: nothing pressure-tests the decision. A society of agents with opposing mandates does.
+  Finance argues the economics, Growth argues the upside, the Skeptic's only job is to attack, and
+  Capability asks whether the organization can actually execute. They disagree, and the
+  disagreement is the product. The Debate Engine forces each position to survive rebuttal across
+  multiple rounds, so what reaches you is not one model's guess but a recommendation that has
+  already withstood its own strongest counterarguments, with the minority view recorded so you see
+  what the board was divided on, not just the verdict. And because the board remembers (every
+  prior decision and its outcome is written back to per-company memory), its judgment compounds
+  over time, the way a long-serving board's would, instead of resetting with every conversation.
 </p>
 
 <p><strong>The transformation we deliver:</strong></p>
 <div class="grid2">
-  <div class="card amber"><strong>From</strong><br>"I want to earn side income."</div>
-  <div class="card green"><strong>To</strong><br>"Here is a validated startup, a Lean Canvas, a go-to-market plan, and a 30-day roadmap — pressure-tested by 7 specialist agents."</div>
+  <div class="card amber"><strong>From</strong><br>"Should we expand into Indonesia next quarter, or deepen in our home market first?"</div>
+  <div class="card green"><strong>To</strong><br>"A board memo: a clear recommendation (proceed / hold / conditional), the dissent behind it, what's still missing, and a phased plan, pressure-tested by 7 specialist agents."</div>
 </div>
 
 <h3>Why this fits Track 3: Agent Society</h3>
 <table>
   <tr><th>Track 3 Requirement</th><th>How FounderOS satisfies it</th></tr>
-  <tr><td><strong>Task decomposition &amp; role assignment</strong></td><td>An Orchestrator decomposes "evaluate a venture" into discovery, market, finance, growth, risk, and fit sub-tasks, each owned by a dedicated agent.</td></tr>
+  <tr><td><strong>Task decomposition &amp; role assignment</strong></td><td>An Orchestrator decomposes "evaluate this company decision" into options, market, finance, growth, risk, and organizational-capability sub-tasks, each owned by a dedicated agent.</td></tr>
   <tr><td><strong>Dialogue &amp; negotiation</strong></td><td>The Debate Engine detects contradictions between agents and runs multi-round structured argumentation until positions converge.</td></tr>
-  <tr><td><strong>Conflict resolution</strong></td><td>A Consensus Engine + Venture Partner agent weighs rebuttals and issues a final, reconciled recommendation.</td></tr>
+  <tr><td><strong>Conflict resolution</strong></td><td>A Consensus Engine + the Chair (<code>venture_partner</code>) weigh rebuttals and issue a final, reconciled recommendation with an explicit dissent record.</td></tr>
   <tr><td><strong>Measurable efficiency gain vs single-agent</strong></td><td>A built-in benchmark harness compares the society against a single-LLM baseline on validity, hallucinated-cost rate, risk coverage, and plan completeness (see §8).</td></tr>
 </table>
 
 <!-- ════════════════ 2. RUBRIC MAPPING ════════════════ -->
-<h2>2. How the Build Targets the Judging Rubric</h2>
-<p>Every architectural decision below is chosen to score against the four rubric pillars.</p>
+<h2><span class="sn">2.</span> How the Build Targets the Judging Rubric</h2>
+<p class="section-lead">Every architectural decision below is chosen to score against the four rubric pillars.</p>
 
 <table>
   <tr><th style="width:26%">Rubric Pillar (weight)</th><th>What we build to win it</th></tr>
@@ -149,15 +234,15 @@
       • Clean, <strong>modular agent abstraction</strong> (`BaseAgent`) → trivially extensible.<br>
       • <strong>LangGraph state machine</strong> for orchestration (advanced pattern).<br>
       • Robust <strong>error handling &amp; graceful degradation</strong> (mock mode without keys).<br>
-      • Non-trivial logic: agents revise positions across rounds — emergent, not scripted.
+      • Non-trivial logic: agents revise positions across rounds, so the behaviour is emergent, not scripted.
     </td>
   </tr>
   <tr>
     <td><strong>Problem Value &amp; Impact</strong> (25%)</td>
     <td>
-      • Authentic pain point: students/young founders lack validation skills &amp; structured plans.<br>
-      • <strong>Productizable</strong>: clear SaaS path, B2B2C (incubators, universities).<br>
-      • <strong>Open-source friendly</strong>: pluggable agents, model-agnostic provider layer.
+      • <strong>Authentic, expensive pain</strong>: a wrong high-stakes call (a bad market entry, the wrong senior hire) burns real capital, and most operators have no one whose only job is to pressure-test the decision before the money is spent.<br>
+      • <strong>Sharper than the alternatives</strong>: a consultant costs six figures and hands back a slide deck in weeks; a quarterly board lacks the context; FounderOS returns a board-ready memo on demand, in minutes, at software cost.<br>
+      • <strong>Productizable</strong>: clear SaaS path for SMB &amp; mid-market operators; pluggable, model-agnostic agents keep it open-source friendly.
     </td>
   </tr>
   <tr>
@@ -172,50 +257,64 @@
 
 <!-- ════════════════ 3. SYSTEM ARCHITECTURE ════════════════ -->
 <div class="pagebreak"></div>
-<h2>3. System Architecture</h2>
+<h2><span class="sn">3.</span> System Architecture</h2>
+<p class="section-lead">One decision enters at the top and a board memo comes out the bottom. Each agent contributes a
+single view, the Debate Engine reconciles them, and every run reads from, and writes back to, the
+company's vault, so the board's context grows with each decision rather than resetting.</p>
 
-<div class="ascii">
-                              ┌──────────────────────────────┐
-   Founder Profile  ─────────▶│   FastAPI  /api/analyze       │
-   (skills, budget,           └──────────────┬───────────────┘
-    hours, goals)                            │
-                                             ▼
-                          ┌──────────────────────────────────────┐
-                          │   LangGraph Orchestrator (state)       │
-                          └──────────────────┬─────────────────────┘
-                                             │ 1. decompose + assign
-                 ┌───────────────────────────┼───────────────────────────┐
-                 ▼                            ▼                            ▼
-        ┌─────────────────┐        ┌────────────────────┐        ┌─────────────────┐
-        │  Scout Agent    │        │  Parallel Analysts  │        │  Skeptic Agent  │
-        │ (opportunities) │  ───▶  │ Trend│Finance│Growth│  ───▶  │ (risk / attack) │
-        └─────────────────┘        │   Founder-Fit       │        └────────┬────────┘
-                                   └────────────────────┘                  │
-                                             │ 2. dialogue / negotiate      │
-                                             ▼                              │
-                          ┌──────────────────────────────────────┐         │
-                          │  Debate Engine                         │◀────────┘
-                          │  • detect conflicts                    │
-                          │  • N rounds of rebuttal + revision     │
-                          │  • consensus scoring                   │
-                          └──────────────────┬─────────────────────┘
-                                             │ 3. resolve
-                                             ▼
-                          ┌──────────────────────────────────────┐
-                          │  Venture Partner (final decision)      │
-                          └──────────────────┬─────────────────────┘
-                                             ▼
-            ┌────────────────────────────────────────────────────────────┐
-            │  Output: ranked ideas · Lean Canvas · GTM · 30-day roadmap   │
-            └────────────────────────────────────────────────────────────┘
-                                             │
-                       ┌─────────────────────┴─────────────────────┐
-                       ▼                                           ▼
-              ┌─────────────────┐                       ┌────────────────────┐
-              │ Memory (Postgres)│                       │ MCP: live market    │
-              │ episodic+semantic│                       │ signals / web data  │
-              └─────────────────┘                       └────────────────────┘
+<div class="diagram">
+  <div class="dg-io"><strong>Company + Decision</strong> (CompanyProfile + Decision)</div>
+  <div class="dg-conn"><span class="rule"></span><span class="tri">▼</span></div>
+
+  <div class="dg-box"><strong>FastAPI</strong> · /api/analyze</div>
+  <div class="dg-conn"><span class="rule"></span><span class="tri">▼</span></div>
+
+  <div class="dg-box"><strong>Vault.read(company_id, query)</strong><span class="sub">LLM-selected notes · no vector DB</span></div>
+  <div class="dg-conn"><span class="rule"></span><span class="tri">▼</span></div>
+
+  <div class="dg-box"><strong>LangGraph Orchestrator</strong><span class="sub">decompose + assign</span></div>
+  <div class="dg-conn"><span class="rule"></span><span class="tri">▼</span></div>
+
+  <div class="dg-row">
+    <div class="dg-col"><strong>Scout</strong><span class="sub">frames the options</span></div>
+    <div class="dg-col"><strong>Parallel Analysts</strong><span class="sub">Trend · Finance · Growth · Capability</span></div>
+    <div class="dg-col main"><strong>Skeptic</strong><span class="sub">attacks the decision</span><span class="dg-tag">the main event</span></div>
+  </div>
+  <div class="dg-conn"><span class="rule"></span><span class="tri">▼</span></div>
+
+  <div class="dg-box wide violet"><strong>Debate Engine</strong><span class="sub">detect conflicts · N rounds of rebuttal + revision · consensus + dissent record</span></div>
+  <div class="dg-conn"><span class="rule"></span><span class="tri">▼</span></div>
+
+  <div class="dg-box"><strong>Chair</strong> (venture_partner)<span class="sub">writes the board memo</span></div>
+  <div class="dg-conn"><span class="rule"></span><span class="tri">▼</span></div>
+
+  <div class="dg-box wide"><strong>BoardResponse</strong><span class="sub">recommendation (proceed | hold | conditional) · confidence (low | med | high) · dissent · phased plan · risks</span></div>
+  <div class="dg-conn"><span class="rule"></span><span class="tri">▼</span></div>
+
+  <div class="dg-row two">
+    <div class="dg-col"><strong>Vault.write_back</strong><span class="sub">per-company .md</span></div>
+    <div class="dg-col"><strong>MCP</strong><span class="sub">live market signals</span></div>
+  </div>
 </div>
+
+<h3>The Vault: the board's institutional memory</h3>
+<p>A real board is valuable because it remembers. It knows what the company has already tried, how it
+tends to decide, and how the last big call turned out. FounderOS gives the agents that same memory
+through a per-company vault of markdown notes that every run reads from and writes back to, so the
+board reasons with accumulating context instead of starting cold each session.</p>
+<p>What the vault holds is chosen for what actually changes a recommendation, not everything about the
+company:</p>
+<ul>
+  <li><strong>Company profile:</strong> sector, stage, business model, and size, so every agent argues about the real business rather than a generic one.</li>
+  <li><strong>Financial shape:</strong> revenue band, margin, and cash position, the constraints Finance reasons against.</li>
+  <li><strong>How it operates:</strong> risk appetite, decision-making style, and what the company has said no to before, which is what the Capability agent reads to judge whether the organization can actually execute.</li>
+  <li><strong>Decision history:</strong> every past decision, the recommendation given, the recorded dissent, and, once known, the outcome. This is the highest-value part. It lets the board learn that a similar expansion was approved before and underperformed, and weight the next call accordingly.</li>
+  <li><strong>Durable market and context notes</strong> gathered along the way.</li>
+</ul>
+<p>What it deliberately leaves out is narrative that does not move a decision: founder biographies,
+mission-statement prose, and anything the analysts never consume. The same discipline the intake
+form uses (keep what an agent reasons over, drop the rest) keeps the memory sharp and the context
+small enough to stay fast.</p>
 
 <h3>Tech Stack (scaffolded; keys added later)</h3>
 <table>
@@ -225,55 +324,71 @@
   <tr><td>Orchestration</td><td>LangGraph state machine</td><td><span class="badge b-new">to wire</span></td></tr>
   <tr><td>AI Layer</td><td><strong>QwenCloud API</strong> (OpenAI-compatible SDK), model <code>qwen-plus</code></td><td><span class="badge b-new">key later</span></td></tr>
   <tr><td>Tooling</td><td>MCP server for market/web signals</td><td><span class="badge b-new">key later</span></td></tr>
-  <tr><td>Memory</td><td>PostgreSQL (episodic) + vector store (semantic)</td><td><span class="badge b-new">to wire</span></td></tr>
+  <tr><td>Memory</td><td>Per-company <strong>Obsidian markdown vault</strong>: LLM-driven selective note-retrieval + write-back (<strong>no embeddings / no vector DB</strong>)</td><td><span class="badge b-new">to build</span></td></tr>
+  <tr><td>Hosting</td><td>Backend: <strong>Hugging Face Spaces</strong> (Docker, port 7860) · Frontend: <strong>Vercel Hobby</strong> (see <code>docs/deployment.md</code>)</td><td><span class="badge b-new">Decision #8</span></td></tr>
 </table>
+<p class="footer-note">
+  The Postgres modules (<code>backend/memory/episodic.py</code>, <code>semantic.py</code>) remain in the
+  repo but are <strong>unwired and off the path</strong>. Persistence is the vault; there is no SQLite.
+</p>
+<p><strong>Endpoints:</strong> <code>POST /api/analyze</code> (body → <code>BoardResponse</code>) ·
+<code>GET /api/response/{id}</code> · <code>GET /api/company/{company_id}</code> ·
+<code>POST /api/feedback</code> (writes the outcome back to the vault).</p>
 
 <!-- ════════════════ 4. AGENT SOCIETY ════════════════ -->
-<h2>4. The Agent Society — Roles &amp; Task Division</h2>
-<p>Seven agents, each a single responsibility. This is the <em>task decomposition</em> Track 3 rewards.</p>
+<h2><span class="sn">4.</span> The Agent Society: Roles &amp; Task Division</h2>
+<p class="section-lead">Seven agents, each a single responsibility, now company-centric (evaluating one decision, not
+inventing ideas). This is the <em>task decomposition</em> Track 3 rewards.</p>
 <table>
-  <tr><th>Agent</th><th>Owned Sub-Task</th><th>Structured Output</th></tr>
-  <tr><td><strong>Opportunity Scout</strong></td><td>Discover gaps, generate hypotheses</td><td>5 opportunity candidates</td></tr>
-  <tr><td><strong>Trend Analyst</strong></td><td>Demand &amp; market growth (uses MCP signals)</td><td>Market attractiveness score</td></tr>
-  <tr><td><strong>Founder-Fit</strong></td><td>Skill match + execution likelihood</td><td>Founder-fit score</td></tr>
-  <tr><td><strong>Finance</strong></td><td>Cost, revenue, profitability</td><td>Financial feasibility score</td></tr>
-  <tr><td><strong>Growth</strong></td><td>Acquisition channels, GTM</td><td>Go-to-market plan</td></tr>
-  <tr><td><strong>Skeptic</strong></td><td>Attack assumptions, surface failure modes</td><td>Risk report</td></tr>
-  <tr><td><strong>Venture Partner</strong></td><td>Facilitate consensus, final call</td><td>Investment-style memo + execution plan</td></tr>
+  <tr><th style="width:20%">Agent</th><th>The question it owns, and what it protects you from</th><th style="width:22%">Structured Output</th></tr>
+  <tr><td><strong>Opportunity Scout</strong> (<code>scout</code>)</td><td>"What are the real options here?" Frames the alternatives (and generates them only if none are given). Protects against tunnel-vision on the first idea that happened to be in the room.</td><td>Options assessed</td></tr>
+  <tr><td><strong>Trend Analyst</strong> (<code>trend</code>)</td><td>"Is the market and the timing actually there?" Reads demand with live MCP signals. Protects against committing to a decision whose demand was only assumed.</td><td>Market read</td></tr>
+  <tr><td><strong>Finance</strong> (<code>finance</code>)</td><td>"What does this do to the P&amp;L, margin, and cash?" Protects against a move that looks strategic but the balance sheet cannot survive.</td><td>Plain-language financial view</td></tr>
+  <tr><td><strong>Growth</strong> (<code>growth</code>)</td><td>"If we commit, how do we actually execute and win customers?" Protects against a yes with no credible route to results.</td><td>Execution / GTM read</td></tr>
+  <tr><td><strong>Skeptic</strong> (<code>skeptic</code>)</td><td><strong>The main event.</strong> "What is the strongest case that this fails?" Attacks the assumptions and failure modes. Protects against the risk no one in the room wanted to raise.</td><td>Risk report</td></tr>
+  <tr><td><strong>Capability</strong> (<code>capability</code>)</td><td>"Can this organization actually pull it off?" Weighs team, ops, and track record (not a person's skills). Protects against a sound idea the company is not staffed or ready to run.</td><td>Capability read</td></tr>
+  <tr><td><strong>Chair</strong> (<code>venture_partner</code>)</td><td>"Given all of the above, what do we do?" Reconciles the debate and weights the Skeptic explicitly. Protects against a call decided by the loudest voice instead of the balance of argument.</td><td>Board memo (<code>BoardRecommendation</code>)</td></tr>
 </table>
+<p class="small">
+  Canonical agent-name strings (roster ↔ <code>agent_name</code> ↔ graph node key ↔ summary key):
+  <code>scout · trend · finance · growth · skeptic · capability · venture_partner</code>.
+  <code>capability</code> is the rebuilt <code>founder_fit</code> (org readiness, not a person). The
+  synthesizer <strong>displays as "Chair"</strong>; its canonical string stays <code>venture_partner</code>.
+</p>
 
 <h3>Conflict Resolution Protocol (the core innovation)</h3>
 <ol>
-  <li><strong>Independent analysis</strong> — agents produce positions without seeing each other.</li>
-  <li><strong>Conflict detection</strong> — the engine flags contradictions (e.g. Growth says "scale paid ads" vs Finance "budget supports 0 ad spend").</li>
-  <li><strong>Debate rounds</strong> — conflicting agents exchange rebuttals; each may revise its stance (up to N rounds).</li>
-  <li><strong>Consensus scoring</strong> — quantify agreement; unresolved tensions are surfaced, not hidden.</li>
-  <li><strong>Final reconciliation</strong> — Venture Partner issues the decision, weighting the Skeptic explicitly.</li>
+  <li><strong>Independent analysis</strong>: agents produce positions without seeing each other.</li>
+  <li><strong>Conflict detection</strong>: the engine flags contradictions (e.g. Trend says "enter now" vs Finance "runway can't support two markets").</li>
+  <li><strong>Debate rounds</strong>: conflicting agents exchange rebuttals; each may revise its stance (up to N rounds).</li>
+  <li><strong>Consensus scoring</strong>: quantify agreement; unresolved tensions are surfaced as the <strong>dissent record</strong>, not hidden.</li>
+  <li><strong>Final reconciliation</strong>: the Chair (<code>venture_partner</code>) issues the recommendation, weighting the Skeptic explicitly.</li>
 </ol>
 
 <!-- ════════════════ 5. SCAFFOLDING PRINCIPLES ════════════════ -->
 <div class="pagebreak"></div>
-<h2>5. Scaffolding-First Principles (API keys later)</h2>
-<p class="lead">
+<h2><span class="sn">5.</span> Scaffolding-First Principles (API keys later)</h2>
+<p class="section-lead">
   The entire system is built to <strong>run end-to-end before any real API key exists</strong>. Keys are
   injected purely through environment variables, and every external call has a deterministic <strong>mock fallback</strong>.
 </p>
 
-<h3>5.1 Single config surface — <code>backend/config.py</code></h3>
+<h3>5.1 Single config surface: <code>backend/config.py</code></h3>
 <pre><span class="c"># All secrets read from env. Empty by default → app still boots.</span>
 <span class="k">from</span> pydantic_settings <span class="k">import</span> BaseSettings
 
 <span class="k">class</span> Settings(BaseSettings):
-    <span class="c"># === QwenCloud (OpenAI-compatible) — fill later ===</span>
+    <span class="c"># === QwenCloud (OpenAI-compatible), fill later ===</span>
     qwen_api_key: str = <span class="y">""</span>            <span class="c"># &lt;-- paste key in .env when ready</span>
     qwen_base_url: str = <span class="s">"https://dashscope-intl.aliyuncs.com/compatible-mode/v1"</span>
     qwen_model: str = <span class="s">"qwen-plus"</span>
 
-    <span class="c"># === MCP tool server — fill later ===</span>
+    <span class="c"># === MCP tool server, fill later ===</span>
     mcp_server_url: str = <span class="y">""</span>
 
-    <span class="c"># === Memory ===</span>
-    database_url: str = <span class="s">"postgresql+asyncpg://postgres:password@localhost:5432/founderos"</span>
+    <span class="c"># === Memory: per-company markdown vault (no DB) ===</span>
+    vault_path: str = <span class="s">"/app/vault"</span>   <span class="c"># env-configurable; seed vault baked into the image</span>
+    allowed_origins: str = <span class="s">"http://localhost:3000"</span>  <span class="c"># CORS: + your Vercel domain</span>
 
     <span class="c"># === Mode flags ===</span>
     use_mock_llm: bool = <span class="k">True</span>   <span class="c"># auto-False once qwen_api_key is set</span>
@@ -281,7 +396,7 @@
     <span class="k">class</span> Config:
         env_file = <span class="s">".env"</span></pre>
 
-<h3>5.2 Provider layer with mock fallback — <code>backend/llm/provider.py</code></h3>
+<h3>5.2 Provider layer with mock fallback: <code>backend/llm/provider.py</code></h3>
 <pre><span class="k">from</span> openai <span class="k">import</span> OpenAI
 <span class="k">from</span> ..config <span class="k">import</span> settings
 
@@ -308,8 +423,8 @@
 
 <p class="footer-note">
   Result: <code>uvicorn</code> + <code>npm run dev</code> work immediately with mock data. The day a QwenCloud key
-  lands, you paste it into <code>.env</code>, set <code>USE_MOCK_LLM=false</code>, and the same code path goes live —
-  zero refactor.
+  lands, you paste it into <code>.env</code>, set <code>USE_MOCK_LLM=false</code>, and the same code path goes live,
+  with zero refactor.
 </p>
 
 <h3>5.3 The <code>.env.example</code> you ship (no secrets committed)</h3>
@@ -318,18 +433,25 @@ QWEN_API_KEY=<span class="y">                         # &lt;-- paste later</span
 QWEN_BASE_URL=https://dashscope-intl.aliyuncs.com/compatible-mode/v1
 QWEN_MODEL=qwen-plus
 MCP_SERVER_URL=<span class="y">                          # &lt;-- paste later</span>
-DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/founderos
-USE_MOCK_LLM=true                          <span class="c"># flip to false once key is set</span>
-CORS_ORIGINS=http://localhost:3000</pre>
+VAULT_PATH=/app/vault                      <span class="c"># per-company vault; seed vault baked into image</span>
+ALLOWED_ORIGINS=http://localhost:3000      <span class="c"># CORS: + your Vercel domain</span>
+USE_MOCK_LLM=true                          <span class="c"># flip to false once key is set</span></pre>
+<p class="footer-note">
+  Frontend reads the backend URL from <code>NEXT_PUBLIC_API_BASE_URL</code> (HF Space / tunnel /
+  localhost), never hardcoded. Full deployment contract: <code>docs/deployment.md</code>.
+</p>
 
 <!-- ════════════════ 6. BUILD PHASES ════════════════ -->
 <div class="pagebreak"></div>
-<h2>6. The Build, Phase by Phase (Start → Finish)</h2>
+<h2><span class="sn">6.</span> The Build, Phase by Phase (Start → Finish)</h2>
+<p class="section-lead">The order matters: the system runs end-to-end in mock mode from Phase 1, and each phase adds one
+capability without breaking the last. Every phase names a concrete deliverable you can demo.</p>
+<p class="small">Live build status and the task split between the two builders live in <code>PROJECT_STATE.md</code> (Build Tracker).</p>
 
 <h3><span class="phase-tag">Phase 0</span>Project Scaffold &amp; Tooling</h3>
 <ul>
   <li>Repo layout: <code>backend/</code> (FastAPI), <code>frontend/</code> (Next.js), <code>docs/</code>.</li>
-  <li><code>requirements.txt</code>: fastapi, uvicorn, pydantic, <strong>openai</strong> (Qwen-compatible), langgraph, sqlalchemy, asyncpg, pytest.</li>
+  <li><code>requirements.txt</code>: fastapi, uvicorn, pydantic, <strong>openai</strong> (Qwen-compatible), langgraph, httpx, pytest. (No sqlalchemy/asyncpg: the Postgres modules are unwired; memory is the vault.)</li>
   <li>Commit <code>.env.example</code>, add <code>.env</code> to <code>.gitignore</code>.</li>
   <li><strong>Deliverable:</strong> <code>uvicorn backend.main:app</code> returns a health check; <code>npm run dev</code> renders a shell.</li>
 </ul>
@@ -338,13 +460,13 @@ CORS_ORIGINS=http://localhost:3000</pre>
 <ul>
   <li>Build <code>QwenProvider</code> with mock fallback (§5.2) and JSON-mode parsing utilities.</li>
   <li>Author deterministic mock fixtures for every agent so the full pipeline runs key-free.</li>
-  <li><strong>Deliverable:</strong> end-to-end <code>/api/analyze</code> returns a complete (mocked) recommendation.</li>
+  <li><strong>Deliverable:</strong> end-to-end <code>/api/analyze</code> returns a complete (mocked) <code>BoardResponse</code>.</li>
 </ul>
 
 <h3><span class="phase-tag">Phase 2</span>Agent Abstraction &amp; the Seven Agents</h3>
 <ul>
   <li><code>BaseAgent</code>: shared provider, profile formatter, JSON parsing, retry-on-malformed-JSON.</li>
-  <li>Implement Scout, Trend, Founder-Fit, Finance, Growth, Skeptic, Venture Partner — each a focused system prompt + typed output.</li>
+  <li>Implement Scout, Trend, Finance, Growth, Skeptic, Capability, and the Chair (<code>venture_partner</code>), each a focused system prompt + typed output.</li>
   <li><strong>Deliverable:</strong> each agent independently produces a validated <code>AgentOutput</code>.</li>
 </ul>
 
@@ -362,11 +484,11 @@ CORS_ORIGINS=http://localhost:3000</pre>
   <li><strong>Deliverable:</strong> measurable consensus score; unresolved conflicts surfaced.</li>
 </ul>
 
-<h3><span class="phase-tag">Phase 5</span>Memory Loop (episodic + semantic)</h3>
+<h3><span class="phase-tag">Phase 5</span>Memory Loop: per-company vault</h3>
 <ul>
-  <li>Wire PostgreSQL episodic store; feed prior outcomes back as <code>memory_context</code> on re-runs.</li>
-  <li>Semantic layer: learned insights (e.g. "this founder executes B2B better than B2C").</li>
-  <li><strong>Deliverable:</strong> second run for the same user demonstrably improves over the first.</li>
+  <li>Wire the per-company <strong>Obsidian markdown vault</strong>: <code>read(company_id, query)</code> does LLM-driven selective note-retrieval over a small index (frontmatter + filename + one-line summary), with <strong>no embeddings and no vector DB</strong>, then feeds the relevant context in.</li>
+  <li><code>write_back</code> records the decision + recommendation, and later its outcome, closing the validation loop.</li>
+  <li><strong>Deliverable:</strong> a returning company's later decisions draw on its prior decisions and outcomes.</li>
 </ul>
 
 <h3><span class="phase-tag">Phase 6</span>MCP Integration (live signals)</h3>
@@ -376,36 +498,39 @@ CORS_ORIGINS=http://localhost:3000</pre>
   <li><strong>Deliverable:</strong> Trend analysis cites live data when MCP is configured.</li>
 </ul>
 
-<h3><span class="phase-tag">Phase 7</span>Frontend — Visualize the Society</h3>
+<h3><span class="phase-tag">Phase 7</span>Frontend: Visualize the Society</h3>
 <ul>
   <li>Four-phase UI: Profile → Analyzing → Debating → Results.</li>
   <li>Agent cards, live conflict badges, consensus meter, execution-plan renderer.</li>
-  <li><strong>Deliverable:</strong> the debate is visible — directly scores the Presentation pillar.</li>
+  <li><strong>Deliverable:</strong> the debate is visible, which directly scores the Presentation pillar.</li>
 </ul>
 
 <h3><span class="phase-tag">Phase 8</span>Benchmark Harness (efficiency gain)</h3>
 <ul>
   <li>Single-agent baseline vs full society on the same profiles; log the metrics in §8.</li>
-  <li><strong>Deliverable:</strong> a chart proving the society beats one agent — Track 3's explicit ask.</li>
+  <li><strong>Deliverable:</strong> a chart proving the society beats one agent, Track 3's explicit ask.</li>
 </ul>
 
 <h3><span class="phase-tag">Phase 9</span>Go Live: Insert Keys</h3>
 <ul>
   <li>Paste <code>QWEN_API_KEY</code> + <code>MCP_SERVER_URL</code> into <code>.env</code>; set <code>USE_MOCK_LLM=false</code>.</li>
+  <li>Deploy per <strong>Decision #8</strong>: backend to <strong>Hugging Face Spaces</strong> (Docker, port 7860, seed vault baked in), frontend to <strong>Vercel Hobby</strong>; set <code>VAULT_PATH</code>, <code>ALLOWED_ORIGINS</code>, and the frontend's <code>NEXT_PUBLIC_API_BASE_URL</code> (see <code>docs/deployment.md</code>).</li>
   <li>Run benchmark again with the real model; record final numbers for the demo.</li>
   <li><strong>Deliverable:</strong> production pipeline on real QwenCloud inference.</li>
 </ul>
 
 <!-- ════════════════ 7. QWEN + MCP DEPTH ════════════════ -->
 <div class="pagebreak"></div>
-<h2>7. QwenCloud &amp; MCP — Technical Depth Details</h2>
+<h2><span class="sn">7.</span> QwenCloud &amp; MCP: Technical Depth Details</h2>
+<p class="section-lead">Two places carry the technical weight: how the agents use the model, and how they reach live
+market data. Both degrade gracefully: they run on deterministic mocks until real keys are supplied.</p>
 
 <h3>7.1 Sophisticated QwenCloud usage</h3>
 <ul>
-  <li><strong>OpenAI-compatible SDK</strong> against the DashScope endpoint — one client, seven agents.</li>
+  <li><strong>OpenAI-compatible SDK</strong> against the DashScope endpoint: one client, seven agents.</li>
   <li><strong>JSON mode</strong> (<code>response_format=json_object</code>) for reliable structured outputs.</li>
   <li><strong>Tool / function calling</strong> in the Trend Analyst to invoke MCP market lookups.</li>
-  <li><strong>Model tiering</strong>: <code>qwen-plus</code> for reasoning-heavy agents, <code>qwen-turbo</code> for cheap fan-out — a cost/perf optimization.</li>
+  <li><strong>Model tiering</strong>: <code>qwen-plus</code> for reasoning-heavy agents, <code>qwen-turbo</code> for cheap fan-out, a cost/perf optimization.</li>
   <li><strong>Response caching</strong> keyed on (agent, profile-hash) to cut latency &amp; spend on repeat runs.</li>
 </ul>
 
@@ -424,38 +549,44 @@ tools = [{
 <span class="c"># → mocked deterministically while MCP_SERVER_URL is empty</span></pre>
 
 <!-- ════════════════ 8. EFFICIENCY BENCHMARK ════════════════ -->
-<h2>8. Measurable Efficiency Gain vs Single-Agent Baseline</h2>
-<p>Track 3 requires a <em>measurable</em> advantage. We run identical founder profiles through both systems and report:</p>
+<h2><span class="sn">8.</span> Measurable Efficiency Gain vs Single-Agent Baseline</h2>
+<p class="section-lead">Track 3 requires a <em>measurable</em> advantage. We run identical company decisions through both systems and report:</p>
 <table>
   <tr><th>Metric</th><th>Single-Agent Baseline</th><th>Agent Society (target)</th><th>Why it improves</th></tr>
   <tr><td>Plan completeness (0–100)</td><td>~55</td><td><strong>90+</strong></td><td>Dedicated agents cover blind spots.</td></tr>
   <tr><td>Hallucinated-cost rate</td><td>High</td><td><strong>Low</strong></td><td>Finance + Skeptic cross-check numbers.</td></tr>
   <tr><td>Risk coverage (# real risks found)</td><td>1–2</td><td><strong>6–8</strong></td><td>Skeptic dedicated to attack.</td></tr>
-  <tr><td>Founder-fit accuracy</td><td>Generic</td><td><strong>Tailored</strong></td><td>Founder-Fit agent + memory.</td></tr>
+  <tr><td>Capability read</td><td>Generic</td><td><strong>Tailored</strong></td><td>Capability agent + vault memory.</td></tr>
   <tr><td>Self-contradiction rate</td><td>Unchecked</td><td><strong>Resolved</strong></td><td>Debate engine reconciles conflicts.</td></tr>
 </table>
 <p class="small">Instrumentation also logs consensus score, agent-agreement rate, and per-stage latency for the demo dashboard.</p>
 
 <!-- ════════════════ 9. REPO LAYOUT ════════════════ -->
-<h2>9. Final Repository Layout</h2>
+<h2><span class="sn">9.</span> Final Repository Layout</h2>
+<p class="section-lead">Where each piece lives. The layout mirrors the pipeline in §3, so a contributor can map a box in
+the diagram to a file.</p>
 <pre>founderos/
-├── frontend/                  <span class="c"># Next.js + Tailwind — visualizes the society</span>
-│   └── src/{app, components}/  <span class="c"># ProfileForm, AgentDebate, StartupCard, ExecutionPlan</span>
+├── frontend/                  <span class="c"># Next.js + Tailwind: the boardroom (decision → board memo)</span>
+│   └── src/{app, components}/  <span class="c"># decision intake, AgentDebate, board-memo view, agentRoster</span>
 ├── backend/
-│   ├── config.py               <span class="c"># single env surface (keys later)</span>
+│   ├── config.py               <span class="c"># single env surface (VAULT_PATH, ALLOWED_ORIGINS, keys)</span>
 │   ├── llm/provider.py         <span class="c"># QwenProvider + mock fallback</span>
-│   ├── agents/                 <span class="c"># base + 7 specialized agents</span>
+│   ├── agents/                 <span class="c"># base + 7 agents (scout…capability, venture_partner)</span>
 │   ├── consensus/debate_engine.py
-│   ├── memory/{episodic,semantic}.py
+│   ├── memory/vault.py         <span class="c"># per-company markdown vault: read · select · write_back (new)</span>
+│   ├── memory/{episodic,semantic}.py   <span class="c"># Postgres schema: UNWIRED / off-path</span>
 │   ├── mcp/client.py           <span class="c"># MCP tool routing</span>
 │   ├── graph.py                <span class="c"># LangGraph orchestrator</span>
 │   ├── benchmark/baseline.py   <span class="c"># single-agent vs society</span>
 │   ├── models.py · main.py
-├── docs/{blueprint, architecture, demo_script}
-└── .env.example                <span class="c"># placeholders — no secrets</span></pre>
+├── docs/{blueprint, architecture, deployment, demo_script}
+├── CLAUDE.md · PROJECT_STATE.md <span class="c"># contributor brief · living status</span>
+└── .env.example                <span class="c"># placeholders, no secrets</span></pre>
 
 <!-- ════════════════ 10. QUICKSTART ════════════════ -->
-<h2>10. Quickstart (runs key-free in mock mode)</h2>
+<h2><span class="sn">10.</span> Quickstart (runs key-free in mock mode)</h2>
+<p class="section-lead">The whole system runs without a single API key (mock fixtures stand in for every external call),
+so a reviewer can clone, run, and see a complete board memo in minutes.</p>
 <pre><span class="c"># 1. Backend</span>
 cd backend &amp;&amp; python -m venv venv &amp;&amp; source venv/bin/activate
 pip install -r requirements.txt
@@ -469,14 +600,16 @@ cd frontend &amp;&amp; npm install &amp;&amp; npm run dev    <span class="c"># h
 <span class="c">#    edit .env → QWEN_API_KEY=... and USE_MOCK_LLM=false → restart. Done.</span></pre>
 
 <div class="card indigo" style="margin-top:18px;">
-  <strong>One-line summary for judges:</strong> FounderOS is a 7-agent society on QwenCloud that decomposes
-  venture evaluation, debates to consensus, and provably out-performs a single agent — built scaffold-first
-  so it runs today and goes live the moment a key is added.
+  <strong>One-line summary for judges:</strong> FounderOS is a 7-agent society on QwenCloud that
+  pressure-tests an existing business's decision, debates to consensus, returns a board memo, and provably
+  out-performs a single agent. It is built scaffold-first, so it runs today and goes live the moment a key is added.
 </div>
 
 <p class="footer-note" style="text-align:center; margin-top:24px;">
   FounderOS · Track 3: Agent Society · Build Blueprint v1.0
 </p>
+
+</div>
 
 </body>
 </html>
