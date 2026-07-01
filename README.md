@@ -1,75 +1,89 @@
-# FounderOS – AI Venture Studio
+# FounderOS — an AI board for business decisions
 
-> An AI-powered venture studio that uses a **society of specialized agents** to transform a founder's profile into a complete, validated startup execution plan.
+> An AI board/council that helps operators of **existing businesses** pressure-test a specific
+> decision. You bring one call — *"is this sound, and what are we missing?"* — and a **society of
+> seven specialized agents** debates it and hands back a **board-ready memo**.
+
+> **⚠ Pivot in progress.** FounderOS is moving from its original "founder profile → startup idea"
+> generator to the board/council evaluator described here. The **canonical, frozen Phase 0 contract**
+> is in [`docs/architecture.md`](docs/architecture.md); current status and the build plan are in
+> [`PROJECT_STATE.md`](PROJECT_STATE.md); the standing brief for contributors is [`CLAUDE.md`](CLAUDE.md).
+> Some code still reflects the old framing while the pivot lands.
 
 ---
 
-## 🧠 What It Does
+## What it does
 
-FounderOS takes a user's skills, budget, time, and goals — then deploys a multi-agent system that **scouts opportunities**, **debates assumptions**, **validates markets**, and **generates a full execution plan**.
+FounderOS takes your **company context** and **one decision**, then runs a multi-agent society that
+**frames the options**, **reads the market**, **models the economics**, **stress-tests the plan**,
+and **debates to a verdict** — then writes a board memo with the reasoning and the dissent.
 
-**From:** `"I want to earn side income"`  
-**To:** `"Here is your validated startup, lean canvas, and 30-day roadmap."`
+**From:** `"Should we expand into Indonesia next quarter, or deepen at home first?"`
+**To:** `"Conditional — pilot one corridor first. Here's the dissent, what's missing, and a phased plan."`
+
+The memo is explicit about its own limits: a `missing_inputs` list, a `what_would_change_this_call`
+section, an attributed `dissent` record, and a one-line disclaimer. It is advisory — the operator
+owns the call.
 
 ---
 
-## 🏗️ Tech Stack
+## Tech stack
 
 | Layer | Technology |
 |-------|-----------|
 | Frontend | Next.js 14, TailwindCSS |
 | Backend | FastAPI (Python) |
-| Agent Orchestration | LangGraph (parallel analyst fan-out) |
-| AI Model | Qwen (qwen-turbo / qwen-plus via DashScope API) |
-| Memory | PostgreSQL (SQLAlchemy async) |
-| Semantic memory | Qwen embeddings persisted in PostgreSQL — no separate vector DB |
+| Agent orchestration | LangGraph (parallel analyst fan-out) |
+| AI model | Qwen (qwen-turbo / qwen-plus via DashScope API) |
+| Memory | Per-company **Obsidian markdown vault** (selective retrieval + write-back) |
+| Retrieval | LLM-driven note selection over a small vault index — **no embeddings / vector DB** |
+| Auth | Stubbed company picker → vault folder (real auth deferred) |
 
 ---
 
-## 📁 Project Structure
+## Project structure
 
 ```
 founderos/
 ├── frontend/               # Next.js + Tailwind UI
 │   └── src/
-│       ├── app/            # Pages
-│       └── components/     # ProfileForm, AgentDebate, StartupCard, ExecutionPlan
+│       ├── app/            # Landing page + /studio app
+│       └── components/     # studio UI, agentRoster, landing/*
 │
 ├── backend/
-│   ├── agents/             # 7 specialized AI agents
-│   │   ├── scout.py        # Opportunity Scout
-│   │   ├── trend.py        # Trend Analyst
-│   │   ├── finance.py      # Finance Analyst
-│   │   ├── growth.py       # Growth Strategist
-│   │   ├── skeptic.py      # Devil's Advocate
-│   │   ├── founder_fit.py  # Founder-Fit Agent
-│   │   └── venture_partner.py  # Final Decision Maker
-│   │
-│   ├── memory/
-│   │   ├── episodic.py     # Past interactions (PostgreSQL)
-│   │   └── semantic.py     # Learned user insights
+│   ├── agents/             # 7 specialized agents (being reframed for the pivot)
+│   │   ├── scout.py        # frames the options on the table
+│   │   ├── trend.py        # market / demand signals for the decision
+│   │   ├── finance.py      # models the decision vs company economics
+│   │   ├── growth.py       # how the company executes
+│   │   ├── skeptic.py      # THE main event — attacks the plan
+│   │   ├── founder_fit.py  # → being rebuilt as the Capability agent (org readiness)
+│   │   └── venture_partner.py  # the Chair — writes the board memo
 │   │
 │   ├── consensus/
-│   │   └── debate_engine.py    # Conflict detection + debate rounds
+│   │   └── debate_engine.py    # conflict detection + debate rounds + consensus (reused as-is)
 │   │
-│   ├── models.py           # Pydantic data models
-│   ├── config.py           # Settings / env vars
+│   ├── mcp/client.py       # live market data (Crunchbase / web / news), mock + live
+│   ├── memory/             # NOTE: episodic.py/semantic.py (Postgres) are UNWIRED and off the
+│   │                       #       pivot path. Persistence is the vault (see architecture.md).
+│   ├── models.py           # Pydantic data models (rewritten to the frozen contract)
+│   ├── config.py           # settings / env vars
 │   ├── graph.py            # LangGraph orchestration
 │   └── main.py             # FastAPI entry point
 │
 ├── docs/
-│   ├── architecture.md
-│   ├── prd.md
+│   ├── architecture.md     # ← the canonical, frozen Phase 0 contract
 │   └── demo_script.md
-│
+├── CLAUDE.md               # standing brief for contributors (lanes, conventions, watchlist)
+├── PROJECT_STATE.md        # current status + build plan
 └── README.md
 ```
 
 ---
 
-## 🚀 Getting Started
+## Getting started
 
-### 1. Clone & Setup Backend
+### 1. Backend
 
 ```bash
 cd backend
@@ -78,20 +92,20 @@ source venv/bin/activate        # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Configure Environment
+### 2. Environment
 
 ```bash
 cp .env.example .env
-# Edit .env with your QWEN_API_KEY (DashScope) and DB connection
+# Set QWEN_API_KEY (DashScope). To run keyless with mock fixtures, set USE_MOCK_LLM=true.
 ```
 
-### 3. Run Backend
+### 3. Run backend
 
 ```bash
-uvicorn main:app --reload --port 8000
+uvicorn backend.main:app --reload --port 8000
 ```
 
-### 4. Setup Frontend
+### 4. Frontend
 
 ```bash
 cd frontend
@@ -103,63 +117,72 @@ Frontend runs at `http://localhost:3000`, API at `http://localhost:8000`.
 
 ---
 
-## 🤖 Agent Society
-
-### Pipeline
+## Agent society
 
 ```
                   ┌──────────────────┐
-                  │  Trend Analyst   │
+                  │      Trend       │
                   ├──────────────────┤
-  ┌───────┐       │ Finance Analyst  │      ┌─────────┐    ┌─────────────┐    ┌───────────────┐    ┌──────────────────┐
-  │ Scout │ ───►  ├──────────────────┤ ──►  │ Skeptic │ ─► │ Founder-Fit │ ─► │ Debate Engine │ ─► │ Venture Partner  │
-  └───────┘       │ Growth Strategist│      └─────────┘    └─────────────┘    └───────────────┘    └──────────────────┘
+  ┌───────┐       │     Finance      │      ┌─────────┐    ┌───────────────┐    ┌──────────────────┐
+  │ Scout │ ───►  ├──────────────────┤ ──►  │ Skeptic │ ─► │ Debate Engine │ ─► │      Chair       │
+  └───────┘       │      Growth      │      └─────────┘    └───────────────┘    │ (venture_partner)│
+                  │    Capability    │                                          └──────────────────┘
                   └──────────────────┘
-   discover        analyze (parallel)        challenge        founder match       resolve conflicts      final decision
+   frame options   analyze (parallel)        stress-test      resolve conflicts       board memo
+                                                               + dissent record
 
-Scout → [Trend ∥ Finance ∥ Growth] → Skeptic → Founder-Fit → Debate Engine → Venture Partner
+Scout → [Trend ∥ Finance ∥ Growth ∥ Capability] → Skeptic → Debate Engine → Chair
 ```
 
-The three analyst agents (Trend, Finance, Growth) fan out concurrently via LangGraph
-(`asyncio.gather` + `asyncio.to_thread`); every other stage runs sequentially on real
-data dependencies.
+The analyst agents fan out concurrently via LangGraph (`asyncio.gather` + `asyncio.to_thread`);
+every other stage runs sequentially on real data dependencies. **The Skeptic and the Debate Engine
+are the centerpiece** — judging the decision *is* the product.
 
-| Agent | Role | Output |
+| Agent (`name` string) | Role | Output |
 |-------|------|--------|
-| **Scout** | Discovers startup opportunities | 5 opportunity hypotheses |
-| **Trend Analyst** | Evaluates market demand | Market attractiveness score |
-| **Finance** | Estimates costs & revenue | Financial feasibility score |
-| **Growth** | Plans acquisition strategy | Go-to-market plan |
-| **Skeptic** | Challenges assumptions | Risk report |
-| **Founder-Fit** | Scores founder–opportunity match across 5 dimensions | Founder-fit score |
-| **Venture Partner** | Facilitates consensus & decides | Investment-style memo |
+| **Scout** (`scout`) | Frames the options on the table | The options assessed |
+| **Trend** (`trend`) | Reads market/demand signals for the decision | Market read |
+| **Finance** (`finance`) | Models the decision vs company economics | Financial view |
+| **Growth** (`growth`) | How the company executes | Go-to-market read |
+| **Skeptic** (`skeptic`) | Attacks the weakest assumptions | Risk + failure modes |
+| **Capability** (`capability`) | Scores organizational capability/readiness (rebuilt from founder-fit) | Readiness read |
+| **Chair** (`venture_partner`) | Synthesizes the memo (canonical string stays `venture_partner`) | Board recommendation |
 
 ---
 
-## 🎯 Demo Flow
+## Demo flow
 
-1. User submits profile (skills, budget, hours, goals)
-2. All agents analyze in parallel
-3. Debate engine detects conflicts
-4. Agents revise positions over 2–3 rounds
-5. Venture Partner produces final recommendation
-6. Execution plan auto-generated (lean canvas, roadmap, landing page copy)
-7. Memory stores outcomes for future improvement
+1. Pick the company (stubbed picker → vault folder) and state one decision.
+2. The council **selectively retrieves** the relevant notes from the company's vault.
+3. Agents analyze in parallel; the Skeptic attacks the plan.
+4. The Debate Engine surfaces conflicts; agents revise over rounds; unresolved conflicts become the **dissent record**.
+5. The Chair writes the **board memo** (recommendation + confidence + missing inputs + phased plan).
+6. The decision + memo are **written back to the vault**; a later outcome closes the loop.
 
 ---
 
-## 📝 API Endpoints
+## API endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/analyze` | Submit profile, get recommendation |
-| `GET` | `/api/recommendation/{id}` | Fetch a recommendation |
-| `POST` | `/api/feedback` | Submit outcome feedback |
-| `GET` | `/api/memory/{user_id}` | Get user memory |
+| `POST` | `/api/analyze` | Submit `{ company_id, profile?, decision }`, get a `BoardResponse` |
+| `GET` | `/api/response/{id}` | Fetch a board response |
+| `POST` | `/api/feedback` | Write a decision outcome back to the vault |
+| `GET` | `/api/company/{company_id}` | Get the company's decision history |
+
+See [`docs/architecture.md`](docs/architecture.md) for the full request/response contract.
 
 ---
 
-## 🏆 Hackathon Tracks
+## Deploying
+
+Backend runs on **Hugging Face Spaces** (Docker SDK, free CPU Basic) — a long-running container
+holds the ~90–240s debate run that serverless can't, with no card required. Frontend runs on
+**Vercel Hobby**, pointed at the backend via `NEXT_PUBLIC_API_BASE_URL`. A local + Cloudflare
+Tunnel option is documented for live demos. Full steps, the Dockerfile spec, and the env-var
+contract: **[`docs/deployment.md`](docs/deployment.md)**.
+
+## Hackathon tracks
 
 - **Primary:** Agent Society
 - **Secondary:** MemoryAgent, Autopilot Agent

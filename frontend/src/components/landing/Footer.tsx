@@ -37,8 +37,9 @@ export default function Footer() {
         <div>
           <Logo idSuffix="footer" size={30} />
           <p className="mt-4 text-sm text-muted max-w-xs leading-relaxed">
-            An AI venture studio: a council of agents that scouts, debates, and
-            builds your startup execution plan from scratch.
+            An AI board for business decisions: a council of agents that
+            pressure-tests the call you bring, debates the trade-offs, and hands
+            you a board-ready memo.
           </p>
         </div>
 

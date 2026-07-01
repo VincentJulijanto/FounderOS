@@ -4,7 +4,7 @@ const FEATURES = [
   {
     icon: Users,
     title: 'A council of specialists',
-    body: 'Seven agents — Scout, Trend Analyst, Finance, Growth, Skeptic, Founder-Fit, and Venture Partner — each examine your idea from their own angle.',
+    body: 'Seven agents — Scout, Trend Analyst, Finance, Growth, Skeptic, Capability, and Chair — each examine your decision from their own angle.',
   },
   {
     icon: MessagesSquare,
@@ -13,8 +13,8 @@ const FEATURES = [
   },
   {
     icon: FileCheck2,
-    title: 'Execution-ready output',
-    body: 'Walk away with a lean canvas, MVP scope, 30-day roadmap, and outreach templates — not just a score, but a plan you can act on.',
+    title: 'Board-ready output',
+    body: 'Walk away with a board memo: a clear recommendation, the dissent behind it, the gaps that remain, and a phased plan you can act on.',
   },
 ]
 
@@ -23,11 +23,11 @@ export default function FeatureCards() {
     <section id="features" className="max-w-6xl mx-auto px-6 py-24 md:py-28 scroll-mt-24">
       <div className="max-w-2xl">
         <h2 className="text-3xl md:text-[2.5rem] font-semibold tracking-[-0.02em] leading-[1.12] text-graphite">
-          One idea in, a full team&rsquo;s thinking out
+          One decision in, a full board&rsquo;s thinking out
         </h2>
         <p className="mt-5 text-muted text-lg leading-relaxed">
-          FounderOS replaces the blank page with a coordinated panel of agents that
-          do the analysis a founding team would.
+          FounderOS puts a coordinated panel of agents around your decision — the
+          scrutiny a seasoned board would bring, on demand.
         </p>
       </div>
 

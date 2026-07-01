@@ -1,149 +1,159 @@
-# FounderOS — Hackathon Demo Script
+# FounderOS — Demo Script
 
-**Target duration:** 3–5 minutes  
-**Track:** Agent Society (Primary), MemoryAgent + Autopilot (Secondary)
+**Target duration:** 3–5 minutes
+**Track:** Agent Society (primary), MemoryAgent + Autopilot (secondary)
+
+> Pivot framing: FounderOS is an **AI board/council** for operators of **existing businesses**.
+> You bring **one decision**; seven agents evaluate it, debate it, and hand back a **board-ready
+> memo** — a clear recommendation, the dissent behind it, what's missing, and a phased plan.
 
 ---
 
-## 🎬 Opening Hook (30 seconds)
+## Opening hook (30 seconds)
 
-> "Every year, thousands of students and young professionals want to start something.
-> But they don't know where to begin. Existing AI tools give you a list of ideas and 
-> leave you stranded.
+> "Every operator faces the same problem: a big decision — expand to a new market, launch a new
+> tier, hire ahead of revenue — and no one in the room whose only job is to pressure-test it.
+> Existing AI tools give you a confident answer and leave you to trust it.
 >
-> FounderOS is different. It's an AI Venture Studio — where six specialized agents 
-> **debate, challenge, and collaborate** to build your complete startup plan from scratch."
+> FounderOS is different. It's an AI board — **seven specialized agents that debate, challenge, and
+> reach a verdict on your decision** — and it remembers your company from one meeting to the next."
 
 ---
 
-## 🧑 Step 1 — Profile Input (30 seconds)
+## Step 1 — Bring a decision (30 seconds)
 
-**Show:** Fill in the profile form live.
+**Show:** Pick the company, then state the decision.
 
 ```
-Name: Alex Tan
-Background: NUS Computer Science student, Year 2
-Skills: Python, React, Data Analysis
-Budget: SGD 500
-Hours/week: 10
-Interests: EdTech, Productivity, AI
-Goals: Earn SGD 1,000/month side income within 3 months
+Company:   Meridian Logistics  (picked from the company list)
+Sector:    Regional B2B logistics · Stage: scaling · Model: B2B SaaS + ops
+Financials: ~SGD 4M ARR, ~30% gross margin, 14 months runway
+Decision:  "Should we expand into Indonesia next quarter, or deepen in our home market first?"
+Constraints: budget ~SGD 400k · timeline: decide within 3 weeks
 ```
 
-> "Alex is a CS student at NUS. He has some coding skills, SGD 500, and 10 hours a week.
-> Let's see what our agent society recommends."
+> "Meridian is a scaling logistics company. They're weighing an Indonesia expansion against
+> doubling down at home. Let's bring that decision to the board."
 
-Click **"Launch Agent Society →"**
-
----
-
-## 🤖 Step 2 — Agent Society in Action (45 seconds)
-
-**Show:** The agent analysis screen with agents activating one by one.
-
-> "Six agents are now working in parallel:
-> - The **Scout** is identifying market gaps matching Alex's profile
-> - The **Trend Analyst** is evaluating market demand  
-> - The **Finance Agent** is running financial projections
-> - The **Growth Agent** is designing acquisition strategies
-> - And the **Skeptic** — this is the key — is *challenging every assumption*"
+Click **"Convene the council →"**
 
 ---
 
-## ⚡ Step 3 — Conflict & Debate (45 seconds)
+## Step 2 — The council convenes (45 seconds)
 
-**Show:** The debate screen activating with agent messages.
+**Show:** The council pulls the company's history from its vault, then the agents work.
 
-> "Here's where FounderOS is different from any other AI tool.
->
-> The Scout found a strong opportunity in AI Study Tools.
-> But the **Skeptic pushes back** — the market is crowded, students don't pay.
-> 
-> Now watch what happens: the agents **debate in real time.**
-> The Growth Agent counters with a campus referral strategy.
-> The Finance Agent validates the revenue model.
-> 
-> After 2 rounds of debate — consensus is reached."
+> "First, the council reads Meridian's vault — its saved context and past decisions — and pulls in
+> only what's relevant to *this* call. Then seven agents go to work:
+> - The **Scout** frames the real options on the table
+> - The **Trend** agent reads market and demand signals for Indonesia
+> - The **Finance** agent models it against Meridian's actual economics
+> - The **Growth** agent maps how they'd execute
+> - The **Capability** agent asks whether the *organization* is ready to run two markets
+> - And the **Skeptic** — this is the point — attacks the weakest assumptions in the plan"
 
 ---
 
-## 🏆 Step 4 — Recommendation (30 seconds)
+## Step 3 — Conflict & debate (45 seconds)
 
-**Show:** The top 3 startup cards with scores.
+**Show:** The debate view — conflicts surfacing, positions revised across rounds.
 
-> "The Venture Partner synthesises everything and produces an investment-style memo.
-> 
-> Alex's top recommendation: **[startup name]** — a [tagline].
-> Startup score: 8.4. Feasibility: 7.9. Founder fit: 9.1.
-> 
-> Not just scores — the agents explain *why Alex specifically can win this.*"
+> "Here's where FounderOS is different from a single chatbot.
+>
+> The Trend agent likes the Indonesia timing. But the **Skeptic pushes back** — the org is stretched
+> and the runway is tight. The **Finance** agent backs the Skeptic on cash. The **Growth** agent
+> argues a phased pilot de-risks it.
+>
+> The agents **debate in rounds.** A moderator tracks each conflict until it resolves — or stays
+> genuinely open. What doesn't resolve isn't hidden; it becomes the **dissent record** in the memo."
 
 ---
 
-## 📋 Step 5 — Autopilot Execution (45 seconds)
+## Step 4 — The board memo (30 seconds)
 
-**Show:** Click through the execution plan tabs.
+**Show:** The board memo.
 
-> "Now the Autopilot kicks in. FounderOS auto-generates everything Alex needs to launch:
+> "The **Chair synthesizes everything into a board memo:**
 >
-> Here's Alex's **Lean Canvas** — problem, solution, channels, revenue model.
+> Recommendation: **Conditional** — pilot Indonesia in one corridor before a full expansion.
+> Confidence: **medium.**
+> The **dissent** is on the page: the Skeptic's cash-runway objection, unresolved.
+> **What's missing:** a landed-cost model and a local ops partner.
+> **What would change this call:** 18+ months runway, or a signed anchor customer.
 >
-> Here's his **30-day roadmap** — week by week.
->
-> Here's his **landing page copy** — ready to paste into Framer or Webflow.
->
-> And here are his **customer outreach templates** — cold emails, LinkedIn DMs, already written.
->
-> Alex goes from 'I want to earn side income' to 'I have a complete launch plan' — in under 2 minutes."
+> Not just an answer — the reasoning, the disagreement, and what to do next."
 
 ---
 
-## 🧠 Step 6 — Memory (30 seconds)
+## Step 5 — Phased execution plan (45 seconds)
 
-**Show:** Briefly show the memory section or explain it.
+**Show:** Click through the phased plan.
 
-> "FounderOS also learns. 
+> "The memo carries a **phased execution plan** — not a generic to-do list:
 >
-> If Alex comes back next month and says his tutoring startup didn't work out — 
-> the system remembers. Episodic memory stores what was tried.
-> Semantic memory extracts the insight: 'Alex prefers B2B over direct-to-consumer.'
+> **Phase 1 — Validate:** landed-cost model, one Indonesian corridor, a local ops partner shortlist.
+> **Phase 2 — Pilot:** run the single corridor, hold the home market steady.
+> **Phase 3 — Scale (conditional):** expand only if the pilot clears the bar the memo names.
 >
-> Every future recommendation gets smarter."
+> Meridian goes from 'should we do this?' to 'here's the call, the risks, and the first phase' —
+> in minutes."
 
 ---
 
-## 🚀 Closing (30 seconds)
+## Step 6 — Memory / the vault (30 seconds)
 
-> "Traditional AI startup generators: User → LLM → Generic idea. Done.
+**Show:** The company's decision history in the vault.
+
+> "And FounderOS remembers. Every decision, its recommendation, and — later — how it actually turned
+> out gets written back to Meridian's vault as a note.
 >
-> FounderOS: User → Agent Society → Debate → Consensus → Memory → Full Execution Plan.
->
-> This is what Agent Society looks like when applied to a real problem.
-> We're not just generating content — we're running a venture studio."
+> Next quarter, when Meridian weighs another market, the council retrieves *this* decision: what the
+> Skeptic flagged, and what happened. The board gets smarter about *this specific company* every time
+> it convenes — without ever loading the whole history into memory."
 
 ---
 
-## 💡 Judge Q&A Prep
+## Closing (30 seconds)
 
-**Q: How is this different from ChatGPT?**  
-A: ChatGPT gives one response. FounderOS has 7 agents with opposing mandates — the Skeptic's job is to *challenge* the Scout. The conflict resolution is where the value comes from.
-
-**Q: Does the memory actually work?**  
-A: For the hackathon, memory is in-memory store. Production version uses PostgreSQL with SQLAlchemy. The semantic extraction via Qwen is fully implemented.
-
-**Q: Can it handle different user types?**  
-A: Yes — we've tested with designers, marketers, non-technical users. The Founder Fit assessment ensures recommendations match actual skills.
-
-**Q: What's the latency?**  
-A: Full pipeline is ~45–90 seconds (7 LLM calls + debate rounds). For demo, can show pre-loaded result.
+> "Traditional AI advisor: prompt → one confident answer. Done.
+>
+> FounderOS: your decision → a council → debate → a verdict with its dissent → a phased plan →
+> written back to memory.
+>
+> This is what an Agent Society looks like pointed at a real business decision. We're not generating
+> ideas — we're running a board."
 
 ---
 
-## 🔧 Demo Day Checklist
+## Judge Q&A prep
 
-- [ ] Backend running locally (`uvicorn main:app --reload`)
+**Q: How is this different from ChatGPT?**
+A: ChatGPT gives one answer. FounderOS runs **7 agents with opposing mandates** — the Skeptic's job
+is to attack the plan the others back — and it debates to a verdict. The unresolved disagreement is
+part of the output, not smoothed away.
+
+**Q: Where does it get the right to advise on real money?**
+A: It doesn't pretend to be a fiduciary board — the memo carries a one-line disclaimer, an explicit
+`missing_inputs` list, and a `what_would_change_this_call` section. The operator owns the decision;
+the council makes the trade-offs and the dissent legible.
+
+**Q: Does the memory actually work?**
+A: Yes. Company context is a per-company markdown vault. The council selectively retrieves only the
+relevant notes for a decision (via an index of frontmatter + summaries — no vector DB), then writes
+the decision and its later outcome back.
+
+**Q: What's the latency?**
+A: A full run is ~90–240s (7 agents + debate rounds). For demo, a pre-loaded result is ready as a
+fallback.
+
+---
+
+## Demo day checklist
+
+- [ ] Backend running (`uvicorn backend.main:app --reload`)
 - [ ] Frontend running (`npm run dev`)
-- [ ] `.env` file with valid `QWEN_API_KEY` (DashScope)
-- [ ] Pre-loaded fallback result in case of API issues
-- [ ] Profile form pre-filled with Alex's data (saves 30 seconds)
-- [ ] Browser at full screen, dark mode
+- [ ] `.env` with a valid `QWEN_API_KEY` (DashScope), or `USE_MOCK_LLM=true` to demo keyless
+- [ ] A company vault pre-seeded (Meridian Logistics) with a couple of past decision notes
+- [ ] Pre-loaded fallback memo in case of API issues
+- [ ] Decision pre-filled to save time
+- [ ] Browser full screen
