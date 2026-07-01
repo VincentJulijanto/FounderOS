@@ -67,7 +67,7 @@ function buildTurns(rounds: DebateRound[]): Turn[] {
 
 export default function AgentDebate({ phase, agentOutputs, debateRounds, debateSummary, consensus, onContinue }: Props) {
   const [visibleAgents, setVisibleAgents] = useState<number[]>([])
-  const [currentStatus, setCurrentStatus] = useState('Gathering the council...')
+  const [currentStatus, setCurrentStatus] = useState('Gathering the board...')
   const [revealed, setRevealed] = useState(0)
 
   // Beat 3 — reveal the roster one-by-one while the backend is working.
@@ -85,7 +85,7 @@ export default function AgentDebate({ phase, agentOutputs, debateRounds, debateS
       const n = debateRounds?.length ?? 0
       setCurrentStatus(n > 0
         ? `Debate complete — ${n} round${n === 1 ? '' : 's'} of conflict resolution.`
-        : 'Consensus reached — the council agreed without debate.')
+        : 'Consensus reached — the board agreed without debate.')
     }
   }, [phase, debateRounds])
 
@@ -126,8 +126,8 @@ export default function AgentDebate({ phase, agentOutputs, debateRounds, debateS
         </div>
         <p className="text-sm text-muted">
           {phase === 'analyzing'
-            ? 'The council is convening — each agent analyses your profile independently.'
-            : 'Here is how the council reasoned about your profile.'}
+            ? 'The board is convening — each agent evaluates your decision independently.'
+            : 'Here is how the board reasoned about your decision.'}
         </p>
       </div>
 
@@ -302,7 +302,7 @@ export default function AgentDebate({ phase, agentOutputs, debateRounds, debateS
 
           {onContinue && (
             <button onClick={onContinue} className="btn-primary w-full">
-              See your startup plan
+              See the board memo
               <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </button>
           )}

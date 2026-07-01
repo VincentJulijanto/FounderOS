@@ -18,7 +18,7 @@ export default function CouncilReasoning({ outputs }: Props) {
   return (
     <section aria-labelledby="council-reasoning">
       <h2 id="council-reasoning" className="text-2xl font-semibold tracking-[-0.01em] mb-1">
-        How the council reasoned
+        How the board reasoned
       </h2>
       <p className="text-sm text-muted mb-5">
         Every score traces back to an agent. Here is what each one concluded.
