@@ -25,7 +25,7 @@ _DEBUG_LOG_PATH = os.environ.get(
 
 # Model tiering — assign per agent class via `llm_model` class variable
 FAST_MODEL = "qwen-turbo"          # Scout, Trend, Finance, Growth — cheap parallel fan-out
-DEEP_MODEL = settings.qwen_model   # Skeptic, VenturePartner, FounderFit — set via QWEN_MODEL in .env
+DEEP_MODEL = settings.qwen_model   # Skeptic, Capability, Chair (venture_partner) — set via QWEN_MODEL in .env
 
 _cache: dict[str, str] = {}  # in-process cache; swap for Redis in production
 

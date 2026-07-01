@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pydantic import BaseModel, Field, field_validator
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Literal
 from datetime import datetime
 import uuid
 
@@ -10,15 +10,15 @@ import uuid
 # Live-LLM coercion helpers
 # ─────────────────────────────────────────────
 # Real Qwen output sometimes returns a list (or dict) where the schema expects a
-# single string — e.g. LeanCanvas fields came back as bullet lists in live mode
-# (Sprint B). Mock fixtures are already strings, so these are no-ops in mock mode.
+# single string. Mock fixtures are already well-typed, so these are no-ops in
+# mock mode. Kept from the pre-pivot model — the live-mode messiness is unchanged.
 
 def _to_str(v: Any) -> Any:
     """Coerce live-LLM values into a string for str-typed fields.
 
     Real Qwen is nondeterministic about types: a field declared as str may come
-    back as a bullet list, a dict, a number (e.g. initial_investment=4850), or
-    null. Normalize them all; leave actual strings untouched.
+    back as a bullet list, a dict, a number, or null. Normalize them all; leave
+    actual strings untouched.
     """
     if v is None:
         return ""
@@ -32,11 +32,7 @@ def _to_str(v: Any) -> Any:
 
 
 def _to_float(v: Any) -> Any:
-    """Extract a float from messy live-LLM score values ('8/10', '7.5', 'high').
-
-    Returns the first number found; falls back to None so the field default (or
-    Pydantic's own error) applies if nothing numeric is present.
-    """
+    """Extract a float from messy live-LLM score values ('8/10', '7.5', 'high')."""
     if isinstance(v, (int, float)):
         return v
     if isinstance(v, str):
@@ -53,49 +49,111 @@ def _items_to_str(v: Any) -> Any:
     return v
 
 
-def _values_to_str(v: Any) -> Any:
-    """Coerce each value of a dict to a string (for Dict[str, str] fields)."""
-    if isinstance(v, dict):
-        return {str(k): _to_str(val) for k, val in v.items()}
-    return v
-
-
 # ─────────────────────────────────────────────
-# Input Models
+# Input Models — company + one decision (the evaluator intake)
 # ─────────────────────────────────────────────
 
-class UserProfile(BaseModel):
-    user_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    name: str
-    background: str              # e.g. "NUS Computer Science student, Year 2"
-    skills: List[str]            # e.g. ["Python", "UI/UX", "Social Media"]
-    budget: float                # in SGD
-    weekly_hours: int
-    interests: List[str]         # e.g. ["EdTech", "Sustainability", "Gaming"]
-    goals: str                   # e.g. "Earn $1k/month side income"
+class Financials(BaseModel):
+    """Freeform financial context — the operator fills in what they have."""
+    revenue_band: str = ""                    # e.g. "SGD 1–5M ARR"
+    margin: Optional[str] = None              # e.g. "~30% gross"
+    cash_position: Optional[str] = None       # e.g. "18 months runway"
+
+    @field_validator("revenue_band", "margin", "cash_position", mode="before")
+    @classmethod
+    def _coerce_text(cls, v):
+        return _to_str(v) if v is not None else v
+
+
+class CompanyProfile(BaseModel):
+    company_name: str
+    sector: str                               # e.g. "regional logistics", "D2C skincare"
+    stage: str                                # e.g. "early-revenue", "scaling", "mature"
+    business_model: str                       # e.g. "B2B SaaS", "marketplace", "retail"
+    size_band: str                            # e.g. "1–10", "11–50", "51–200" employees
+    financials: Financials = Field(default_factory=Financials)
 
     model_config = {"json_schema_extra": {
         "example": {
-            "name": "Alex Tan",
-            "background": "NUS Computer Science student with $500 budget and 10 hours per week",
-            "skills": ["Python", "React", "Data Analysis"],
-            "budget": 500,
-            "weekly_hours": 10,
-            "interests": ["EdTech", "Productivity", "AI"],
-            "goals": "Earn $1,000/month passive side income within 3 months"
+            "company_name": "Kirana Logistics",
+            "sector": "regional last-mile logistics",
+            "stage": "scaling",
+            "business_model": "B2B logistics SaaS + fleet ops",
+            "size_band": "51–200",
+            "financials": {
+                "revenue_band": "SGD 8–12M ARR",
+                "margin": "~22% gross",
+                "cash_position": "14 months runway",
+            },
         }
     }}
 
 
+class Constraints(BaseModel):
+    budget: Optional[str] = None
+    timeline: Optional[str] = None
+
+
+class Decision(BaseModel):
+    question: str                             # the call being brought to the board
+    context: Optional[str] = None             # background the operator wants on the table
+    constraints: Constraints = Field(default_factory=Constraints)
+    # Alternative approaches to THIS one decision (not separate decisions).
+    # Scout frames them when the operator leaves this empty.
+    options: Optional[List[str]] = None
+
+    model_config = {"json_schema_extra": {
+        "example": {
+            "question": "Should we expand into the Vietnam market next quarter?",
+            "context": "Two anchor customers have asked us to serve their Vietnam routes.",
+            "constraints": {"budget": "SGD 500k", "timeline": "6 months"},
+            "options": [
+                "Full subsidiary in Ho Chi Minh City",
+                "Asset-light partnership with a local 3PL",
+                "Hold and deepen the current market",
+            ],
+        }
+    }}
+
+
+class AnalyzeRequest(BaseModel):
+    company_id: str                           # from the company picker → vault folder
+    profile: Optional[CompanyProfile] = None  # if None, hydrated from the vault
+    decision: Decision
+
+
 # ─────────────────────────────────────────────
-# Agent Output Models
+# Vault interface models (persistence — signatures per the contract)
+# ─────────────────────────────────────────────
+
+class VaultNote(BaseModel):
+    """One entry in a company's vault index — enough to rank without reading the body."""
+    path: str                                 # filename within the company's vault folder
+    frontmatter: Dict[str, Any] = {}          # {type, decision_id, date, recommendation, outcome}
+    summary: str = ""                         # one line, for the LLM selector
+
+
+class ContextBundle(BaseModel):
+    """What vault.read returns: the bodies of the notes the selector chose, + provenance."""
+    notes: List[str] = []                     # bodies of the selected notes only
+    used_paths: List[str] = []                # which notes informed this run
+
+    def as_prompt_block(self) -> str:
+        """Render the selected notes into a compact block for agent prompts."""
+        if not self.notes:
+            return "No prior board history for this company — treat as a first session."
+        return "\n\n---\n\n".join(self.notes)
+
+
+# ─────────────────────────────────────────────
+# Agent Output Models (carried over unchanged in shape)
 # ─────────────────────────────────────────────
 
 class AgentOutput(BaseModel):
-    agent_name: str
+    agent_name: str                           # canonical agent-name string
     role: str
     analysis: str
-    score: Optional[float] = None       # 0–10
+    score: Optional[float] = None             # 0–10
     key_findings: List[str] = []
     concerns: List[str] = []
     recommendations: List[str] = []
@@ -103,7 +161,7 @@ class AgentOutput(BaseModel):
 
 
 # ─────────────────────────────────────────────
-# Debate & Conflict Models
+# Debate & Conflict Models (carried over unchanged — the debate is the main event)
 # ─────────────────────────────────────────────
 
 class ConflictPoint(BaseModel):
@@ -113,168 +171,153 @@ class ConflictPoint(BaseModel):
     agent_b: str
     agent_b_position: str
     severity: str   # "low" | "medium" | "high"
-    resolved: bool = False   # set per round; backward-compatible default
+    resolved: bool = False
 
 
 class DebateRound(BaseModel):
     round_number: int
     conflicts_identified: List[ConflictPoint]
-    revised_positions: Dict[str, str]   # agent_name -> revised stance
+    revised_positions: Dict[str, str]
     resolution_achieved: bool
     moderator_summary: str
 
 
 class ConsensusReport(BaseModel):
     """
-    Quantified outcome of the debate. consensus_score is a *resolution rate* —
-    how much of the severity-weighted disagreement the society resolved — NOT a
-    measure of idea quality. A run that resolves one trivial conflict (10.0) is
-    not "better" than one that surfaces three hard ones and resolves two (6.0).
-    Labels describe agreement only.
+    Quantified outcome of the debate. consensus_score is a *resolution rate* — how
+    much of the severity-weighted disagreement the board resolved — NOT a measure
+    of decision quality. Unresolved conflicts are a feature: they become the memo's
+    auditable dissent record. Labels describe agreement only.
     """
-    consensus_score: float                       # 0–10, severity-weighted resolution rate
-    label: str                                   # agreement label (see debate_engine bands)
+    consensus_score: float
+    label: str
     total_conflicts: int
     resolved_conflicts: int
-    unresolved_conflicts: List[ConflictPoint] = []   # structured, not just prose
+    unresolved_conflicts: List[ConflictPoint] = []
     rounds_used: int
-    summary: str                                 # human-readable write-up
+    summary: str
 
 
 # ─────────────────────────────────────────────
-# Startup Idea Models
+# Board Memo Models (the evaluator output)
 # ─────────────────────────────────────────────
 
-class StartupIdea(BaseModel):
-    name: str
-    tagline: str
-    description: str
-    target_market: str
+class OptionAssessment(BaseModel):
+    """One per decision.options entry (1:1 with the alternatives on the table)."""
+    option: str
+    assessment: str
+    verdict: Optional[str] = None             # e.g. "favoured", "viable", "avoid"
 
-    # Scores (0–10)
-    startup_score: float
-    feasibility_score: float
-    market_attractiveness_score: float
-    founder_fit_score: float
-    risk_score: float   # lower = less risky
-
-    # Estimates
-    revenue_potential: str
-    estimated_monthly_revenue: str
-    time_to_launch: str
-    initial_investment: str
-    risk_level: str     # "Low" | "Medium" | "High"
-
-    # Live Qwen sometimes returns lists/dicts for text fields — coerce to str.
-    @field_validator(
-        "name", "tagline", "description", "target_market", "revenue_potential",
-        "estimated_monthly_revenue", "time_to_launch", "initial_investment", "risk_level",
-        mode="before",
-    )
+    @field_validator("option", "assessment", "verdict", mode="before")
     @classmethod
     def _coerce_text(cls, v):
-        return _to_str(v)
-
-    @field_validator(
-        "startup_score", "feasibility_score", "market_attractiveness_score",
-        "founder_fit_score", "risk_score", mode="before",
-    )
-    @classmethod
-    def _coerce_score(cls, v):
-        coerced = _to_float(v)
-        return coerced if coerced is not None else 0.0
+        return _to_str(v) if v is not None else v
 
 
-# ─────────────────────────────────────────────
-# Execution Plan Models
-# ─────────────────────────────────────────────
+class Dissent(BaseModel):
+    """The auditable dissent record — objections that did NOT get resolved."""
+    agent: str                                # canonical agent-name string
+    position: str
 
-class LeanCanvas(BaseModel):
-    problem: str
-    solution: str
-    unique_value_proposition: str
-    unfair_advantage: str
-    customer_segments: str
-    key_metrics: str
-    channels: str
-    cost_structure: str
-    revenue_streams: str
-
-    # All fields are text; live Qwen often returns bullet lists here (Sprint B).
-    @field_validator("*", mode="before")
+    @field_validator("agent", "position", mode="before")
     @classmethod
     def _coerce_text(cls, v):
         return _to_str(v)
 
 
-class ExecutionPlan(BaseModel):
-    startup_name: str
-    value_proposition: str
-    customer_persona: str
-    lean_canvas: LeanCanvas
-    mvp_scope: str
-    landing_page_copy: str
-    marketing_strategy: str
-    customer_acquisition_plan: str
-    elevator_pitch: str
-    customer_outreach_templates: Dict[str, str]   # e.g. {"cold_email": "...", "dm": "..."}
-    thirty_day_roadmap: List[str]                 # list of daily/weekly milestones
+class Phase(BaseModel):
+    name: str                                 # e.g. "Validate", "Pilot", "Scale"
+    objective: str
+    actions: List[str] = []
+    timeframe: Optional[str] = None
 
-    # Coerce live Qwen lists/dicts into the declared shapes.
-    @field_validator(
-        "startup_name", "value_proposition", "customer_persona", "mvp_scope",
-        "landing_page_copy", "marketing_strategy", "customer_acquisition_plan",
-        "elevator_pitch", mode="before",
-    )
+    @field_validator("name", "objective", mode="before")
     @classmethod
     def _coerce_text(cls, v):
         return _to_str(v)
 
-    @field_validator("customer_outreach_templates", mode="before")
+    @field_validator("actions", mode="before")
     @classmethod
-    def _coerce_templates(cls, v):
-        return _values_to_str(v)
-
-    @field_validator("thirty_day_roadmap", mode="before")
-    @classmethod
-    def _coerce_roadmap(cls, v):
+    def _coerce_actions(cls, v):
         return _items_to_str(v)
 
 
+class ExecutionPlan(BaseModel):
+    """Phased execution plan — replaces the old lean-canvas plan."""
+    phases: List[Phase] = []
+
+
+class BoardRecommendation(BaseModel):
+    """The board memo core — what the Chair (venture_partner) writes."""
+    recommendation: Literal["proceed", "hold", "conditional"]
+    confidence: Literal["low", "medium", "high"]
+    rationale: str                            # plain-language "why this call"
+    missing_inputs: List[str] = []            # trust posture — what we'd need to be surer
+    options_assessed: List[OptionAssessment] = []
+    dissent: List[Dissent] = []               # the auditable dissent record
+    what_would_change_this_call: str = ""     # the conditions that flip the recommendation
+    execution_plan: ExecutionPlan = Field(default_factory=ExecutionPlan)
+    financial_view: str = ""                  # plain-language financial read
+    risks: List[str] = []
+    disclaimer: str = (
+        "Advisory output from an AI board, not a fiduciary board decision. "
+        "The operator owns the call."
+    )
+
+    # Live Qwen coercion for the free-text and list fields.
+    @field_validator("rationale", "what_would_change_this_call", "financial_view",
+                     "disclaimer", mode="before")
+    @classmethod
+    def _coerce_text(cls, v):
+        return _to_str(v) if v is not None else v
+
+    @field_validator("missing_inputs", "risks", mode="before")
+    @classmethod
+    def _coerce_lists(cls, v):
+        return _items_to_str(v)
+
+    @field_validator("recommendation", mode="before")
+    @classmethod
+    def _coerce_recommendation(cls, v):
+        s = _to_str(v).strip().lower()
+        if s in ("proceed", "go", "yes", "approve"):
+            return "proceed"
+        if s in ("hold", "no", "reject", "pause", "wait"):
+            return "hold"
+        return "conditional"
+
+    @field_validator("confidence", mode="before")
+    @classmethod
+    def _coerce_confidence(cls, v):
+        s = _to_str(v).strip().lower()
+        if "high" in s:
+            return "high"
+        if "low" in s:
+            return "low"
+        return "medium"
+
+
 # ─────────────────────────────────────────────
-# Final Recommendation
+# API Response envelope
 # ─────────────────────────────────────────────
 
-class VentureRecommendation(BaseModel):
-    recommendation_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    user_profile: UserProfile
+class BoardResponse(BaseModel):
+    response_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    company_id: str
     agent_outputs: List[AgentOutput]
     debate_rounds: List[DebateRound]
-    debate_summary: str = ""                       # consensus write-up (mirrors consensus.summary)
-    consensus: Optional[ConsensusReport] = None    # quantified debate outcome
-    top_ideas: List[StartupIdea]                  # top 3
-    recommended_idea: Optional[StartupIdea] = None  # None only if model returned no ideas
-    execution_plan: Optional[ExecutionPlan] = None
-    final_memo: str                         # investment-style write-up
-
-    # MCP (Phase 6) — provenance of the live market signals used this run.
-    mcp_used: bool = False                   # True if any MCP call returned live data
-    mcp_sources: List[str] = []              # deduped union of all agents' mcp_sources
-
+    consensus: Optional[ConsensusReport] = None
+    recommendation: BoardRecommendation       # the memo
+    mcp_used: bool = False
+    mcp_sources: List[str] = []
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
 # ─────────────────────────────────────────────
-# API Request/Response Models
+# Feedback (the outcome loop → vault write-back)
 # ─────────────────────────────────────────────
 
-class AnalyzeRequest(BaseModel):
-    profile: UserProfile
-
-
 class FeedbackRequest(BaseModel):
-    recommendation_id: str
-    user_id: str
-    pursued_idea: Optional[str] = None
-    outcome: Optional[str] = None          # "launched" | "abandoned" | "in_progress"
+    response_id: str
+    outcome: Optional[str] = None             # what actually happened
     notes: Optional[str] = None

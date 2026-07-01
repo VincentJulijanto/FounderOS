@@ -1,9 +1,11 @@
 """
-Phase 6 — MCP integration tests (mock mode, no credentials, offline).
+MCP integration tests (mock mode, no credentials, offline).
 
 Covers: the MCPClient mock schema for all three methods, Scout/Trend surfacing
 mcp_sources, and the /api/analyze response exposing mcp_used + mcp_sources.
 The suite is forced into mock mode by backend/tests/conftest.py.
+
+Fixtures `company`, `decision` live in conftest.py.
 """
 
 import asyncio
@@ -13,29 +15,14 @@ from fastapi.testclient import TestClient
 
 from backend.mcp.client import MCPClient
 from backend.agents import OpportunityScoutAgent, TrendAnalystAgent
-from backend.models import UserProfile
 from backend.main import app
-
-
-@pytest.fixture
-def founder():
-    return UserProfile(
-        user_id="mcp-founder",
-        name="Alex Tan",
-        background="NUS CS student",
-        skills=["Python", "React"],
-        budget=500,
-        weekly_hours=10,
-        interests=["edtech"],
-        goals="SGD 2,000/month side income",
-    )
 
 
 def _run(coro):
     return asyncio.run(coro)
 
 
-# ── Task 5.1 — MCPClient mock schema ─────────────────────────────────────────
+# ── MCPClient mock schema ─────────────────────────────────────────────────────
 
 def test_mcp_client_is_mock_without_mcp_server():
     """No mcp_server_url configured → client is in mock mode."""
@@ -45,10 +32,10 @@ def test_mcp_client_is_mock_without_mcp_server():
 
 def test_search_crunchbase_mock_schema():
     client = MCPClient()
-    data = _run(client.search_crunchbase("edtech"))
+    data = _run(client.search_crunchbase("logistics"))
     assert data["mode"] == "mock"
-    assert data["query"] == "edtech"
-    assert isinstance(data["results"], list) and data["results"]  # non-empty
+    assert data["query"] == "logistics"
+    assert isinstance(data["results"], list) and data["results"]
     first = data["results"][0]
     for key in ("name", "description", "funding_total", "last_round", "investors", "url"):
         assert key in first
@@ -58,7 +45,7 @@ def test_search_crunchbase_mock_schema():
 
 def test_search_web_mock_schema():
     client = MCPClient()
-    data = _run(client.search_web("edtech trends 2026"))
+    data = _run(client.search_web("logistics trends 2026"))
     assert data["mode"] == "mock"
     assert isinstance(data["results"], list) and data["results"]
     first = data["results"][0]
@@ -69,9 +56,9 @@ def test_search_web_mock_schema():
 
 def test_fetch_news_mock_schema():
     client = MCPClient()
-    data = _run(client.fetch_news("edtech"))
+    data = _run(client.fetch_news("logistics"))
     assert data["mode"] == "mock"
-    assert data["topic"] == "edtech"
+    assert data["topic"] == "logistics"
     assert isinstance(data["articles"], list) and data["articles"]
     first = data["articles"][0]
     for key in ("headline", "summary", "source", "published", "url"):
@@ -86,36 +73,38 @@ def test_mock_is_deterministic():
     assert a == b
 
 
-# ── Task 5.2 — Scout surfaces mcp_sources ────────────────────────────────────
+# ── Scout surfaces mcp_sources ────────────────────────────────────────────────
 
-def test_scout_output_has_mcp_sources(founder):
-    out = OpportunityScoutAgent().analyze(founder)
+def test_scout_output_has_mcp_sources(company, decision):
+    out = OpportunityScoutAgent().analyze(company, {"decision": decision})
     assert "mcp_sources" in out.raw_data
     assert isinstance(out.raw_data["mcp_sources"], list)
-    assert out.raw_data["mcp_sources"]  # mock labels present
+    assert out.raw_data["mcp_sources"]
 
 
-# ── Task 5.3 — Trend surfaces mcp_sources ────────────────────────────────────
+# ── Trend surfaces mcp_sources ────────────────────────────────────────────────
 
-def test_trend_output_has_mcp_sources(founder):
-    scout = OpportunityScoutAgent().analyze(founder)
-    out = TrendAnalystAgent().analyze(
-        founder, {"opportunities": scout.raw_data["opportunities"]}
-    )
+def test_trend_output_has_mcp_sources(company, decision):
+    out = TrendAnalystAgent().analyze(company, {"decision": decision})
     assert "mcp_sources" in out.raw_data
     assert isinstance(out.raw_data["mcp_sources"], list)
 
 
-# ── Task 5.4 — /api/analyze exposes mcp_used + mcp_sources ────────────────────
+# ── /api/analyze exposes mcp_used + mcp_sources ───────────────────────────────
 
-def test_analyze_response_has_mcp_fields(founder):
+def test_analyze_response_has_mcp_fields(company, decision, tmp_path, monkeypatch):
+    from backend.vault import store
+    monkeypatch.setattr(store._vault, "root", tmp_path)
+
     client = TestClient(app)
-    r = client.post("/api/analyze", json={"profile": founder.model_dump()})
-    assert r.status_code == 200
+    r = client.post("/api/analyze", json={
+        "company_id": "kirana-logistics",
+        "profile": company.model_dump(),
+        "decision": decision.model_dump(),
+    })
+    assert r.status_code == 200, r.text
     body = r.json()
     assert "mcp_used" in body and isinstance(body["mcp_used"], bool)
     assert "mcp_sources" in body and isinstance(body["mcp_sources"], list)
-    # mock mode → no live data
-    assert body["mcp_used"] is False
-    # union of Scout + Trend sources, deduped
+    assert body["mcp_used"] is False   # mock mode → no live data
     assert body["mcp_sources"]

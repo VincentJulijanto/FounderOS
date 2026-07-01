@@ -2,136 +2,100 @@ import json
 from typing import Dict, Any
 from .base import BaseAgent
 from ..llm.provider import DEEP_MODEL
-from ..models import UserProfile, AgentOutput
+from ..models import CompanyProfile, AgentOutput
 
 _MOCK = json.dumps({
-    "risk_reports": [
-        {
-            "opportunity_name": "AI Study Buddy",
-            "failure_risks": [
-                {"risk": "API cost scaling", "probability": "Medium", "mitigation": "Implement per-user limits"},
-                {"risk": "Student churn after exam season", "probability": "Medium", "mitigation": "Year-round content"},
-            ],
-            "risk_score": 4,
-            "verdict": "PROCEED_WITH_CAUTION",
-        }
+    "critical_assumption": (
+        "That the two anchor customers' demand is durable enough to justify fixed commitment "
+        "in a new market."
+    ),
+    "failure_modes": [
+        {"risk": "Anchor demand evaporates after year one", "probability": "Medium",
+         "mitigation": "Structure minimum-volume commitments before committing capital."},
+        {"risk": "Local execution costs run 30-50% over plan", "probability": "Medium",
+         "mitigation": "Pilot asset-light before any subsidiary build."},
     ],
-    "least_risky": "AI Study Buddy",
-    "overall_concern": "[MOCK] Skeptic analysis. Add QWEN_API_KEY for real results.",
+    "steelman_against": "The reversible, asset-light option preserves optionality at low cost.",
+    "risk_score": 6.0,
+    "verdict": "PROCEED_WITH_CAUTION",
+    "overall_concern": (
+        "[MOCK] Skeptic analysis. Add QWEN_API_KEY for real results. The decision's weakest "
+        "point is betting fixed cost on demand that has not been contractually secured."
+    ),
 })
 
 
 SYSTEM_PROMPT = """
-You are the Skeptic Agent at FounderOS — the Devil's Advocate.
+You are the Skeptic on an AI board advising an EXISTING company on ONE decision. You are the
+MAIN EVENT: judging this decision well IS the product.
 
-Your mission: Challenge every assumption. Identify the real risks, overlooked weaknesses,
-and most likely failure modes for each startup opportunity.
-
-You are NOT pessimistic for its own sake. You are rigorous. Your goal is to stress-test
-ideas so only the strongest survive. A good skeptic strengthens good ideas.
-
-For each opportunity, identify:
-- The single most dangerous assumption being made
-- Top 3 failure risks (with probability estimate: High / Medium / Low)
-- Competitive threats the Scout may have underestimated
-- Execution risks specific to this founder's constraints
-- Whether the financial projections are realistic
-- A Risk Score (0-10, where 10 = very risky)
+Attack the decision's weakest assumptions and most likely failure modes. You are not
+pessimistic for its own sake — you are rigorous. Pressure-test the options the other agents
+are leaning toward. Name the single most dangerous assumption, the failure modes with
+probabilities, and steelman the case AGAINST proceeding.
 
 IMPORTANT: Respond with valid JSON only.
 
 Output format:
 {
-  "risk_reports": [
-    {
-      "opportunity_name": "string",
-      "critical_assumption": "the biggest assumption that could be wrong",
-      "failure_risks": [
-        {"risk": "string", "probability": "High|Medium|Low", "mitigation": "string"}
-      ],
-      "competitive_threats": ["threat 1", "threat 2"],
-      "execution_risks": ["risk specific to this founder"],
-      "financial_reality_check": "honest assessment of projections",
-      "risk_score": 0-10,
-      "verdict": "PROCEED | PROCEED_WITH_CAUTION | AVOID"
-    }
+  "critical_assumption": "the biggest assumption that could be wrong",
+  "failure_modes": [
+    {"risk": "string", "probability": "High|Medium|Low", "mitigation": "string"}
   ],
-  "overall_concern": "the single biggest concern across all opportunities",
-  "least_risky": "opportunity with the best risk profile"
+  "steelman_against": "the strongest case against proceeding as proposed",
+  "risk_score": 0-10,
+  "verdict": "PROCEED | PROCEED_WITH_CAUTION | AVOID",
+  "overall_concern": "the single biggest concern the board must not ignore"
 }
 """
 
 
 class SkepticAgent(BaseAgent):
-    name = "Skeptic Agent"
-    role = "Risk Analysis & Devil's Advocate"
+    name = "skeptic"
+    role = "Skeptic — attacks the decision's weak points"
     llm_model = DEEP_MODEL  # needs careful reasoning to challenge assumptions
-    max_tokens = 6000       # per-opportunity risk JSON over 5 opps truncated at 2000 in live mode (Sprint B)
+    max_tokens = 6000       # detailed failure-mode JSON truncates at the 2000 default in live mode
 
     def _mock_response(self) -> str:
         return _MOCK
 
-    def analyze(self, profile: UserProfile, context: Dict[str, Any] = {}) -> AgentOutput:
-        opportunities = context.get("opportunities", [])
-        financial_data = context.get("financial_analysis", [])
-        market_data = context.get("market_analysis", [])
+    def analyze(self, profile: CompanyProfile, context: Dict[str, Any] = {}) -> AgentOutput:
+        decision = context["decision"]
+        company_text = self._format_company(profile)
+        decision_text = self._format_decision(decision)
 
-        profile_text = self._format_profile(profile)
-
-        opp_list = "\n".join(
-            f"- {opp['name']}: {opp.get('description', opp.get('tagline', ''))}"
-            for opp in opportunities
-        ) if opportunities else "Challenge general startup assumptions."
-
-        # Provide financial context for reality checking
-        fin_context = ""
-        if financial_data:
-            fin_context = "\nFinancial projections to reality-check:\n" + "\n".join(
-                f"- {a['opportunity_name']}: SGD {a.get('revenue_month_3_sgd', 'N/A')}/month by month 3"
-                for a in financial_data
-            )
+        # Reality-check the analysts' reads if they ran before the Skeptic.
+        analyst_context = context.get("analyst_summary", "")
+        analyst_block = f"\n## What the analysts concluded\n{analyst_context}\n" if analyst_context else ""
 
         user_message = (
-            f"{profile_text}\n\n"
-            f"Challenge these opportunities aggressively:\n{opp_list}"
-            f"{fin_context}\n\n"
-            "Be specific about risks. Don't hold back."
+            f"{company_text}\n{decision_text}\n"
+            f"{analyst_block}\n"
+            "Attack this decision. Name the most dangerous assumption, the likely failure "
+            "modes, and the strongest case against proceeding. Don't hold back."
         )
 
-        # Cap comes from the class-level max_tokens (6000) — 5 detailed risk reports
-        # overflow the 2000 default and truncate the JSON in live mode.
         raw = self._call_llm(SYSTEM_PROMPT, user_message)
         data = self._parse_json(raw)
 
-        risk_reports = data.get("risk_reports", [])
-        least_risky = data.get("least_risky", "")
-
-        avoid_list = [
-            r["opportunity_name"]
-            for r in risk_reports
-            if r.get("verdict") == "AVOID"
+        high_risks = [
+            f["risk"] for f in data.get("failure_modes", [])
+            if str(f.get("probability", "")).lower() == "high"
         ]
+        concerns = high_risks or [f.get("risk", "") for f in data.get("failure_modes", [])]
 
-        high_risks = []
-        for report in risk_reports:
-            for risk in report.get("failure_risks", []):
-                if risk.get("probability") == "High":
-                    high_risks.append(
-                        f"{report['opportunity_name']}: {risk['risk']}"
-                    )
-
-        avg_risk_score = (
-            sum(r.get("risk_score", 5) for r in risk_reports) / len(risk_reports)
-            if risk_reports else 5
-        )
+        risk_score = data.get("risk_score", 5) or 5
 
         return AgentOutput(
             agent_name=self.name,
             role=self.role,
             analysis=data.get("overall_concern", ""),
-            score=round(10 - avg_risk_score, 1),  # invert: high score = low risk
-            key_findings=[f"Least risky: {least_risky}"] if least_risky else [],
-            concerns=high_risks + [f"AVOID: {name}" for name in avoid_list],
-            recommendations=[least_risky] if least_risky else [],
+            score=round(10 - float(risk_score), 1),  # invert: high score = low risk
+            key_findings=[
+                f"Critical assumption: {data.get('critical_assumption', '')}",
+                f"Case against: {data.get('steelman_against', '')}",
+            ],
+            concerns=concerns + ([f"Verdict: {data.get('verdict')}"] if data.get("verdict") else []),
+            recommendations=[data.get("verdict", "")] if data.get("verdict") else [],
             raw_data=data,
         )

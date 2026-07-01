@@ -6,10 +6,11 @@
 > contract** lives in `docs/architecture.md`; the **standing brief** for both build lanes is `CLAUDE.md`.
 
 **Last updated:** 2026-07-01
-**Current phase:** **Phase 1: Docs & copy pass for the pivot** (this session). Docs/copy only; no
-code. Contract drafted into `docs/architecture.md` and awaiting owner sign-off before it freezes.
-**Branch:** `phase-1-docs-pivot` (off `main` @ a4e4633). Not committed/pushed; owner squash-merges
-after sign-off.
+**Current phase:** **Phase 2: Backend pivot (Lane A) — contract, vault, agents, graph, API.** Code
+adapted to the evaluator/board contract; suite green (30 passed). Old founder-generator machinery
+reframed in place, not deleted.
+**Branch:** `phase-2-pivot-backend` (off `main` @ afb1839). Not committed/pushed; owner
+squash-merges after review.
 
 ---
 
@@ -21,10 +22,10 @@ by default), or **Joint**.
 
 | Day | Focus | Owner | Status |
 |---|---|---|---|
-| Day 1 | Phase 0: freeze contract (Pydantic I/O + vault interface signatures + agent-name strings) and finish docs pivot | Joint | In progress (docs done on branch, awaiting merge) |
-| Day 2-3 | Vincent: company/decision intake rebuild + board-memo renderer scaffold vs mock fixtures. Steven: vault module (read/retrieval/write-back) + agent rebuilds (scout, finance, capability) | Split | Not started |
-| Day 4-5 | Vincent: ExecutionPlan to board-memo sections, planMarkdown in lockstep, studio TS interfaces. Steven: graph rewire, Chair (venture_partner) synthesis, reframes (trend, growth, skeptic) | Split | Not started |
-| Day 6 | Vincent: landing + agentRoster. Steven: main.py endpoints, wire vault into the run, tests. (Backend assist window if Vincent is free) | Split | Not started |
+| Day 1 | Phase 0: freeze contract (Pydantic I/O + vault interface signatures + agent-name strings) and finish docs pivot | Joint | Docs done; contract implemented in `models.py` (Phase 2) |
+| Day 2-3 | Vincent: company/decision intake rebuild + board-memo renderer scaffold vs mock fixtures. Steven: vault module (read/retrieval/write-back) + agent rebuilds (scout, finance, capability) | Split | **Steven: DONE** (vault + scout/finance/capability rebuilt). Vincent: not started |
+| Day 4-5 | Vincent: ExecutionPlan to board-memo sections, planMarkdown in lockstep, studio TS interfaces. Steven: graph rewire, Chair (venture_partner) synthesis, reframes (trend, growth, skeptic) | Split | **Steven: DONE** (graph rewired, Chair writes memo, trend/growth/skeptic reframed). Vincent: not started |
+| Day 6 | Vincent: landing + agentRoster. Steven: main.py endpoints, wire vault into the run, tests. (Backend assist window if Vincent is free) | Split | **Steven: DONE** (new endpoints, vault wired, tests green). Vincent: not started |
 | Day 7 | Buffer / MCP connector stretch. Vincent: renderer polish. Steven: Xero or Shopify into Finance if ahead | Split | Not started |
 | Day 8 | Integration: real backend to real frontend, fix drift. Feature freeze end of day | Joint | Not started |
 | Day 9 | Demo prep + buffer | Joint | Not started |
@@ -140,16 +141,50 @@ key, `StartupCard`'s founder-fit field, and `planMarkdown.ts`. Track as one chan
 
 ---
 
-## What's NOT built yet (the pivot work)
+## What Phase 2 (this session) built — Lane A backend pivot
 
-- **Vault layer** (`read`/`write_back` + index): new, on the critical path (Lane A). Signatures
-  are frozen in the contract; implementation is a later phase.
-- **`models.py` rewrite**: `CompanyProfile`/`Decision`/`AnalyzeRequest` in, **`BoardResponse`
-  (wrapping `recommendation: BoardRecommendation`) out**. Freeze-first shared file.
-- **Agent reframing/rebuild**: 5 of 7 agents (Scout, Finance, Capability rebuilt; Trend, Growth,
-  Skeptic reframed; VP reframed to write the memo).
-- **Stubbed company picker** + studio rebuild for decision intake → board memo (Lane B).
-- **Landing structural rework** beyond copy (mockups, ProfileForm): later Lane B.
+All backend code adapted to the evaluator/board contract; **`python -m pytest -q` → 30 passed**,
+hermetic mock mode. Machinery reframed in place (debate engine, provider, MCP, LangGraph
+structure preserved), not rewritten from scratch.
+
+- **`backend/models.py`** — rewritten to the frozen contract: `CompanyProfile`/`Financials`/
+  `Decision`/`Constraints`/`AnalyzeRequest` in; `BoardResponse` wrapping `BoardRecommendation`
+  (with `OptionAssessment`, `Dissent`, phased `ExecutionPlan`/`Phase`) out; vault models
+  (`VaultNote`, `ContextBundle`). `AgentOutput`/`ConflictPoint`/`DebateRound`/`ConsensusReport`
+  carried over unchanged. Old `UserProfile`/`StartupIdea`/`LeanCanvas`/`VentureRecommendation`
+  removed. Live-LLM coercion validators retained + extended (recommendation/confidence coercion).
+- **`backend/vault/`** — NEW, on the critical path. File-backed per-company markdown vault under
+  `VAULT_PATH`. `read(company_id, query) → ContextBundle` (selective retrieval: LLM note-selection
+  in live mode, keyword-overlap fallback in mock; caps at 4 notes), `write_back(...)` (appends a
+  decision note + frontmatter index), `record_outcome(...)` (the outcome loop), `history(...)`.
+- **Agents (all 7, canonical `name` strings)** — `scout` frames options; `trend`/`finance`/
+  `growth` reframed company/decision-centric; `skeptic` is the main event (attacks the decision);
+  **`founder_fit → capability`** rebuilt (org readiness, 5 new dimensions) — old file deleted;
+  `venture_partner` (Chair) writes the `BoardRecommendation`, deriving `dissent[]` from the
+  debate's unresolved conflicts. `base.py` now formats company + decision (not a founder profile).
+- **`backend/graph.py`** — rewired: `scout → analysts (trend ∥ finance ∥ growth ∥ capability) →
+  skeptic → debate → venture_partner`. Node keys + `agent_outputs` keys are canonical strings.
+  New state (`company_profile`, `decision`, `vault_context`, `recommendation`).
+- **`backend/main.py`** — new routes: `POST /api/analyze` (vault.read → board → vault.write_back),
+  `GET /api/response/{id}`, `POST /api/feedback` (outcome loop), `GET /api/company/{id}`. Old
+  `/api/recommendation` + `/api/memory` retired. Listens on **7860** (HF default).
+- **`backend/config.py`** — `vault_path` + `allowed_origins` (Decision #8) added; CORS reads
+  `ALLOWED_ORIGINS` then falls back to `cors_origins`.
+- **Debate engine** — prompts + mock fixtures reframed to a market-expansion decision with
+  canonical agent names; **scoring math unchanged** (worked example still 6.0 / Moderate).
+- **Tests** — `test_pipeline.py` + `test_mcp.py` rewritten to the new contract; **`test_vault.py`
+  added** (read/write/outcome loop + full HTTP flow); `test_memory.py` deleted (in-process memory
+  loop retired — vault replaces it). Shared `company`/`decision` fixtures in `conftest.py`.
+
+## What's NOT built yet
+
+- **Seed vault baked into the image** (Decision #8) — a couple of sample company folders with `.md`
+  history for the "returning company that remembers" demo. Not created yet.
+- **Dockerfile + deployment wiring** (Lane A, Decision #8) — port 7860, `VAULT_PATH`/`ALLOWED_ORIGINS`.
+- **Lane B (frontend)** — everything: stubbed company picker, decision intake → board-memo renderer,
+  `/studio → /boardroom` rename + copy sweep, roster to canonical strings, mirror `models.py` in TS.
+- **Postgres memory path** stays retired (Decision #1). `backend/memory/` + `benchmark/` remain
+  off-path (untouched, don't import the new models).
 
 ---
 
@@ -169,10 +204,13 @@ key, `StartupCard`'s founder-fit field, and `planMarkdown.ts`. Track as one chan
 ## Next session should start by
 
 1. Reading this file, then `docs/architecture.md` (the contract) and `CLAUDE.md` (the brief).
-2. **Getting the contract signed off / frozen**: it is the gate for both lanes.
-3. Once frozen: Lane A implements `models.py` to match, then the vault interface; Lane B mirrors
-   the models in `studio/page.tsx` and starts the company picker + decision intake. **Do not start
-   agent/UI logic before the contract is frozen.**
-4. (Resolved) `venture_partner` displays as **Chair**; canonical string unchanged. Naming target
-   for the app surface is **"boardroom"**: the `/studio`→`/boardroom` rename + copy sweep is Lane
-   B's rebuild (one commit), not a docs task.
+2. **Review + squash-merge `phase-2-pivot-backend`** — the backend now implements the frozen
+   contract end-to-end with a green suite. The contract in code IS the implementation of §Frozen
+   I/O Contract; treat any drift between them as a bug in the code, not the doc.
+3. **Lane A remaining:** seed vault (sample company `.md` history) + Dockerfile (port 7860,
+   `VAULT_PATH`/`ALLOWED_ORIGINS`) for Decision #8.
+4. **Lane B can now start against the real contract:** mirror `backend/models.py` shapes in TS,
+   build the stubbed company picker → decision intake → board-memo renderer, do the
+   `/studio → /boardroom` rename + copy sweep (one commit), point the roster at the canonical
+   strings (`venture_partner` displays as **Chair**). The backend `/api/analyze` returns a real
+   `BoardResponse` in mock mode, so Lane B can integrate without a key.

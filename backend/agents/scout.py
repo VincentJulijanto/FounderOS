@@ -1,106 +1,91 @@
 import json
 from typing import Dict, Any
 from .base import BaseAgent
-from ..models import UserProfile, AgentOutput
+from ..models import CompanyProfile, AgentOutput
 from ..mcp.client import mcp_client, run_sync
 
 _MOCK = json.dumps({
-    "opportunities": [
-        {
-            "name": "AI Study Buddy",
-            "tagline": "Your AI tutor, always available",
-            "description": "Personalised AI tutoring app for university students",
-            "skills_required": ["Python", "web development"],
-            "budget_required": "SGD 200",
-            "time_to_first_revenue": "3 weeks",
-            "revenue_model": "Monthly subscription",
-            "competitive_landscape": "Medium",
-        }
+    "options": [
+        "Full subsidiary in the new market",
+        "Asset-light partnership with a local operator",
+        "Hold and deepen the current market before expanding",
     ],
-    "top_pick": "AI Study Buddy",
-    "scout_rationale": "[MOCK] Scout analysis. Add QWEN_API_KEY for real results.",
+    "framing": (
+        "[MOCK] Scout framing. Add QWEN_API_KEY for real results. The decision reduces to "
+        "how much fixed commitment to take on versus preserving optionality."
+    ),
+    "recommended_frame": "Weigh speed-to-market against capital-at-risk and reversibility.",
 })
 
 
 SYSTEM_PROMPT = """
-You are the Opportunity Scout at FounderOS, an AI Venture Studio.
+You are the Opportunity Scout on an AI board of directors advising an EXISTING company.
 
-Your mission: Given a founder's profile, discover 5 high-potential startup opportunities
-they could realistically launch.
+Your job is NOT to invent new business ideas. Your job is to frame the DECISION on the
+table: lay out the realistic OPTIONS (alternative approaches to this one decision) so the
+board can evaluate them. If the operator already listed options, sharpen and complete them;
+if they left options empty, generate 2–4 credible alternatives (always include the
+"do nothing / hold" option where relevant).
 
-Focus on:
-- Underserved market gaps that match their skills
-- Opportunities executable within their budget and time constraints
-- Ideas appropriate for their local context (assume Singapore unless stated)
-- Both digital (SaaS, content, freelance) and service-based opportunities
+Ground your framing in the company's stage, sector, and the live market data provided.
 
 IMPORTANT: You MUST respond with valid JSON only — no preamble, no markdown, no explanation.
 
 Output format:
 {
-  "opportunities": [
-    {
-      "name": "string",
-      "tagline": "one line pitch",
-      "description": "2-3 sentence description",
-      "target_market": "who buys this",
-      "why_now": "market timing rationale",
-      "skill_match": "how founder's skills apply",
-      "estimated_revenue": "SGD X/month within Y months"
-    }
-  ],
-  "scout_rationale": "brief explanation of your scouting approach",
-  "top_pick": "name of the strongest opportunity and why"
+  "options": ["option 1", "option 2", "option 3"],
+  "framing": "2-3 sentences framing what this decision really turns on",
+  "recommended_frame": "the single lens the board should judge these options through"
 }
 """
 
 
 class OpportunityScoutAgent(BaseAgent):
-    name = "Opportunity Scout"
-    role = "Market Opportunity Discovery"
+    name = "scout"
+    role = "Opportunity Scout — frames the options on the table"
 
     def _mock_response(self) -> str:
         return _MOCK
 
-    def analyze(self, profile: UserProfile, context: Dict[str, Any] = {}) -> AgentOutput:
-        profile_text = self._format_profile(profile)
+    def analyze(self, profile: CompanyProfile, context: Dict[str, Any] = {}) -> AgentOutput:
+        decision = context["decision"]
+        company_text = self._format_company(profile)
+        decision_text = self._format_decision(decision)
 
-        # ── MCP (Phase 6): ground the scout in live market data before reasoning.
-        # The founder's primary interest stands in for the sector to probe; pre-scout
-        # there is no concrete startup name yet. Mock-safe — falls back to fixtures.
-        industry = profile.interests[0] if profile.interests else "technology startups"
-        crunchbase = run_sync(mcp_client.search_crunchbase(industry))
-        news = run_sync(mcp_client.fetch_news(industry))
+        # ── MCP: ground the framing in live market data for this company's sector.
+        # Mock-safe — falls back to deterministic fixtures with no credentials.
+        probe = profile.sector or decision.question
+        crunchbase = run_sync(mcp_client.search_crunchbase(probe))
+        news = run_sync(mcp_client.fetch_news(probe))
         mcp_sources = _dedupe(crunchbase.get("sources", []) + news.get("sources", []))
         market_data_block = _format_market_data(crunchbase, news)
 
         user_message = (
-            f"{profile_text}\n\n"
+            f"{company_text}\n{decision_text}\n\n"
             "## Live Market Data\n"
             f"{market_data_block}\n\n"
-            "Scout 5 startup opportunities for this founder. "
-            "Prioritize opportunities that play to their strengths and can be launched "
-            "within their budget and weekly hours."
+            "Frame the options for this decision. If options are already listed, refine and "
+            "complete them; otherwise generate 2–4 credible alternatives including a hold option."
         )
 
         raw = self._call_llm(SYSTEM_PROMPT, user_message)
         data = self._parse_json(raw)
 
-        opportunities = data.get("opportunities", [])
-        top_pick = data.get("top_pick", "")
+        # Preserve the operator's options when they supplied them (Scout refines,
+        # it does not replace the operator's stated alternatives). Only fall back
+        # to the framed set when the operator left options empty.
+        options = (decision.options or []) or data.get("options") or []
 
         return AgentOutput(
             agent_name=self.name,
             role=self.role,
-            analysis=data.get("scout_rationale", ""),
-            recommendations=[opp["name"] for opp in opportunities],
-            key_findings=[
-                f"{opp['name']}: {opp['tagline']}" for opp in opportunities
-            ],
+            analysis=data.get("framing", ""),
+            key_findings=[data.get("recommended_frame", "")] if data.get("recommended_frame") else [],
+            recommendations=options,
             concerns=[],
             raw_data={
-                "opportunities": opportunities,
-                "top_pick": top_pick,
+                "options": options,
+                "framing": data.get("framing", ""),
                 "mcp_sources": mcp_sources,
             },
         )

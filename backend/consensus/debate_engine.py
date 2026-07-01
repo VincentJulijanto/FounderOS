@@ -1,14 +1,15 @@
 """
-Debate Engine — the core innovation of FounderOS.
+Debate Engine — the main event of FounderOS.
 
-Instead of chaining agents linearly, this engine:
+The board doesn't chain agents linearly; it debates ONE decision:
 1. Collects all agent outputs
-2. Detects disagreements between agents
+2. Detects disagreements between agents about the decision
 3. Runs up to MAX_DEBATE_ROUNDS debate rounds where agents revise positions
 4. Scores how much of the (severity-weighted) disagreement was resolved
-5. Produces a ConsensusReport + summary for the Venture Partner
+5. Produces a ConsensusReport + summary for the Chair — unresolved conflicts
+   become the memo's auditable dissent record
 
-This demonstrates true Agent Society behaviour.
+This demonstrates true Agent Society behaviour and is the evaluator's centrepiece.
 
 NOTE: consensus_score is a *resolution rate*, not a measure of idea quality.
 Resolving one trivial conflict (10.0) is not "better" than surfacing three hard
@@ -32,11 +33,11 @@ SEVERITY_WEIGHT = {"high": 3.0, "medium": 2.0, "low": 1.0}
 SKEPTIC_MULTIPLIER = 1.5
 
 CONFLICT_DETECTION_PROMPT = """
-You are a debate moderator at an AI Venture Studio.
+You are the debate moderator on an AI board of directors evaluating ONE company decision.
 
-You have received analyses from multiple agents about startup opportunities.
-Identify where agents DISAGREE — specifically where one agent recommends something
-another agent flags as risky or infeasible.
+You have received analyses from multiple board agents about the decision. Identify where
+agents DISAGREE — specifically where one agent supports a course of action another flags as
+risky, unaffordable, or unrealistic.
 
 Agent outputs:
 {agent_outputs}
@@ -50,8 +51,7 @@ Identify conflicts in this JSON format:
       "agent_a_position": "what agent A claims",
       "agent_b": "agent name",
       "agent_b_position": "what agent B claims (opposite/contradicting)",
-      "severity": "high|medium|low",
-      "opportunity_name": "which startup idea this concerns"
+      "severity": "high|medium|low"
     }}
   ],
   "has_significant_conflicts": true/false,
@@ -62,7 +62,7 @@ Only flag real conflicts, not just different perspectives.
 """
 
 DEBATE_ROUND_PROMPT = """
-You are facilitating a debate round at an AI Venture Studio.
+You are facilitating a debate round on an AI board evaluating ONE company decision.
 
 The following conflicts are still unresolved entering this round:
 {conflicts}
@@ -70,7 +70,7 @@ The following conflicts are still unresolved entering this round:
 Original agent positions:
 {agent_outputs}
 
-User's profile context:
+Company & decision context:
 {profile_context}
 
 This is round {round_number} of {max_rounds}.
@@ -98,101 +98,99 @@ Respond in JSON:
 """
 
 # ── Mock fixtures ─────────────────────────────────────────────────────────────
-# A representative, deterministic 2-round negotiation on the "AI Study Buddy"
-# profile so the debate engine, scorer, and UI are fully exercisable WITHOUT a
-# live key. Three conflicts: budget (high), willingness-to-pay (medium, Skeptic),
-# timeline (low, Skeptic). Round 1 resolves budget + timeline; willingness-to-pay
-# stays contested and is surfaced. Worked score: 4.5 / 7.5 = 6.0 → "Moderate".
+# A representative, deterministic 2-round board debate on a market-expansion
+# decision, so the engine, scorer, and UI are fully exercisable WITHOUT a live
+# key. Three conflicts: capital commitment (high), anchor-demand durability
+# (medium, Skeptic), timeline (low, Skeptic). Round 1 resolves capital + timeline;
+# demand durability stays contested and is surfaced as dissent. Worked score:
+# 4.5 / 7.5 = 6.0 → "Moderate". Agent names are the canonical strings.
 
 _MOCK_CONFLICTS = json.dumps({
     "conflicts": [
         {
-            "topic": "Paid acquisition vs zero ad budget",
-            "agent_a": "Growth Agent",
-            "agent_a_position": "Scale via paid TikTok ads to reach the first 100 users quickly.",
-            "agent_b": "Finance Agent",
-            "agent_b_position": "The SGD 300 budget supports effectively zero paid ad spend — organic only.",
+            "topic": "Capital commitment vs reversibility",
+            "agent_a": "growth",
+            "agent_a_position": "Commit to a full subsidiary now to capture anchor demand fast.",
+            "agent_b": "finance",
+            "agent_b_position": "The budget can't absorb subsidiary fixed cost without breaching the cash buffer.",
             "severity": "high",
-            "opportunity_name": "AI Study Buddy",
         },
         {
-            "topic": "Willingness to pay",
-            "agent_a": "Skeptic Agent",
-            "agent_a_position": "Students won't pay SGD 9/mo when free AI tools already exist.",
-            "agent_b": "Trend Analyst",
-            "agent_b_position": "35% YoY edtech growth and exam-season urgency support paid conversion.",
+            "topic": "Durability of anchor demand",
+            "agent_a": "skeptic",
+            "agent_a_position": "The anchor customers' LOIs aren't binding; demand may not survive year one.",
+            "agent_b": "trend",
+            "agent_b_position": "Regional demand signals and incumbent inertia support the expansion window.",
             "severity": "medium",
-            "opportunity_name": "AI Study Buddy",
         },
         {
-            "topic": "Launch timeline realism",
-            "agent_a": "Skeptic Agent",
-            "agent_a_position": "A 3-week solo launch is unrealistic.",
-            "agent_b": "Opportunity Scout",
-            "agent_b_position": "The MVP scope is small enough to ship in 3 weeks.",
+            "topic": "Expansion timeline realism",
+            "agent_a": "skeptic",
+            "agent_a_position": "A 6-month full cross-border build is unrealistic for a first move.",
+            "agent_b": "scout",
+            "agent_b_position": "The asset-light option fits 6 months without a full build.",
             "severity": "low",
-            "opportunity_name": "AI Study Buddy",
         },
     ],
     "has_significant_conflicts": True,
-    "conflict_summary": "Core tension: can a SGD 300, 3-week solo build convert price-sensitive students into paying users?",
+    "conflict_summary": "Core tension: does the anchor demand justify fixed capital commitment, and can it be executed in the window?",
 })
 
 _MOCK_ROUNDS = [
-    # Round 1 — resolves budget + timeline, leaves willingness-to-pay open.
+    # Round 1 — resolves capital + timeline, leaves demand durability open.
     json.dumps({
         "debate_exchanges": [
             {
-                "conflict_topic": "Paid acquisition vs zero ad budget",
-                "agent_a_rebuttal": "Paid ads buy speed to the first 100 users.",
-                "agent_b_rebuttal": "There is no cash for paid; free campus channels exist.",
-                "moderator_verdict": "Lean Finance — start organic (campus ambassadors, Reddit); revisit paid only after first revenue.",
+                "conflict_topic": "Capital commitment vs reversibility",
+                "agent_a_rebuttal": "A subsidiary buys control and speed to serve the anchors.",
+                "agent_b_rebuttal": "There's no cash buffer for fixed cost on unproven demand.",
+                "moderator_verdict": "Lean Finance — start asset-light with a local partner; revisit a subsidiary only after the pilot proves economics.",
                 "resolved": True,
             },
             {
-                "conflict_topic": "Launch timeline realism",
-                "agent_a_rebuttal": "Solo founders routinely slip on timelines.",
-                "agent_b_rebuttal": "Scope is note-upload + Q&A only; that fits 3 weeks.",
-                "moderator_verdict": "Lean Scout — keep 3 weeks but cut scope to the single core flow.",
+                "conflict_topic": "Expansion timeline realism",
+                "agent_a_rebuttal": "First cross-border builds routinely overrun.",
+                "agent_b_rebuttal": "Asset-light scope is 2-3 routes, which fits 6 months.",
+                "moderator_verdict": "Lean Scout — keep the 6-month window but scope it to the asset-light pilot only.",
                 "resolved": True,
             },
             {
-                "conflict_topic": "Willingness to pay",
-                "agent_a_rebuttal": "Free substitutes cap pricing power.",
-                "agent_b_rebuttal": "Exam-time urgency drives willingness to pay.",
-                "moderator_verdict": "Unsettled — needs a live pricing test before any commitment.",
+                "conflict_topic": "Durability of anchor demand",
+                "agent_a_rebuttal": "Non-binding LOIs are not committed volume.",
+                "agent_b_rebuttal": "Market timing and incumbent inertia favour moving now.",
+                "moderator_verdict": "Unsettled — needs signed minimum-volume commitments before any fixed commitment.",
                 "resolved": False,
             },
         ],
         "revised_positions": {
-            "Growth Agent": "Organic-first (campus ambassadors + Reddit); paid ads deferred until post-revenue.",
-            "Opportunity Scout": "3-week launch holds with scope cut to note-upload + Q&A only.",
+            "growth": "Asset-light-first via a local partner; subsidiary deferred until the pilot proves economics.",
+            "scout": "6-month window holds with scope cut to the asset-light pilot.",
         },
         "overall_resolution_achieved": False,
-        "round_summary": "Budget and timeline conflicts resolved by going organic-first and trimming MVP scope; willingness-to-pay remains open.",
+        "round_summary": "Capital and timeline conflicts resolved by going asset-light and scoping to a pilot; anchor-demand durability remains open.",
     }),
-    # Round 2 — willingness-to-pay discussed again; stays unresolved (stalemate).
+    # Round 2 — demand durability discussed again; stays unresolved (stalemate).
     json.dumps({
         "debate_exchanges": [
             {
-                "conflict_topic": "Willingness to pay",
-                "agent_a_rebuttal": "Without a paywall test, paid conversion is an assumption.",
-                "agent_b_rebuttal": "A freemium trial can validate it cheaply.",
-                "moderator_verdict": "Genuine unresolved tension — recommend a freemium pricing experiment rather than forcing consensus.",
+                "conflict_topic": "Durability of anchor demand",
+                "agent_a_rebuttal": "Without signed volume commitments, durable demand is an assumption.",
+                "agent_b_rebuttal": "A short paid pilot can validate it cheaply.",
+                "moderator_verdict": "Genuine unresolved tension — recommend securing minimum-volume commitments rather than forcing consensus.",
                 "resolved": False,
             },
         ],
         "revised_positions": {
-            "Trend Analyst": "Demand is real but pricing power is unproven; validate with a freemium test.",
-            "Skeptic Agent": "Maintains paid conversion is the key risk until a pricing test proves otherwise.",
+            "trend": "Demand signal is real but durability is unproven; validate with a paid pilot.",
+            "skeptic": "Maintains uncommitted demand is the key risk until volume commitments prove otherwise.",
         },
         "overall_resolution_achieved": False,
-        "round_summary": "Willingness-to-pay stays unresolved and is surfaced as the key risk; both sides agree only a live pricing test settles it.",
+        "round_summary": "Anchor-demand durability stays unresolved and is surfaced as the key dissent; both sides agree only signed commitments settle it.",
     }),
 ]
 
 
-_DEBATE_SYSTEM = "You are a debate moderator at an AI Venture Studio. Respond with valid JSON only."
+_DEBATE_SYSTEM = "You are the debate moderator on an AI board of directors. Respond with valid JSON only."
 
 
 def _label_for(score: float, total_conflicts: int) -> str:

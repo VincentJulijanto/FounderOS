@@ -3,7 +3,7 @@ from .trend import TrendAnalystAgent
 from .finance import FinanceAgent
 from .skeptic import SkepticAgent
 from .growth import GrowthAgent
-from .founder_fit import FounderFitAgent
+from .capability import CapabilityAgent
 from .venture_partner import VenturePartnerAgent
 
 __all__ = [
@@ -12,6 +12,6 @@ __all__ = [
     "FinanceAgent",
     "SkepticAgent",
     "GrowthAgent",
-    "FounderFitAgent",
+    "CapabilityAgent",
     "VenturePartnerAgent",
 ]

@@ -1,127 +1,81 @@
 import json
 from typing import Dict, Any
 from .base import BaseAgent
-from ..models import UserProfile, AgentOutput
+from ..models import CompanyProfile, AgentOutput
 from ..mcp.client import mcp_client, run_sync
 
 _MOCK = json.dumps({
-    "market_analysis": [
-        {
-            "opportunity_name": "AI Study Buddy",
-            "market_size": "SGD 50M Singapore edtech",
-            "growth_rate": "35% YoY",
-            "demand_signals": ["Rising AI tool adoption", "Student cost pressures"],
-            "market_attractiveness_score": 8,
-            "verdict": "STRONG",
-        }
-    ],
-    "top_market_pick": "AI Study Buddy",
-    "trending_now": "[MOCK] Trend analysis. Add QWEN_API_KEY for real results.",
+    "market_read": (
+        "[MOCK] Trend analysis. Add QWEN_API_KEY for real results. Demand signals for this "
+        "decision are moderately favourable but timing risk is real."
+    ),
+    "demand_score": 7.0,
+    "signals": ["Rising demand in adjacent markets", "Incumbents moving slowly"],
+    "timing_risks": ["Macro softness could delay payback"],
+    "verdict": "MODERATE",
 })
 
 
 SYSTEM_PROMPT = """
-You are the Trend Analyst at FounderOS, an AI Venture Studio.
+You are the Trend Analyst on an AI board advising an EXISTING company on ONE decision.
 
-Your mission: Evaluate market attractiveness for each startup opportunity identified
-by the Scout Agent. You analyse demand signals, industry growth, competition, and timing.
+Read the market and demand signals that bear on THIS decision — not generic industry
+commentary. Use the live signals provided. Judge whether the timing and demand support the
+options on the table.
 
-Score each opportunity from 0-10 on:
-- Market demand (how much people want/need this)
-- Industry growth (is this market growing?)
-- Competition level (lower competition = higher score)
-- Timing (is now the right moment?)
-- Compute a weighted Market Attractiveness Score (average of above)
+Score demand 0-10 (10 = strong tailwind) and be explicit about timing risk.
 
 IMPORTANT: Respond with valid JSON only.
 
 Output format:
 {
-  "market_analysis": [
-    {
-      "opportunity_name": "string",
-      "demand_score": 0-10,
-      "growth_score": 0-10,
-      "competition_score": 0-10,
-      "timing_score": 0-10,
-      "market_attractiveness_score": 0-10,
-      "trend_signals": ["signal 1", "signal 2"],
-      "market_size": "estimated TAM/SAM",
-      "verdict": "STRONG | MODERATE | WEAK"
-    }
-  ],
-  "trending_now": "what macro trends support these opportunities",
-  "top_market_pick": "opportunity with strongest market position"
+  "market_read": "what the market signals say about this decision",
+  "demand_score": 0-10,
+  "signals": ["signal 1", "signal 2"],
+  "timing_risks": ["risk 1", "risk 2"],
+  "verdict": "STRONG | MODERATE | WEAK"
 }
 """
 
 
 class TrendAnalystAgent(BaseAgent):
-    name = "Trend Analyst"
-    role = "Market Trend & Demand Evaluation"
+    name = "trend"
+    role = "Trend Analyst — market & demand signals for the decision"
 
     def _mock_response(self) -> str:
         return _MOCK
 
-    def analyze(self, profile: UserProfile, context: Dict[str, Any] = {}) -> AgentOutput:
-        opportunities = context.get("opportunities", [])
-        profile_text = self._format_profile(profile)
+    def analyze(self, profile: CompanyProfile, context: Dict[str, Any] = {}) -> AgentOutput:
+        decision = context["decision"]
+        company_text = self._format_company(profile)
+        decision_text = self._format_decision(decision)
 
-        opp_list = "\n".join(
-            f"- {opp['name']}: {opp.get('tagline', opp.get('description', ''))}"
-            for opp in opportunities
-        ) if opportunities else "No opportunities provided — generate general analysis."
-
-        # ── MCP (Phase 6): pull current web signals for the founder's sector.
-        # Mock-safe — falls back to deterministic fixtures with no credentials.
-        industry = profile.interests[0] if profile.interests else "technology"
-        web = run_sync(mcp_client.search_web(f"{industry} trends 2026"))
+        # ── MCP: pull current web signals for the company's sector + decision.
+        query = f"{profile.sector} {decision.question} 2026"
+        web = run_sync(mcp_client.search_web(query))
         mcp_sources = list(dict.fromkeys(web.get("sources", [])))
         signals_block = "\n".join(
-            f"- {r.get('title')}: {r.get('snippet')}"
-            for r in web.get("results", [])
+            f"- {r.get('title')}: {r.get('snippet')}" for r in web.get("results", [])
         ) or "No live signals available."
 
         user_message = (
-            f"{profile_text}\n\n"
+            f"{company_text}\n{decision_text}\n\n"
             "## Current Signals\n"
             f"{signals_block}\n\n"
-            f"Evaluate market attractiveness for these opportunities:\n{opp_list}\n\n"
-            "Provide detailed trend analysis and scores for each."
+            "Assess whether market demand and timing support this decision."
         )
 
         raw = self._call_llm(SYSTEM_PROMPT, user_message)
         data = self._parse_json(raw)
         data["mcp_sources"] = mcp_sources
 
-        market_analysis = data.get("market_analysis", [])
-        top_pick = data.get("top_market_pick", "")
-
-        strong_markets = [
-            m["opportunity_name"]
-            for m in market_analysis
-            if m.get("verdict") == "STRONG"
-        ]
-
-        weak_markets = [
-            f"{m['opportunity_name']} (weak market)"
-            for m in market_analysis
-            if m.get("verdict") == "WEAK"
-        ]
-
-        avg_score = (
-            sum(m.get("market_attractiveness_score", 0) for m in market_analysis)
-            / len(market_analysis)
-            if market_analysis else 0
-        )
-
         return AgentOutput(
             agent_name=self.name,
             role=self.role,
-            analysis=data.get("trending_now", ""),
-            score=round(avg_score, 1),
-            key_findings=[f"Top market pick: {top_pick}"] + strong_markets,
-            concerns=weak_markets,
-            recommendations=[top_pick] if top_pick else [],
+            analysis=data.get("market_read", ""),
+            score=data.get("demand_score"),
+            key_findings=data.get("signals", []),
+            concerns=data.get("timing_risks", []),
+            recommendations=[data.get("verdict", "")] if data.get("verdict") else [],
             raw_data=data,
         )

@@ -9,10 +9,54 @@ behaves the same with or without credentials. A live smoke test (Sprint B) is
 run deliberately and separately, never through this suite.
 """
 
+import pytest
+
 from backend.config import settings
 from backend.mcp.client import mcp_client
+from backend.models import CompanyProfile, Financials, Decision, Constraints
 
 # Force mock mode at import time — before any agent / provider is constructed.
 settings.use_mock_llm = True
 # The singleton computed .live at import; pin it to mock to stay offline.
 mcp_client.live = False
+
+
+@pytest.fixture
+def company():
+    """A representative existing company bringing a decision to the board."""
+    return CompanyProfile(
+        company_name="Kirana Logistics",
+        sector="regional last-mile logistics",
+        stage="scaling",
+        business_model="B2B logistics SaaS + fleet ops",
+        size_band="51–200",
+        financials=Financials(
+            revenue_band="SGD 8–12M ARR",
+            margin="~22% gross",
+            cash_position="14 months runway",
+        ),
+    )
+
+
+@pytest.fixture
+def decision():
+    """One decision, with the alternatives on the table."""
+    return Decision(
+        question="Should we expand into the Vietnam market next quarter?",
+        context="Two anchor customers have asked us to serve their Vietnam routes.",
+        constraints=Constraints(budget="SGD 500k", timeline="6 months"),
+        options=[
+            "Full subsidiary in Ho Chi Minh City",
+            "Asset-light partnership with a local 3PL",
+            "Hold and deepen the current market",
+        ],
+    )
+
+
+@pytest.fixture
+def decision_no_options():
+    """A decision with no options — Scout must frame them."""
+    return Decision(
+        question="Should we raise prices 15% across the B2B tier?",
+        context="Margins are compressing and we haven't raised prices in two years.",
+    )

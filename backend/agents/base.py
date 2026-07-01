@@ -2,7 +2,7 @@ import json
 import re
 from typing import Dict, Any
 from ..config import settings
-from ..models import UserProfile, AgentOutput
+from ..models import CompanyProfile, Decision, AgentOutput
 from ..llm.provider import QwenProvider, FAST_MODEL
 
 
@@ -10,9 +10,10 @@ class BaseAgent:
     """
     Base class for all FounderOS agents.
 
-    Subclasses set `llm_model` to control model tiering:
+    An agent evaluates ONE decision brought by an existing company. Subclasses set
+    `llm_model` to control model tiering:
       - FAST_MODEL (qwen-turbo)  — Scout, Trend, Finance, Growth
-      - DEEP_MODEL (qwen-plus)   — Skeptic, Venture Partner
+      - DEEP_MODEL (qwen-plus)   — Skeptic, Capability, Chair (venture_partner)
     """
 
     name: str = "Base Agent"
@@ -61,24 +62,51 @@ class BaseAgent:
             )
 
     # ──────────────────────────────────────────
-    # Profile Formatter (shared by all agents)
+    # Company + Decision Formatters (shared by all agents)
     # ──────────────────────────────────────────
 
-    def _format_profile(self, profile: UserProfile) -> str:
+    def _format_company(self, profile: CompanyProfile) -> str:
+        fin = profile.financials
+        fin_line = ", ".join(
+            part for part in (
+                f"revenue {fin.revenue_band}" if fin.revenue_band else "",
+                f"margin {fin.margin}" if fin.margin else "",
+                f"cash {fin.cash_position}" if fin.cash_position else "",
+            ) if part
+        ) or "not disclosed"
         return (
-            f"Founder Profile:\n"
-            f"- Name: {profile.name}\n"
-            f"- Background: {profile.background}\n"
-            f"- Skills: {', '.join(profile.skills)}\n"
-            f"- Budget: SGD {profile.budget}\n"
-            f"- Available Time: {profile.weekly_hours} hours/week\n"
-            f"- Interests: {', '.join(profile.interests)}\n"
-            f"- Goals: {profile.goals}\n"
+            f"Company Profile:\n"
+            f"- Name: {profile.company_name}\n"
+            f"- Sector: {profile.sector}\n"
+            f"- Stage: {profile.stage}\n"
+            f"- Business model: {profile.business_model}\n"
+            f"- Size: {profile.size_band} employees\n"
+            f"- Financials: {fin_line}\n"
         )
+
+    def _format_decision(self, decision: Decision) -> str:
+        c = decision.constraints
+        constraint_line = ", ".join(
+            part for part in (
+                f"budget {c.budget}" if c.budget else "",
+                f"timeline {c.timeline}" if c.timeline else "",
+            ) if part
+        ) or "none stated"
+        opts = "\n".join(f"  - {o}" for o in (decision.options or [])) or "  (none — frame them)"
+        return (
+            f"Decision on the table:\n"
+            f"- Question: {decision.question}\n"
+            f"- Context: {decision.context or '(none provided)'}\n"
+            f"- Constraints: {constraint_line}\n"
+            f"- Options under consideration:\n{opts}\n"
+        )
+
+    def _format_options(self, options: list) -> str:
+        return "\n".join(f"- {o}" for o in options) if options else "- (Scout will frame options)"
 
     # ──────────────────────────────────────────
     # Override in subclasses
     # ──────────────────────────────────────────
 
-    def analyze(self, profile: UserProfile, context: Dict[str, Any] = {}) -> AgentOutput:
+    def analyze(self, profile: CompanyProfile, context: Dict[str, Any] = {}) -> AgentOutput:
         raise NotImplementedError("Each agent must implement analyze()")
