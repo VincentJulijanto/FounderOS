@@ -5,8 +5,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'FounderOS — AI Venture Studio',
-  description: 'A society of AI agents that builds your startup plan from scratch.',
+  title: 'FounderOS — AI Board for Operators',
+  description: 'A board of AI agents that pressure-tests one business decision and returns a board memo.',
 }
 
 export default function RootLayout({

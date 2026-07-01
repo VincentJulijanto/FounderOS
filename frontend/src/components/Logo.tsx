@@ -55,7 +55,7 @@ export default function Logo({
         </g>
       </svg>
       {withWordmark && (
-        // Inherits the surrounding text colour: paper on the dark studio,
+        // Inherits the surrounding text colour: paper on a dark surface,
         // graphite on the light marketing page.
         <span className="font-semibold text-lg tracking-tight">FounderOS</span>
       )}

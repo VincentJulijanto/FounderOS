@@ -2,7 +2,7 @@ import { Telescope, TrendingUp, Wallet, Rocket, Target, Check, Loader2 } from 'l
 
 /**
  * Light product-UI mockup for the marketing hero. White card, hairline border,
- * soft shadow — no dark glass. Mirrors the studio's "agent society" surface but
+ * soft shadow — no dark glass. Mirrors the boardroom's "agent society" surface but
  * presentational only. All values are illustrative PLACEHOLDERS.
  */
 
@@ -11,7 +11,7 @@ const AGENTS = [
   { name: 'Trend Analyst', icon: TrendingUp, status: 'done', note: 'Demand scored' },
   { name: 'Finance Agent', icon: Wallet, status: 'running', note: 'Modelling unit economics' },
   { name: 'Growth Agent', icon: Rocket, status: 'queued', note: 'Acquisition plan' },
-  { name: 'Skeptic Agent', icon: Target, status: 'queued', note: 'Stress-testing' },
+  { name: 'Skeptic', icon: Target, status: 'queued', note: 'Stress-testing' },
 ] as const
 
 const statusStyles: Record<string, string> = {
@@ -25,7 +25,7 @@ export default function AgentActivityMockup() {
     <div
       className="card-light p-5"
       role="img"
-      aria-label="Illustration of the FounderOS agent council evaluating a business decision in real time"
+      aria-label="Illustration of the FounderOS board evaluating a business decision in real time"
     >
       {/* Window chrome */}
       <div className="flex items-center justify-between pb-4 border-b border-hairline">
@@ -34,7 +34,7 @@ export default function AgentActivityMockup() {
           <span className="w-2.5 h-2.5 rounded-full bg-graphite/10" />
           <span className="w-2.5 h-2.5 rounded-full bg-graphite/10" />
         </div>
-        <span className="text-xs font-mono text-muted">agent council · live</span>
+        <span className="text-xs font-mono text-muted">the board · live</span>
       </div>
 
       {/* Agent rows */}

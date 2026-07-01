@@ -5,13 +5,15 @@
 > what to do next. Read this first at the start of any new session. The **canonical, frozen Phase 0
 > contract** lives in `docs/architecture.md`; the **standing brief** for both build lanes is `CLAUDE.md`.
 
-**Last updated:** 2026-07-01
-**Current phase:** **Phase 3: Deployment wiring (Lane A, Decision #8) — Dockerfile + seed vault.**
-The HF Spaces image, Space README, `.dockerignore`, seed vault (2 sample companies with `.md`
-history), and env-var wiring are done; suite still green (30 passed). Phase 2 (contract, vault,
-agents, graph, API) remains complete underneath.
-**Branch:** `phase-3-deployment` (off `phase-2-pivot-backend`). Not pushed; owner squash-merges
-after review. Phase 2 lives on `phase-2-pivot-backend` (off `main` @ afb1839).
+**Last updated:** 2026-07-02
+**Current phase:** **Phase 6: Lane B `/studio → /boardroom` rename + copy sweep** — the last of the
+frontend pivot. The whole evaluator app now exists end-to-end: decision intake → board debate →
+board memo, on the `/boardroom` route, wired to the real contract. `tsc` clean, `next build` green.
+**Branch:** `phase-6-boardroom-rename`. The pivot ships as a **chain of phase branches**, each off
+the previous (none pushed; owner squash-merges in order):
+`main` → **phase-2-pivot-backend** (contract/vault/agents/graph/API) → **phase-3-deployment**
+(Dockerfile + seed vault) → **phase-4-frontend-contract** (TS mirror + roster) →
+**phase-5-frontend-app** (intake + board memo) → **phase-6-boardroom-rename** (route + copy).
 
 ---
 
@@ -24,10 +26,11 @@ by default), or **Joint**.
 | Day | Focus | Owner | Status |
 |---|---|---|---|
 | Day 1 | Phase 0: freeze contract (Pydantic I/O + vault interface signatures + agent-name strings) and finish docs pivot | Joint | Docs done; contract implemented in `models.py` (Phase 2) |
-| Day 2-3 | Vincent: company/decision intake rebuild + board-memo renderer scaffold vs mock fixtures. Steven: vault module (read/retrieval/write-back) + agent rebuilds (scout, finance, capability) | Split | **Steven: DONE** (vault + scout/finance/capability rebuilt). Vincent: not started |
-| Day 4-5 | Vincent: ExecutionPlan to board-memo sections, planMarkdown in lockstep, studio TS interfaces. Steven: graph rewire, Chair (venture_partner) synthesis, reframes (trend, growth, skeptic) | Split | **Steven: DONE** (graph rewired, Chair writes memo, trend/growth/skeptic reframed). Vincent: not started |
-| Day 6 | Vincent: landing + agentRoster. Steven: main.py endpoints, wire vault into the run, tests. (Backend assist window if Vincent is free) | Split | **Steven: DONE** (new endpoints, vault wired, tests green). Vincent: not started |
+| Day 2-3 | Vincent: company/decision intake rebuild + board-memo renderer scaffold vs mock fixtures. Steven: vault module (read/retrieval/write-back) + agent rebuilds (scout, finance, capability) | Split | **Steven: DONE.** **Vincent: DONE** (intake + memo renderer, Phase 5) |
+| Day 4-5 | Vincent: ExecutionPlan to board-memo sections, planMarkdown in lockstep, studio TS interfaces. Steven: graph rewire, Chair (venture_partner) synthesis, reframes (trend, growth, skeptic) | Split | **Steven: DONE.** **Vincent: DONE** (phased plan in BoardMemo, planMarkdown rewritten, TS mirror in Phase 4) |
+| Day 6 | Vincent: landing + agentRoster. Steven: main.py endpoints, wire vault into the run, tests. (Backend assist window if Vincent is free) | Split | **Steven: DONE.** **Vincent: DONE** (roster to canonical strings Phase 4; landing CTAs + copy sweep Phase 6) |
 | Day 6.5 | Steven: Decision #8 deploy wiring — Dockerfile + `.dockerignore` + Space README + seed vault | Steven (Lane A) | **DONE** (Phase 3, `phase-3-deployment`) |
+| Day 6.6 | Lane B frontend pivot: contract mirror + roster (P4), evaluator app intake + memo (P5), `/studio → /boardroom` rename + copy sweep (P6) | Lane B | **DONE** (Phases 4–6) |
 | Day 7 | Buffer / MCP connector stretch. Vincent: renderer polish. Steven: Xero or Shopify into Finance if ahead | Split | Not started |
 | Day 8 | Integration: real backend to real frontend, fix drift. Feature freeze end of day | Joint | Not started |
 | Day 9 | Demo prep + buffer | Joint | Not started |
@@ -201,10 +204,38 @@ Suite still green (**30 passed**, mock mode). All additive — no backend logic 
 > Dockerfile is validated by inspection + the app boots under the test suite. Build it on a machine
 > with Docker before the demo (checklist in `docs/deployment.md`).
 
+## What Phases 4–6 (this session) built — Lane B frontend pivot
+
+Reframe-in-place, not a rewrite: the debate machinery (`AgentDebate`, `CouncilReasoning`), the
+design system (`globals.css`, `tailwind.config.js`), landing structure, and `Logo` are all kept;
+only the generator-specific surfaces changed. `tsc --noEmit` clean and `next build` green after each
+phase. **The full evaluator app works end-to-end against the mock backend.**
+
+- **Phase 4 (`phase-4-frontend-contract`)** — `frontend/src/lib/types.ts` NEW: the TS mirror of
+  `backend/models.py` (BoardResponse/BoardRecommendation/AgentOutput/debate + company/decision
+  inputs). `agentRoster.tsx` re-keyed on the **canonical strings** with a `label` field
+  (`venture_partner` → "Chair"; `founder_fit` → `capability`); company-centric roles; `labelFor`/
+  `roleFor` exports. `AgentDebate` + `CouncilReasoning` now match on canonical `agent_name` and
+  render labels (they were silently broken against the pivoted backend). **Root cause fixed:** the
+  backend emits `scout·trend·…·venture_partner`; the UI had matched on old display names.
+- **Phase 5 (`phase-5-frontend-app`)** — `DecisionIntake.tsx` NEW (stubbed company picker seeded with
+  `harborline-logistics`/`lumen-skincare` + "new company" → company profile + one decision).
+  `BoardMemo.tsx` NEW (verdict + confidence, options assessed, phased plan, dissent, what-would-
+  change, financial view, missing inputs, risks, disclaimer). `studio/page.tsx` rebuilt to the
+  input→analyzing→debating→results flow posting `{company_id, profile, decision}` to `/api/analyze`
+  and reading `BoardResponse`; API base is **`NEXT_PUBLIC_API_BASE_URL`**. `planMarkdown.ts` →
+  `memoToMarkdown(BoardResponse)`. Removed `ProfileForm`/`StartupCard`/`ExecutionPlan` (old
+  generator UI). **Verified: the exact intake request body round-trips → 200 `BoardResponse`.**
+- **Phase 6 (`phase-6-boardroom-rename`)** — `/studio → /boardroom` route move (`git mv`); all CTAs
+  (`LandingNav`, `Hero`, `ClosingCTA`, `Footer`) → `/boardroom` + "Enter the boardroom"; `layout.tsx`
+  metadata reframed off "Venture Studio"; residual "studio"/"council" copy swept to "boardroom"/
+  "board". No `studio` reference remains in `frontend/src`.
+
 ## What's NOT built yet
 
-- **Lane B (frontend)** — everything: stubbed company picker, decision intake → board-memo renderer,
-  `/studio → /boardroom` rename + copy sweep, roster to canonical strings, mirror `models.py` in TS.
+- **Real `docker build` + live deploy** (Lane A, from Phase 3) — Docker CLI wasn't available in-session.
+- **Live end-to-end frontend↔backend run** — validated via `next build` + a mock-backend contract
+  round-trip; not yet run against a live Qwen key or a deployed Space (Day 8 integration).
 - **Postgres memory path** stays retired (Decision #1). `backend/memory/` + `benchmark/` remain
   off-path (untouched, don't import the new models).
 
@@ -226,14 +257,15 @@ Suite still green (**30 passed**, mock mode). All additive — no backend logic 
 ## Next session should start by
 
 1. Reading this file, then `docs/architecture.md` (the contract) and `CLAUDE.md` (the brief).
-2. **Review + squash-merge `phase-2-pivot-backend`, then `phase-3-deployment`** (it branches off
-   phase-2, so merge phase-2 first). The backend implements the frozen contract end-to-end with a
-   green suite; Phase 3 adds the HF Spaces image + seed vault. Treat any drift between the contract
-   in code and §Frozen I/O Contract as a bug in the code, not the doc.
-3. **Lane A remaining:** run a real `docker build` on a Docker-capable machine + do a live Space
-   deploy dry-run (checklist in `docs/deployment.md`). Optional Day-7 stretch: Xero/Shopify into Finance.
-4. **Lane B can now start against the real contract:** mirror `backend/models.py` shapes in TS,
-   build the stubbed company picker → decision intake → board-memo renderer, do the
-   `/studio → /boardroom` rename + copy sweep (one commit), point the roster at the canonical
-   strings (`venture_partner` displays as **Chair**). The backend `/api/analyze` returns a real
-   `BoardResponse` in mock mode, so Lane B can integrate without a key.
+2. **Squash-merge the phase chain in order** — each branch is off the previous, so merge
+   `phase-2-pivot-backend` → `phase-3-deployment` → `phase-4-frontend-contract` →
+   `phase-5-frontend-app` → `phase-6-boardroom-rename`. Together they implement the pivot end-to-end
+   (backend + deploy wiring + full evaluator frontend). Treat any drift between the code and
+   §Frozen I/O Contract as a bug in the code, not the doc.
+3. **Integration (Day 8):** run the real frontend against the real backend. `cd frontend && npm run
+   dev` with `NEXT_PUBLIC_API_BASE_URL=http://localhost:8000`; `uvicorn backend.main:app --port 8000`
+   in mock mode. Walk decision intake → debate → board memo for a seeded company
+   (`harborline-logistics`) and confirm the vault write-back + history. Then a live-key run (~90–240s).
+4. **Lane A remaining:** a real `docker build` on a Docker-capable machine + a live HF Space deploy
+   dry-run (checklist in `docs/deployment.md`); set `ALLOWED_ORIGINS` to the Vercel domain.
+5. **Optional Day-7 stretch:** Xero/Shopify into Finance.

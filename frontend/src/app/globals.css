@@ -15,7 +15,7 @@
 }
 
 @layer components {
-  /* Padded white card — the studio's primary surface. */
+  /* Padded white card — the boardroom's primary surface. */
   .card {
     @apply bg-white border border-hairline rounded-xl p-6
            shadow-[0_1px_2px_rgba(20,21,26,0.04),0_12px_32px_-12px_rgba(20,21,26,0.10)];

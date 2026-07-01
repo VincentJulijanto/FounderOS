@@ -8,12 +8,12 @@ export default function ClosingCTA() {
         Bring your decision to the board
       </h2>
       <p className="mt-5 text-muted text-lg leading-relaxed max-w-xl mx-auto">
-        State the decision you&rsquo;re weighing and let the council debate it —
+        State the decision you&rsquo;re weighing and let the board debate it —
         then hand you a board-ready memo, in minutes.
       </p>
       <div className="mt-9 flex justify-center">
-        <Link href="/studio" className="btn-ink">
-          Enter the studio
+        <Link href="/boardroom" className="btn-ink">
+          Enter the boardroom
           <ArrowRight className="w-4 h-4" aria-hidden="true" />
         </Link>
       </div>

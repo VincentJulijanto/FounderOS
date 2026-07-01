@@ -43,8 +43,8 @@ export default function LandingNav() {
         </div>
 
         {/* Desktop CTA — one quiet link */}
-        <Link href="/studio" className="hidden md:inline-flex link-quiet text-sm">
-          Enter studio
+        <Link href="/boardroom" className="hidden md:inline-flex link-quiet text-sm">
+          Enter the boardroom
           <ArrowRight className="w-4 h-4" aria-hidden="true" />
         </Link>
 
@@ -75,11 +75,11 @@ export default function LandingNav() {
             </a>
           ))}
           <Link
-            href="/studio"
+            href="/boardroom"
             onClick={() => setOpen(false)}
             className="link-quiet text-sm"
           >
-            Enter studio
+            Enter the boardroom
             <ArrowRight className="w-4 h-4" aria-hidden="true" />
           </Link>
         </div>

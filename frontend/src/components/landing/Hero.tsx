@@ -41,8 +41,8 @@ export default function Hero() {
 
           {/* CTAs — solid ink primary, quiet secondary */}
           <div className="mt-9 flex flex-col sm:flex-row sm:items-center gap-4">
-            <Link href="/studio" className="btn-ink">
-              Enter the studio
+            <Link href="/boardroom" className="btn-ink">
+              Enter the boardroom
               <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </Link>
             <a href="#how-it-works" className="link-quiet">
