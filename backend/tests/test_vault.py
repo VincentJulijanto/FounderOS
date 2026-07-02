@@ -76,6 +76,21 @@ def test_record_outcome_unknown_decision_returns_false(vault):
     assert vault.record_outcome("kirana", "does-not-exist", "launched") is False
 
 
+def test_identical_same_day_decisions_do_not_collide(vault):
+    """Two identical same-day decisions must not overwrite each other (regression)."""
+    from backend.models import BoardRecommendation
+    rec = BoardRecommendation(recommendation="hold", confidence="low", rationale="x")
+    q = Decision(question="Should we do the exact same thing?")
+
+    id1 = vault.write_back("co", q, rec)
+    id2 = vault.write_back("co", q, rec)
+    assert id1 != id2
+    assert len(vault.index("co")) == 2, "identical same-day decisions overwrote each other"
+    # Both decision_ids stay independently addressable for the outcome loop.
+    assert vault.record_outcome("co", id1, "outcome one") is True
+    assert vault.record_outcome("co", id2, "outcome two") is True
+
+
 # ── Full HTTP flow ────────────────────────────────────────────────────────────
 
 @pytest.fixture

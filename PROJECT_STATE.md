@@ -6,13 +6,15 @@
 > contract** lives in `docs/architecture.md`; the **standing brief** for both build lanes is `CLAUDE.md`.
 
 **Last updated:** 2026-07-02
-**Current phase:** **Phase 7: live-mode reliability + vault hygiene.** Phases 2–6 (the full
-generator→evaluator pivot) are **merged to `main`** (fast-forward to the pivot tip). This phase
-raises `capability` max_tokens 4500→6000 (aligns with skeptic/venture_partner; avoids live-JSON
-truncation) and documents pointing `VAULT_PATH` at a throwaway dir locally so runs don't dirty the
-committed seed vault. Suite green (30 passed).
-**Branch:** `phase-7-reliability` (off `main`). The build is complete and merged; the remaining work
-is integration + deploy, not features. `/boardroom` verified serving at runtime (200; `/studio` 404).
+**Current phase:** **Phase 10: vault filename-collision fix (found by rigorous testing).** A full
+whole-system dry run (mock, no Qwen) surfaced silent data loss: two identical same-day decisions
+collided on the note filename `{date}-{slug}.md`, so the second overwrote the first and orphaned its
+decision_id from the outcome loop. Fixed by suffixing the filename with the decision_id; regression
+test added. Suite 30→31.
+**Branch:** `phase-10-vault-collision-fix` (off `main`, unmerged). Unmerged sibling review branches
+off `main`: `phase-8-system-tests` (→36), `phase-9-finance-connector` (→32). Whole system otherwise
+verified end-to-end in mock — backend lifecycle, seed-vault memory, connector provenance, frontend
+runtime (`/boardroom` 200, `/studio` 404, tsc clean). Build complete; remaining work is deploy.
 
 ---
 
