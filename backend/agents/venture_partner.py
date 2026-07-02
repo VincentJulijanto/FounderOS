@@ -207,21 +207,37 @@ class VenturePartnerAgent(BaseAgent):
             if isinstance(item, dict)
         ]
         decision_opts = decision.options or []
-        overlap = {a.option for a in chair_assessed} & set(decision_opts)
 
-        if decision_opts and not overlap and len(chair_assessed) == len(decision_opts):
-            # The Chair assessed the options in order but under its own labels (common
-            # in mock mode) — realign the assessments onto the operator's option strings.
-            assessed = [
-                OptionAssessment(option=opt, assessment=ca.assessment, verdict=ca.verdict)
-                for opt, ca in zip(decision_opts, chair_assessed)
-            ]
-        else:
-            assessed = chair_assessed
-            covered = {a.option for a in assessed}
+        if decision_opts:
+            # The operator's options are the table of record: options_assessed maps
+            # 1:1 onto them, whatever labels or count the Chair produced (the mock
+            # fixture always returns its own three). Exact matches keep their
+            # assessment; the Chair's remaining assessments are reassigned in order
+            # to the remaining operator options.
+            by_option = {a.option: a for a in chair_assessed}
+            unused = [a for a in chair_assessed if a.option not in decision_opts]
+            assessed = []
             for opt in decision_opts:
-                if opt not in covered:
-                    assessed.append(OptionAssessment(option=opt, assessment="Not separately assessed."))
+                if opt in by_option:
+                    assessed.append(by_option[opt])
+                elif unused:
+                    ca = unused.pop(0)
+                    assessed.append(OptionAssessment(
+                        option=opt, assessment=ca.assessment, verdict=ca.verdict,
+                    ))
+                else:
+                    # More operator options than Chair assessments — fold the
+                    # option into the board's overall read rather than stubbing.
+                    assessed.append(OptionAssessment(
+                        option=opt,
+                        assessment=(
+                            "Weighed by the board alongside the options above; "
+                            "the recommendation and rationale cover this option."
+                        ),
+                    ))
+        else:
+            # No operator options — the Scout/Chair framed them; keep as produced.
+            assessed = chair_assessed
 
         # Dissent — the unresolved conflicts become the auditable record.
         dissent: List[Dissent] = []

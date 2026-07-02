@@ -70,6 +70,7 @@ export default function DecisionIntake({ onSubmit }: Props) {
     timeline: '',
     optionsText: '',
   })
+  const [errors, setErrors] = useState<{ company_name?: string; question?: string }>({})
 
   const selectPreset = (p: CompanyPreset | null) => {
     if (p) {
@@ -87,14 +88,15 @@ export default function DecisionIntake({ onSubmit }: Props) {
     setProfile(prev => ({ ...prev, financials: { ...prev.financials, [k]: v } }))
 
   const handleSubmit = () => {
+    const nextErrors: typeof errors = {}
     if (!profile.company_name.trim()) {
-      alert('Name the company bringing this decision to the board.')
-      return
+      nextErrors.company_name = 'Name the company bringing this decision to the board.'
     }
     if (!decision.question.trim()) {
-      alert('Enter the one decision you want the board to evaluate.')
-      return
+      nextErrors.question = 'Enter the one decision you want the board to evaluate.'
     }
+    setErrors(nextErrors)
+    if (Object.keys(nextErrors).length > 0) return
 
     const company_id = presetId === '__new__' ? slugId(profile.company_name) : presetId
     const options = decision.optionsText
@@ -180,7 +182,11 @@ export default function DecisionIntake({ onSubmit }: Props) {
         {/* Company profile */}
         <div className="grid sm:grid-cols-2 gap-4 pt-2">
           <Field label="Company name *" value={profile.company_name}
-            onChange={v => setProfileField('company_name', v)} placeholder="e.g. Harborline Logistics" />
+            onChange={v => {
+              setProfileField('company_name', v)
+              if (errors.company_name) setErrors(e => ({ ...e, company_name: undefined }))
+            }}
+            placeholder="e.g. Harborline Logistics" error={errors.company_name} />
           <Field label="Sector" value={profile.sector}
             onChange={v => setProfileField('sector', v)} placeholder="e.g. regional logistics" />
           <Field label="Stage" value={profile.stage}
@@ -208,11 +214,16 @@ export default function DecisionIntake({ onSubmit }: Props) {
         <div>
           <label className="label">The question *</label>
           <textarea
-            className="input min-h-[70px] resize-none"
+            className={`input min-h-[70px] resize-none ${errors.question ? 'border-red-300 focus:border-red-400' : ''}`}
             placeholder="e.g. Should we open a dedicated Vietnam cross-border lane next quarter?"
             value={decision.question}
-            onChange={e => setDecision(p => ({ ...p, question: e.target.value }))}
+            onChange={e => {
+              setDecision(p => ({ ...p, question: e.target.value }))
+              if (errors.question) setErrors(er => ({ ...er, question: undefined }))
+            }}
+            aria-invalid={errors.question ? true : undefined}
           />
+          {errors.question && <p className="mt-1.5 text-xs text-red-600" role="alert">{errors.question}</p>}
         </div>
 
         <div>
@@ -256,14 +267,19 @@ export default function DecisionIntake({ onSubmit }: Props) {
   )
 }
 
-function Field({ label, value, onChange, placeholder }: {
-  label: string; value: string; onChange: (v: string) => void; placeholder?: string
+function Field({ label, value, onChange, placeholder, error }: {
+  label: string; value: string; onChange: (v: string) => void; placeholder?: string; error?: string
 }) {
   return (
     <div>
       <label className="label">{label}</label>
-      <input className="input" placeholder={placeholder} value={value}
-        onChange={e => onChange(e.target.value)} />
+      <input
+        className={`input ${error ? 'border-red-300 focus:border-red-400' : ''}`}
+        placeholder={placeholder} value={value}
+        onChange={e => onChange(e.target.value)}
+        aria-invalid={error ? true : undefined}
+      />
+      {error && <p className="mt-1.5 text-xs text-red-600" role="alert">{error}</p>}
     </div>
   )
 }
