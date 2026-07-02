@@ -94,20 +94,27 @@ export default function BoardMemo({ rec }: Props) {
         </Section>
       )}
 
-      {/* Dissent on record — a feature of the output, not a failure */}
-      {rec.dissent.length > 0 && (
-        <Section title="Dissent on record" Icon={ShieldAlert}>
-          <p className="text-sm text-muted -mt-2 mb-3">Objections that did not get resolved — surfaced, not buried.</p>
-          <ul className="space-y-2">
-            {rec.dissent.map((d, i) => (
-              <li key={i} className="card !p-4 border-amber-200 bg-amber-50/50">
-                <span className="text-sm font-semibold text-graphite">{labelFor(d.agent)}</span>
-                <span className="text-sm text-graphite/80"> — {d.position}</span>
-              </li>
-            ))}
-          </ul>
-        </Section>
-      )}
+      {/* Dissent on record — a feature of the output, not a failure. Always
+          rendered: an empty record is itself part of the trust posture. */}
+      <Section title="Dissent on record" Icon={ShieldAlert}>
+        {rec.dissent.length > 0 ? (
+          <>
+            <p className="text-sm text-muted -mt-2 mb-3">Objections that did not get resolved — surfaced, not buried.</p>
+            <ul className="space-y-2">
+              {rec.dissent.map((d, i) => (
+                <li key={i} className="card !p-4 border-amber-200 bg-amber-50/50">
+                  <span className="text-sm font-semibold text-graphite">{labelFor(d.agent)}</span>
+                  <span className="text-sm text-graphite/80"> — {d.position}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <p className="card !p-4 text-sm text-muted -mt-1">
+            No dissent recorded — the board aligned on this call.
+          </p>
+        )}
+      </Section>
 
       {/* Trust posture — what would change the call, what's missing, the risks */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

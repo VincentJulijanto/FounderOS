@@ -1,4 +1,5 @@
 import type { BoardResponse } from '@/lib/types'
+import { labelFor } from '@/components/agentRoster'
 
 /**
  * Serialize a BoardResponse into a portable board-memo Markdown document.
@@ -32,7 +33,7 @@ export function memoToMarkdown(res: BoardResponse): string {
 
   if (rec.dissent?.length) {
     lines.push(`\n## Dissent on record`)
-    rec.dissent.forEach((d) => lines.push(`- **${d.agent}:** ${d.position}`))
+    rec.dissent.forEach((d) => lines.push(`- **${labelFor(d.agent)}:** ${d.position}`))
   }
 
   if (rec.what_would_change_this_call) {
@@ -53,7 +54,7 @@ export function memoToMarkdown(res: BoardResponse): string {
   if (res.agent_outputs?.length) {
     lines.push(`\n## How the board reasoned`)
     for (const a of res.agent_outputs) {
-      lines.push(`\n### ${a.agent_name}${a.score != null ? ` — ${a.score}/10` : ''}`)
+      lines.push(`\n### ${labelFor(a.agent_name)}${a.score != null ? ` — ${a.score}/10` : ''}`)
       if (a.analysis) lines.push(a.analysis)
       if (a.key_findings?.length) {
         lines.push(`\n**Key findings**`)

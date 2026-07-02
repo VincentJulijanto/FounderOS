@@ -44,6 +44,19 @@ def test_options_assessed_map_one_to_one(company, decision):
         assert opt in assessed
 
 
+def test_options_assessed_one_to_one_on_count_mismatch(company, decision):
+    """1:1 holds even when the operator's option count differs from the
+    Chair's (the mock fixture always returns three): exactly one assessment
+    per operator option, under the operator's own strings — no fixture-labelled
+    extras, no 'Not separately assessed.' stubs."""
+    decision.options = decision.options[:2]  # 2 options vs the fixture's 3
+    rec = run_board("kirana-logistics", company, decision).recommendation
+    assert [a.option for a in rec.options_assessed] == decision.options
+    for a in rec.options_assessed:
+        assert a.assessment
+        assert "not separately assessed" not in a.assessment.lower()
+
+
 def test_execution_plan_is_phased(company, decision):
     rec = run_board("kirana-logistics", company, decision).recommendation
     phases = rec.execution_plan.phases
