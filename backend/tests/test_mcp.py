@@ -14,7 +14,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from backend.mcp.client import MCPClient
-from backend.agents import OpportunityScoutAgent, TrendAnalystAgent
+from backend.agents import OpportunityScoutAgent, TrendAnalystAgent, FinanceAgent
 from backend.main import app
 
 
@@ -66,11 +66,25 @@ def test_fetch_news_mock_schema():
     assert isinstance(data["sources"], list) and data["sources"]
 
 
+def test_fetch_financials_mock_schema():
+    client = MCPClient()
+    data = _run(client.fetch_financials("Harborline Logistics"))
+    assert data["mode"] == "mock"
+    assert data["company"] == "Harborline Logistics"
+    assert isinstance(data["metrics"], dict) and data["metrics"]
+    for key in ("revenue", "gross_margin", "cash_on_hand", "runway_months"):
+        assert key in data["metrics"]
+    assert isinstance(data["sources"], list) and data["sources"]
+    assert all(s.startswith("[MOCK] ") for s in data["sources"])
+
+
 def test_mock_is_deterministic():
     client = MCPClient()
     a = _run(client.search_crunchbase("fintech"))
     b = _run(client.search_crunchbase("fintech"))
     assert a == b
+    # financials snapshot is deterministic too
+    assert _run(client.fetch_financials("Acme")) == _run(client.fetch_financials("Acme"))
 
 
 # ── Scout surfaces mcp_sources ────────────────────────────────────────────────
@@ -88,6 +102,15 @@ def test_trend_output_has_mcp_sources(company, decision):
     out = TrendAnalystAgent().analyze(company, {"decision": decision})
     assert "mcp_sources" in out.raw_data
     assert isinstance(out.raw_data["mcp_sources"], list)
+
+
+# ── Finance surfaces mcp_sources from the financials connector ─────────────────
+
+def test_finance_output_has_mcp_sources(company, decision):
+    out = FinanceAgent().analyze(company, {"decision": decision})
+    assert "mcp_sources" in out.raw_data
+    assert isinstance(out.raw_data["mcp_sources"], list) and out.raw_data["mcp_sources"]
+    assert any("accounting" in s for s in out.raw_data["mcp_sources"])
 
 
 # ── /api/analyze exposes mcp_used + mcp_sources ───────────────────────────────

@@ -2,6 +2,7 @@ import json
 from typing import Dict, Any
 from .base import BaseAgent
 from ..models import CompanyProfile, AgentOutput
+from ..mcp.client import mcp_client, run_sync
 
 _MOCK = json.dumps({
     "financial_view": (
@@ -52,10 +53,20 @@ class FinanceAgent(BaseAgent):
         company_text = self._format_company(profile)
         decision_text = self._format_decision(decision)
 
+        # Ground the analysis in the company's book financials (Xero/Shopify-style
+        # connector). Mock-safe: returns a deterministic snapshot with no credentials,
+        # and never crashes the pipeline.
+        book = run_sync(mcp_client.fetch_financials(profile.company_name))
+        metrics = book.get("metrics", {})
+        book_block = "\n".join(f"- {k.replace('_', ' ')}: {v}" for k, v in metrics.items())
+        mcp_sources = book.get("sources", [])
+
         user_message = (
             f"{company_text}\n{decision_text}\n\n"
-            "Model the financial impact of this decision on THIS company. "
-            "Assess affordability, payback, and downside. Be realistic and conservative."
+            f"Book financials pulled from the company's accounting system "
+            f"({book.get('period', 'recent')}):\n{book_block or '- (none available)'}\n\n"
+            "Model the financial impact of this decision on THIS company, using the book "
+            "figures above. Assess affordability, payback, and downside. Be realistic and conservative."
         )
 
         raw = self._call_llm(SYSTEM_PROMPT, user_message)
@@ -72,5 +83,5 @@ class FinanceAgent(BaseAgent):
             ],
             concerns=data.get("financial_risks", []),
             recommendations=[data.get("verdict", "")] if data.get("verdict") else [],
-            raw_data=data,
+            raw_data={**data, "mcp_sources": mcp_sources},
         )
