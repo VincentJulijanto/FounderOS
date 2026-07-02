@@ -6,14 +6,13 @@
 > contract** lives in `docs/architecture.md`; the **standing brief** for both build lanes is `CLAUDE.md`.
 
 **Last updated:** 2026-07-02
-**Current phase:** **Phase 6: Lane B `/studio → /boardroom` rename + copy sweep** — the last of the
-frontend pivot. The whole evaluator app now exists end-to-end: decision intake → board debate →
-board memo, on the `/boardroom` route, wired to the real contract. `tsc` clean, `next build` green.
-**Branch:** `phase-6-boardroom-rename`. The pivot ships as a **chain of phase branches**, each off
-the previous (none pushed; owner squash-merges in order):
-`main` → **phase-2-pivot-backend** (contract/vault/agents/graph/API) → **phase-3-deployment**
-(Dockerfile + seed vault) → **phase-4-frontend-contract** (TS mirror + roster) →
-**phase-5-frontend-app** (intake + board memo) → **phase-6-boardroom-rename** (route + copy).
+**Current phase:** **Phase 7: live-mode reliability + vault hygiene.** Phases 2–6 (the full
+generator→evaluator pivot) are **merged to `main`** (fast-forward to the pivot tip). This phase
+raises `capability` max_tokens 4500→6000 (aligns with skeptic/venture_partner; avoids live-JSON
+truncation) and documents pointing `VAULT_PATH` at a throwaway dir locally so runs don't dirty the
+committed seed vault. Suite green (30 passed).
+**Branch:** `phase-7-reliability` (off `main`). The build is complete and merged; the remaining work
+is integration + deploy, not features. `/boardroom` verified serving at runtime (200; `/studio` 404).
 
 ---
 

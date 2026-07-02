@@ -69,7 +69,7 @@ class CapabilityAgent(BaseAgent):
     name = "capability"
     role = "Capability Agent — organizational readiness to execute"
     llm_model = DEEP_MODEL  # judgment-heavy — assessing an organization, not crunching numbers
-    max_tokens = 4500
+    max_tokens = 6000       # detailed readiness JSON truncates below this in live mode (matches skeptic/venture_partner)
 
     def _mock_response(self) -> str:
         return _MOCK
