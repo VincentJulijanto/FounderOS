@@ -6,14 +6,14 @@
 > contract** lives in `docs/architecture.md`; the **standing brief** for both build lanes is `CLAUDE.md`.
 
 **Last updated:** 2026-07-02
-**Current phase:** **Phase 8: whole-system test hardening (mock/offline).** Phases 2–7 are merged to
-`main`. This phase adds `backend/tests/test_system.py` (**suite 30→36**) covering the two gaps the
-per-module suites missed: the committed **seed vault** integrity + retrieval (the demo's "returning
-company remembers" beat) and the **frontend↔backend contract** (backend models + canonical roster
-keys vs `lib/types.ts`/`BoardMemo.tsx`/`agentRoster.tsx` — the coupling that broke in Phase 4). All
-hermetic; no live LLM/API calls.
-**Branch:** `phase-8-system-tests` (off `main`). Build complete; remaining work is integration +
-deploy, not features. `/boardroom` verified serving at runtime (200; `/studio` 404).
+**Current phase:** **Phase 9: financials connector into the Finance agent (Day-7 stretch).** Phases
+2–7 are merged to `main`. This phase adds a Xero/Shopify-style `fetch_financials(company)` to the MCP
+client (mock-safe, source-tagged, never crashes) and wires it into Finance so the analysis is
+grounded in the company's book figures; the provenance flows through to the response `mcp_sources`
+(verified end-to-end in mock). Suite on this branch 30→32, all mock/offline.
+**Branch:** `phase-9-finance-connector` (off `main`, unmerged). Sibling review branch
+`phase-8-system-tests` (seed-vault + contract hardening, suite→36) is also unmerged off `main`. Build
+complete; remaining work is integration + deploy, not features.
 
 ---
 
@@ -31,7 +31,7 @@ by default), or **Joint**.
 | Day 6 | Vincent: landing + agentRoster. Steven: main.py endpoints, wire vault into the run, tests. (Backend assist window if Vincent is free) | Split | **Steven: DONE.** **Vincent: DONE** (roster to canonical strings Phase 4; landing CTAs + copy sweep Phase 6) |
 | Day 6.5 | Steven: Decision #8 deploy wiring — Dockerfile + `.dockerignore` + Space README + seed vault | Steven (Lane A) | **DONE** (Phase 3, `phase-3-deployment`) |
 | Day 6.6 | Lane B frontend pivot: contract mirror + roster (P4), evaluator app intake + memo (P5), `/studio → /boardroom` rename + copy sweep (P6) | Lane B | **DONE** (Phases 4–6) |
-| Day 7 | Buffer / MCP connector stretch. Vincent: renderer polish. Steven: Xero or Shopify into Finance if ahead | Split | Not started |
+| Day 7 | Buffer / MCP connector stretch. Vincent: renderer polish. Steven: Xero or Shopify into Finance if ahead | Split | **Steven: DONE** (financials connector into Finance, Phase 9, mock-safe). Vincent renderer polish: not started |
 | Day 8 | Integration: real backend to real frontend, fix drift. Feature freeze end of day | Joint | Not started |
 | Day 9 | Demo prep + buffer | Joint | Not started |
 

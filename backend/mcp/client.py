@@ -97,6 +97,18 @@ class MCPClient:
             logger.warning("MCP fetch_news('%s') failed (%s); using mock fallback", topic, e)
             return self._mock_news(topic)
 
+    async def fetch_financials(self, company: str) -> Dict[str, Any]:
+        """Pull `company`'s book financials (a Xero/Shopify-style accounting snapshot)."""
+        if not self.live:
+            return self._mock_financials(company)
+        try:
+            data = await self._post("accounting/financials", {"company": company})
+            return self._normalize(data, mode="live", query=company,
+                                   default_sources=[f"accounting:{company}"])
+        except Exception as e:  # never crash the pipeline
+            logger.warning("MCP fetch_financials('%s') failed (%s); using mock fallback", company, e)
+            return self._mock_financials(company)
+
     # ──────────────────────────────────────────
     # Live HTTP
     # ──────────────────────────────────────────
@@ -194,6 +206,25 @@ class MCPClient:
                 },
             ],
             "sources": [f"{_MOCK_PREFIX}news: {topic}"],
+        }
+
+    @staticmethod
+    def _mock_financials(company: str) -> Dict[str, Any]:
+        return {
+            "company": company,
+            "mode": "mock",
+            "period": "trailing 12 months",
+            "metrics": {
+                "revenue": "SGD 9.8M",
+                "revenue_growth_yoy": "+18%",
+                "gross_margin": "31%",
+                "operating_expenses": "SGD 6.1M",
+                "net_profit_margin": "6%",
+                "cash_on_hand": "SGD 2.3M",
+                "monthly_burn": "SGD 140k",
+                "runway_months": 16,
+            },
+            "sources": [f"{_MOCK_PREFIX}accounting: {company}"],
         }
 
 
