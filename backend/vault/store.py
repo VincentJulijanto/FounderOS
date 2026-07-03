@@ -229,7 +229,10 @@ class Vault:
             f"### Outcome\n(pending — updated when the operator reports back)\n"
         )
 
-        filename = f"{date}-{_slugify(decision.question)}.md"
+        # Suffix with the decision_id so two same-day decisions with an identical
+        # question don't collide on filename (which would overwrite the earlier
+        # note and orphan its decision_id from the outcome loop).
+        filename = f"{date}-{_slugify(decision.question)}-{decision_id[:8]}.md"
         (company_dir / filename).write_text(
             f"{_dump_frontmatter(fm)}\n\n{body}", encoding="utf-8"
         )
