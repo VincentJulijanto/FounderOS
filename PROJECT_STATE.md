@@ -5,16 +5,19 @@
 > what to do next. Read this first at the start of any new session. The **canonical, frozen Phase 0
 > contract** lives in `docs/architecture.md`; the **standing brief** for both build lanes is `CLAUDE.md`.
 
-**Last updated:** 2026-07-02
-**Current phase:** **Phase 10: vault filename-collision fix (found by rigorous testing).** A full
-whole-system dry run (mock, no Qwen) surfaced silent data loss: two identical same-day decisions
-collided on the note filename `{date}-{slug}.md`, so the second overwrote the first and orphaned its
-decision_id from the outcome loop. Fixed by suffixing the filename with the decision_id; regression
-test added. Suite 30→31.
-**Branch:** `phase-10-vault-collision-fix` (off `main`, unmerged). Unmerged sibling review branches
-off `main`: `phase-8-system-tests` (→36), `phase-9-finance-connector` (→32). Whole system otherwise
-verified end-to-end in mock — backend lifecycle, seed-vault memory, connector provenance, frontend
-runtime (`/boardroom` 200, `/studio` 404, tsc clean). Build complete; remaining work is deploy.
+**Last updated:** 2026-07-03
+**Current phase:** **Phases 8–10 merged to `main`** (backend hardening), on top of Vincent's PR #8
+(`862e5fd`, options-1:1 + frontend memo/validation fixes). Reconciled cleanly — my phases touch no
+file PR #8 changed. **Suite 40 passed** (mock/offline).
+- **Phase 8** — `test_system.py`: seed-vault integrity + retrieval, frontend↔backend contract shape.
+- **Phase 9** — Xero/Shopify-style `fetch_financials` connector grounding the Finance agent.
+- **Phase 10** — vault filename-collision fix (unique note names; a rigorous dry-run found silent
+  data loss when two identical same-day decisions collided).
+- **Phase 11 (options-1:1) DROPPED** — Vincent's PR #8 already fixed the same bug; verified his fix
+  passes the exact-count probe (1–6). Two independent finds of the same real bug.
+**Branch:** merged via `main`. Build complete; remaining work is deploy (Docker/HF/Vercel) + a live
+end-to-end run. Whole system verified in mock: lifecycle, seed memory, connector provenance, options
+1:1, frontend runtime (`/boardroom` 200, `/studio` 404, tsc clean).
 
 ---
 
