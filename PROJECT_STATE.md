@@ -6,13 +6,14 @@
 > contract** lives in `docs/architecture.md`; the **standing brief** for both build lanes is `CLAUDE.md`.
 
 **Last updated:** 2026-07-02
-**Current phase:** **Phase 7: live-mode reliability + vault hygiene.** Phases 2–6 (the full
-generator→evaluator pivot) are **merged to `main`** (fast-forward to the pivot tip). This phase
-raises `capability` max_tokens 4500→6000 (aligns with skeptic/venture_partner; avoids live-JSON
-truncation) and documents pointing `VAULT_PATH` at a throwaway dir locally so runs don't dirty the
-committed seed vault. Suite green (30 passed).
-**Branch:** `phase-7-reliability` (off `main`). The build is complete and merged; the remaining work
-is integration + deploy, not features. `/boardroom` verified serving at runtime (200; `/studio` 404).
+**Current phase:** **Phase 8: whole-system test hardening (mock/offline).** Phases 2–7 are merged to
+`main`. This phase adds `backend/tests/test_system.py` (**suite 30→36**) covering the two gaps the
+per-module suites missed: the committed **seed vault** integrity + retrieval (the demo's "returning
+company remembers" beat) and the **frontend↔backend contract** (backend models + canonical roster
+keys vs `lib/types.ts`/`BoardMemo.tsx`/`agentRoster.tsx` — the coupling that broke in Phase 4). All
+hermetic; no live LLM/API calls.
+**Branch:** `phase-8-system-tests` (off `main`). Build complete; remaining work is integration +
+deploy, not features. `/boardroom` verified serving at runtime (200; `/studio` 404).
 
 ---
 
