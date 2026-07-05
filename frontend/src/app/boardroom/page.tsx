@@ -8,6 +8,7 @@ import DecisionIntake from '@/components/DecisionIntake'
 import AgentDebate from '@/components/AgentDebate'
 import BoardMemo from '@/components/BoardMemo'
 import CouncilReasoning from '@/components/CouncilReasoning'
+import ErrorBoundary from '@/components/ErrorBoundary'
 import { memoToMarkdown, downloadTextFile } from '@/lib/planMarkdown'
 import type { AnalyzeRequest, BoardResponse } from '@/lib/types'
 
@@ -164,17 +165,21 @@ export default function Boardroom() {
               </div>
 
               {/* The memo itself */}
-              <BoardMemo
-                rec={response.recommendation}
-                companyName={companyName}
-                question={request?.decision.question}
-                date={response.created_at}
-                sampleData={response.mock_mode}
-                usedPaths={response.used_paths}
-              />
+              <ErrorBoundary>
+                <BoardMemo
+                  rec={response.recommendation}
+                  companyName={companyName}
+                  question={request?.decision.question}
+                  date={response.created_at}
+                  sampleData={response.mock_mode}
+                  usedPaths={response.used_paths}
+                />
+              </ErrorBoundary>
 
               {/* How the board reasoned — attributed */}
-              <CouncilReasoning outputs={response.agent_outputs} />
+              <ErrorBoundary>
+                <CouncilReasoning outputs={response.agent_outputs} />
+              </ErrorBoundary>
 
               {/* Close the loop: export */}
               <div className="card flex flex-col sm:flex-row sm:items-center gap-4 sm:justify-between">

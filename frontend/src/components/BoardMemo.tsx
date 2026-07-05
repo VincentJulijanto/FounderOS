@@ -113,12 +113,20 @@ export default function BoardMemo({ rec, companyName, question, date, sampleData
           <>
             <p className="text-sm text-muted -mt-2 mb-3">Objections that did not get resolved — surfaced, not buried.</p>
             <ul className="space-y-2">
-              {rec.dissent.map((d, i) => (
-                <li key={i} className="card !p-4 border-amber-200 bg-amber-50/50">
-                  <span className="text-sm font-semibold text-graphite">{labelFor(d.agent)}</span>
-                  <span className="text-sm text-graphite/80"> — {d.position}</span>
-                </li>
-              ))}
+              {rec.dissent.map((d, i) => {
+                const isSkeptic = d.agent === 'skeptic'
+                return (
+                  <li key={i} className={`card !p-4 ${isSkeptic ? 'border-red-200 bg-red-50/40' : 'border-amber-200 bg-amber-50/50'}`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-semibold text-graphite">{labelFor(d.agent)}</span>
+                      <span className={`badge border text-[10px] uppercase tracking-wide ${isSkeptic ? 'bg-red-100 text-red-700 border-red-200' : 'bg-amber-100 text-amber-700 border-amber-200'}`}>
+                        unresolved
+                      </span>
+                    </div>
+                    <span className="text-sm text-graphite/80">{d.position}</span>
+                  </li>
+                )
+              })}
             </ul>
           </>
         ) : (

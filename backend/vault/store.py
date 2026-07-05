@@ -158,7 +158,12 @@ class Vault:
 
     # ── paths ────────────────────────────────────────────────────────────
     def _company_dir(self, company_id: str) -> Path:
-        return self.root / company_id
+        if not re.fullmatch(r'[a-z0-9][a-z0-9\-_]{0,49}', company_id):
+            raise ValueError(f"Invalid company_id: {company_id!r}")
+        result = (self.root / company_id).resolve()
+        if not str(result).startswith(str(self.root.resolve()) + '/') and result != self.root.resolve():
+            raise ValueError("Path traversal attempt blocked")
+        return result
 
     # ── index ────────────────────────────────────────────────────────────
     def index(self, company_id: str) -> List[VaultNote]:

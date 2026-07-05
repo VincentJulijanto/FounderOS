@@ -66,11 +66,11 @@ class Financials(BaseModel):
 
 
 class CompanyProfile(BaseModel):
-    company_name: str
-    sector: str                               # e.g. "regional logistics", "D2C skincare"
-    stage: str                                # e.g. "early-revenue", "scaling", "mature"
-    business_model: str                       # e.g. "B2B SaaS", "marketplace", "retail"
-    size_band: str                            # e.g. "1–10", "11–50", "51–200" employees
+    company_name: str = Field(max_length=100)
+    sector: str = Field(max_length=200)
+    stage: str = Field(max_length=100)
+    business_model: str = Field(max_length=200)
+    size_band: str = Field(max_length=50)
     financials: Financials = Field(default_factory=Financials)
 
     model_config = {"json_schema_extra": {
@@ -95,12 +95,10 @@ class Constraints(BaseModel):
 
 
 class Decision(BaseModel):
-    question: str                             # the call being brought to the board
-    context: Optional[str] = None             # background the operator wants on the table
+    question: str = Field(max_length=500)
+    context: Optional[str] = Field(default=None, max_length=2000)
     constraints: Constraints = Field(default_factory=Constraints)
-    # Alternative approaches to THIS one decision (not separate decisions).
-    # Scout frames them when the operator leaves this empty.
-    options: Optional[List[str]] = None
+    options: Optional[List[str]] = None  # Scout frames these when left empty
 
     model_config = {"json_schema_extra": {
         "example": {
@@ -116,8 +114,11 @@ class Decision(BaseModel):
     }}
 
 
+_COMPANY_ID_PATTERN = r'^[a-z0-9][a-z0-9\-_]{0,49}$'
+
+
 class AnalyzeRequest(BaseModel):
-    company_id: str                           # from the company picker → vault folder
+    company_id: str = Field(pattern=_COMPANY_ID_PATTERN)
     profile: Optional[CompanyProfile] = None  # if None, hydrated from the vault
     decision: Decision
 

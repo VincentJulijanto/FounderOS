@@ -278,3 +278,67 @@ def test_used_paths_surface_in_response(company, decision, isolated_vault):
     decision_notes = [p for p in used if not p.startswith("_")]
     assert len(decision_notes) == 1
     assert decision_notes[0].endswith(".md")
+
+# ── Security: path traversal + input validation ───────────────────────────────
+
+@pytest.mark.parametrize("bad_id", [
+    "../../.env",
+    "../etc/passwd",
+    "foo/../../bar",
+    "",
+    "A" * 51,
+    "has spaces",
+    "-starts-with-dash",
+])
+def test_path_traversal_blocked(vault, bad_id):
+    """company_id values that could escape the vault root must raise ValueError."""
+    with pytest.raises(ValueError):
+        vault._company_dir(bad_id)
+
+
+def test_valid_company_ids_are_accepted(vault):
+    for ok in ("kirana", "harborline-logistics", "co123", "a" * 50, "a1-b_c"):
+        d = vault._company_dir(ok)
+        assert str(d).startswith(str(vault.root))
+
+
+def test_company_id_pattern_rejected_by_api(isolated_vault):
+    client = TestClient(app)
+    r = client.post("/api/analyze", json={
+        "company_id": "../../.env",
+        "decision": {"question": "test?", "constraints": {}},
+    })
+    assert r.status_code == 422  # Pydantic validation error
+
+
+def test_decision_question_length_limit_rejected_by_api(isolated_vault):
+    client = TestClient(app)
+    r = client.post("/api/analyze", json={
+        "company_id": "kirana",
+        "decision": {"question": "x" * 501, "constraints": {}},
+    })
+    assert r.status_code == 422
+
+
+async def _raise_on_call(*args, **kwargs):
+    raise RuntimeError("internal secret: api_key=abc123")
+
+
+def test_error_response_does_not_leak_internals(isolated_vault, monkeypatch):
+    """A pipeline crash must return a generic message, not a stack trace."""
+    import backend.main as main_module
+    monkeypatch.setattr(main_module, "run_graph", _raise_on_call)
+    client = TestClient(app)
+    r = client.post("/api/analyze", json={
+        "company_id": "kirana",
+        # Profile supplied so hydration (422 on unknown company) doesn't
+        # short-circuit before the pipeline — this test targets the 500 path.
+        "profile": {"company_name": "Kirana", "sector": "s", "stage": "s",
+                    "business_model": "b", "size_band": "1-10",
+                    "financials": {"revenue_band": "x"}},
+        "decision": {"question": "Should we expand?", "constraints": {}},
+    })
+    assert r.status_code == 500
+    detail = r.json().get("detail", "")
+    assert "Traceback" not in detail
+    assert "api_key" not in detail

@@ -217,13 +217,23 @@ export default function DecisionIntake({ onSubmit }: Props) {
             className={`input min-h-[70px] resize-none ${errors.question ? 'border-red-300 focus:border-red-400' : ''}`}
             placeholder="e.g. Should we open a dedicated Vietnam cross-border lane next quarter?"
             value={decision.question}
+            maxLength={500}
             onChange={e => {
               setDecision(p => ({ ...p, question: e.target.value }))
               if (errors.question) setErrors(er => ({ ...er, question: undefined }))
             }}
             aria-invalid={errors.question ? true : undefined}
           />
-          {errors.question && <p className="mt-1.5 text-xs text-red-600" role="alert">{errors.question}</p>}
+          <div className="flex justify-between mt-1">
+            {errors.question
+              ? <p className="text-xs text-red-600" role="alert">{errors.question}</p>
+              : <span />}
+            {decision.question.length >= 400 && (
+              <span className={`text-xs ${decision.question.length >= 490 ? 'text-red-500' : 'text-muted'}`}>
+                {decision.question.length}/500
+              </span>
+            )}
+          </div>
         </div>
 
         <div>
@@ -232,8 +242,14 @@ export default function DecisionIntake({ onSubmit }: Props) {
             className="input min-h-[70px] resize-none"
             placeholder="Background you want on the table — why now, what's prompted it."
             value={decision.context}
+            maxLength={2000}
             onChange={e => setDecision(p => ({ ...p, context: e.target.value }))}
           />
+          {decision.context.length >= 1800 && (
+            <p className={`mt-1 text-xs text-right ${decision.context.length >= 1980 ? 'text-red-500' : 'text-muted'}`}>
+              {decision.context.length}/2000
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -250,6 +266,7 @@ export default function DecisionIntake({ onSubmit }: Props) {
             className="input min-h-[80px] resize-none"
             placeholder={'Full subsidiary in Ho Chi Minh City\nAsset-light partnership with a local 3PL\nHold and deepen the current market'}
             value={decision.optionsText}
+            maxLength={1400}
             onChange={e => setDecision(p => ({ ...p, optionsText: e.target.value }))}
           />
         </div>
