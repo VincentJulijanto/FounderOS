@@ -114,23 +114,28 @@ async def analyze(request: AnalyzeRequest):
     Evaluate one company decision and return a board memo.
     Runs the full board (LangGraph) and writes the decision back to the vault.
     """
-    try:
-        # Profile: use the supplied one, else a minimal placeholder (a real build
-        # would hydrate from the vault; stubbed picker for this phase).
-        profile = request.profile or CompanyProfile(
-            company_name=request.company_id,
-            sector="unknown", stage="unknown",
-            business_model="unknown", size_band="unknown",
+    # Profile: use the supplied one, else hydrate from the vault's _profile.md
+    # (stubbed company picker → vault folder). Resolved BEFORE the try so the
+    # 422 isn't swallowed into a 500 by the pipeline catch-all.
+    profile = request.profile or vault.read_profile(request.company_id)
+    if profile is None:
+        raise HTTPException(
+            status_code=422,
+            detail=f"No stored profile for company '{request.company_id}' — "
+                   "include a company profile with the first decision.",
         )
 
+    try:
         response, _used = await build_response(request.company_id, profile, request.decision)
 
-        # Persist the decision to the vault (durable) + the request store (for GET).
+        # Persist the decision + company identity to the vault (durable) + the
+        # request store (for GET).
         decision_id = vault.write_back(
             company_id=request.company_id,
             decision=request.decision,
             recommendation=response.recommendation,
             learnings=[d.position for d in response.recommendation.dissent],
+            profile=profile,
         )
         responses_store[response.response_id] = {
             "response": response.model_dump(),

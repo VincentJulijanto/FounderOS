@@ -175,3 +175,86 @@ def test_slug_never_cuts_mid_word():
     # Short questions are untouched; empty input still yields a filename.
     assert _slugify("Raise rates?") == "raise-rates"
     assert _slugify("???") == "decision"
+
+
+# ── company profile note (_profile.md) ────────────────────────────────────────
+
+def _rec():
+    from backend.models import BoardRecommendation
+    return BoardRecommendation(recommendation="proceed", confidence="high", rationale="x")
+
+
+def test_write_back_persists_profile_note(vault, company, decision):
+    from backend.vault.store import PROFILE_NOTE, _parse_frontmatter
+
+    vault.write_back("kirana", decision, _rec(), profile=company)
+
+    raw = (vault.root / "kirana" / PROFILE_NOTE).read_text(encoding="utf-8")
+    fm, _body = _parse_frontmatter(raw)
+    assert fm["type"] == "profile"
+    assert fm["updated"]
+    assert vault.read_profile("kirana") == company          # lossless round-trip
+    # Identity note never enters the rankable index.
+    assert all(n.path != PROFILE_NOTE for n in vault.index("kirana"))
+
+
+def test_changed_profile_updates_note(vault, company, decision):
+    from backend.vault.store import PROFILE_NOTE
+
+    vault.write_back("kirana", decision, _rec(), profile=company)
+    changed = company.model_copy(update={"stage": "mature"})
+    vault.write_back("kirana", decision, _rec(), profile=changed)
+
+    assert len(list((vault.root / "kirana").glob(PROFILE_NOTE))) == 1
+    assert vault.read_profile("kirana").stage == "mature"
+
+
+def test_read_includes_profile_outside_selection_budget(vault, company):
+    from backend.vault.store import MAX_SELECTED_NOTES, PROFILE_NOTE
+
+    vault.write_profile("kirana", company)
+    for i in range(MAX_SELECTED_NOTES + 2):
+        vault.write_back("kirana", Decision(question=f"Should we expand into market {i}?"), _rec())
+
+    bundle = vault.read("kirana", "expand into market 3")
+    assert bundle.used_paths[0] == PROFILE_NOTE             # identity always first
+    assert any("company profile" in n for n in bundle.notes)
+    decision_paths = [p for p in bundle.used_paths if p != PROFILE_NOTE]
+    assert len(decision_paths) == MAX_SELECTED_NOTES        # budget untouched
+
+
+def test_hydration_runs_with_stored_profile(company, decision, isolated_vault, monkeypatch):
+    import backend.main as main_mod
+    client = TestClient(app)
+    cid = "kirana-hydrate"
+
+    r1 = client.post("/api/analyze", json={
+        "company_id": cid, "profile": company.model_dump(), "decision": decision.model_dump()})
+    assert r1.status_code == 200
+
+    captured = {}
+    orig = main_mod.build_response
+
+    async def spy(company_id, profile, decision):
+        captured["profile"] = profile
+        return await orig(company_id, profile, decision)
+
+    monkeypatch.setattr(main_mod, "build_response", spy)
+    r2 = client.post("/api/analyze", json={
+        "company_id": cid, "profile": None, "decision": decision.model_dump()})
+    assert r2.status_code == 200
+
+    hydrated = captured["profile"]
+    for f in ("company_name", "sector", "stage", "business_model", "size_band"):
+        assert getattr(hydrated, f) == getattr(company, f)
+    for f in ("revenue_band", "margin", "cash_position"):
+        assert getattr(hydrated.financials, f) == getattr(company.financials, f)
+
+
+def test_hydration_without_stored_profile_is_422(isolated_vault):
+    client = TestClient(app)
+    r = client.post("/api/analyze", json={
+        "company_id": "ghost-co", "profile": None,
+        "decision": {"question": "Should we do X?", "constraints": {}}})
+    assert r.status_code == 422
+    assert "No stored profile" in r.json()["detail"]
