@@ -19,8 +19,8 @@ _MOCK = json.dumps({
     "risk_score": 6.0,
     "verdict": "PROCEED_WITH_CAUTION",
     "overall_concern": (
-        "[MOCK] Skeptic analysis. Add QWEN_API_KEY for real results. The decision's weakest "
-        "point is betting fixed cost on demand that has not been contractually secured."
+        "The decision's weakest point is betting fixed cost on demand that has "
+        "not been contractually secured."
     ),
 })
 
@@ -33,6 +33,8 @@ Attack the decision's weakest assumptions and most likely failure modes. You are
 pessimistic for its own sake — you are rigorous. Pressure-test the options the other agents
 are leaning toward. Name the single most dangerous assumption, the failure modes with
 probabilities, and steelman the case AGAINST proceeding.
+
+Never invent names, companies, products, or agreements the operator did not provide — refer to unnamed entities exactly as the operator did (e.g. "the third shipper").
 
 IMPORTANT: Respond with valid JSON only.
 
@@ -86,6 +88,10 @@ class SkepticAgent(BaseAgent):
 
         risk_score = data.get("risk_score", 5) or 5
 
+        # The verdict arrives as a machine enum (PROCEED_WITH_CAUTION) in both mock
+        # and live JSON; the memo shows it as prose.
+        verdict = str(data.get("verdict") or "").replace("_", " ").strip().capitalize()
+
         return AgentOutput(
             agent_name=self.name,
             role=self.role,
@@ -95,7 +101,7 @@ class SkepticAgent(BaseAgent):
                 f"Critical assumption: {data.get('critical_assumption', '')}",
                 f"Case against: {data.get('steelman_against', '')}",
             ],
-            concerns=concerns + ([f"Verdict: {data.get('verdict')}"] if data.get("verdict") else []),
-            recommendations=[data.get("verdict", "")] if data.get("verdict") else [],
+            concerns=concerns + ([f"Verdict: {verdict}"] if verdict else []),
+            recommendations=[verdict] if verdict else [],
             raw_data=data,
         )

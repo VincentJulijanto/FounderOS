@@ -9,12 +9,20 @@ import { labelFor } from '@/components/agentRoster'
 
 interface Props {
   rec: BoardRecommendation
+  /** Company DISPLAY name (from the picker's label, never the vault slug). */
+  companyName?: string
+  /** The decision question the board was convened on. */
+  question?: string
+  /** Run date (ISO string; rendered as a date). */
+  date?: string
+  /** True when the response was built from mock fixtures. */
+  sampleData?: boolean
 }
 
-const VERDICT: Record<Verdict, { label: string; Icon: typeof CheckCircle2; tone: string }> = {
-  proceed:     { label: 'Proceed',     Icon: CheckCircle2, tone: 'border-green-200 bg-green-50 text-green-700' },
-  hold:        { label: 'Hold',        Icon: PauseCircle,  tone: 'border-red-200 bg-red-50 text-red-700' },
-  conditional: { label: 'Conditional', Icon: AlertCircle,  tone: 'border-amber-200 bg-amber-50 text-amber-700' },
+const VERDICT: Record<Verdict, { label: string; Icon: typeof CheckCircle2; tone: string; text: string }> = {
+  proceed:     { label: 'Proceed',     Icon: CheckCircle2, tone: 'border-green-200 bg-green-50 text-green-700', text: 'text-green-700' },
+  hold:        { label: 'Hold',        Icon: PauseCircle,  tone: 'border-red-200 bg-red-50 text-red-700', text: 'text-red-700' },
+  conditional: { label: 'Conditional', Icon: AlertCircle,  tone: 'border-amber-200 bg-amber-50 text-amber-700', text: 'text-amber-600' },
 }
 
 const optionVerdictTone = (v?: string | null) => {
@@ -24,23 +32,43 @@ const optionVerdictTone = (v?: string | null) => {
   return 'bg-brand-500/10 text-brand-700 border-brand-500/20'
 }
 
-export default function BoardMemo({ rec }: Props) {
+export default function BoardMemo({ rec, companyName, question, date, sampleData }: Props) {
   const v = VERDICT[rec.recommendation] ?? VERDICT.conditional
   const VIcon = v.Icon
+  const dateStr = date
+    ? new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+    : null
 
   return (
     <div className="space-y-8">
 
-      {/* The call */}
+      {/* The call — a document header, then the verdict at headline scale */}
       <div className="card">
-        <div className="flex flex-wrap items-center gap-3 mb-3">
-          <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-semibold ${v.tone}`}>
-            <VIcon className="w-4 h-4" aria-hidden="true" />
+        {(companyName || question || sampleData) && (
+          <div className="flex flex-wrap items-start justify-between gap-3 mb-5 pb-5 border-b border-hairline">
+            <div className="min-w-0">
+              {companyName && (
+                <p className="text-sm text-muted">
+                  {companyName}{dateStr && <span> · {dateStr}</span>}
+                </p>
+              )}
+              {question && (
+                <p className="text-lg font-medium text-graphite mt-1 leading-snug">&ldquo;{question}&rdquo;</p>
+              )}
+            </div>
+            {sampleData && (
+              <span className="badge border border-hairline bg-graphite/[0.04] text-muted shrink-0">
+                Sample data — live run uses your API key
+              </span>
+            )}
+          </div>
+        )}
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">
+          <span className={`inline-flex items-center gap-2.5 text-4xl md:text-5xl font-semibold tracking-[-0.02em] ${v.text}`}>
+            <VIcon className="w-8 h-8 md:w-9 md:h-9" aria-hidden="true" />
             {v.label}
           </span>
-          <span className="badge bg-graphite/[0.05] text-graphite/70 uppercase tracking-wide text-[11px]">
-            {rec.confidence} confidence
-          </span>
+          <span className="text-sm text-muted">{rec.confidence} confidence</span>
         </div>
         <p className="text-graphite/85 leading-relaxed">{rec.rationale}</p>
       </div>
@@ -61,36 +89,6 @@ export default function BoardMemo({ rec }: Props) {
               </article>
             ))}
           </div>
-        </Section>
-      )}
-
-      {/* Execution plan (phased) */}
-      {rec.execution_plan?.phases?.length > 0 && (
-        <Section title="Execution plan" Icon={MapIcon}>
-          <ol className="space-y-4">
-            {rec.execution_plan.phases.map((ph, i) => (
-              <li key={i} className="card !p-5">
-                <div className="flex items-center gap-3 mb-1.5">
-                  <span className="w-7 h-7 rounded-lg bg-brand-500/10 text-brand-700 font-mono text-sm flex items-center justify-center shrink-0">
-                    {i + 1}
-                  </span>
-                  <h3 className="text-sm font-semibold text-graphite">{ph.name}</h3>
-                  {ph.timeframe && <span className="text-xs text-muted">{ph.timeframe}</span>}
-                </div>
-                {ph.objective && <p className="text-sm text-graphite/80 mb-2">{ph.objective}</p>}
-                {ph.actions?.length > 0 && (
-                  <ul className="space-y-1">
-                    {ph.actions.map((a, j) => (
-                      <li key={j} className="flex items-start gap-2 text-sm text-graphite/80">
-                        <span className="mt-1.5 w-1 h-1 rounded-full bg-brand-500 shrink-0" aria-hidden="true" />
-                        {a}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            ))}
-          </ol>
         </Section>
       )}
 
@@ -156,9 +154,34 @@ export default function BoardMemo({ rec }: Props) {
         )}
       </div>
 
-      {/* Disclaimer — advisory, not fiduciary */}
-      {rec.disclaimer && (
-        <p className="text-xs text-muted italic border-t border-hairline pt-4">{rec.disclaimer}</p>
+      {/* Execution plan (phased) — the appendix: the call and its reservations come first */}
+      {rec.execution_plan?.phases?.length > 0 && (
+        <Section title="Execution plan" Icon={MapIcon}>
+          <ol className="space-y-4">
+            {rec.execution_plan.phases.map((ph, i) => (
+              <li key={i} className="card !p-5">
+                <div className="flex items-center gap-3 mb-1.5">
+                  <span className="w-7 h-7 rounded-lg bg-brand-500/10 text-brand-700 font-mono text-sm flex items-center justify-center shrink-0">
+                    {i + 1}
+                  </span>
+                  <h3 className="text-sm font-semibold text-graphite">{ph.name}</h3>
+                  {ph.timeframe && <span className="text-xs text-muted">{ph.timeframe}</span>}
+                </div>
+                {ph.objective && <p className="text-sm text-graphite/80 mb-2">{ph.objective}</p>}
+                {ph.actions?.length > 0 && (
+                  <ul className="space-y-1">
+                    {ph.actions.map((a, j) => (
+                      <li key={j} className="flex items-start gap-2 text-sm text-graphite/80">
+                        <span className="mt-1.5 w-1 h-1 rounded-full bg-brand-500 shrink-0" aria-hidden="true" />
+                        {a}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ol>
+        </Section>
       )}
     </div>
   )

@@ -191,3 +191,38 @@ async def test_run_graph_state_has_expected_keys(company, decision):
     assert len(state["agent_outputs"]) == 7
     assert state["errors"] == []
     assert state["recommendation"] is not None
+
+
+def test_round_two_reachable_on_moved_positions(monkeypatch):
+    """Live finding #3a: a zero-resolution round 1 with moved positions gets one
+    more round instead of ending the debate (which made rounds 2+ dead code)."""
+    engine = DebateEngine()
+    conflicts, _, _ = engine.detect_conflicts({})
+    zero_resolution_round = json.dumps({
+        "debate_exchanges": [
+            {"conflict_topic": c.topic, "resolved": False} for c in conflicts
+        ],
+        "revised_positions": {"skeptic": "moved, but still opposed"},
+        "overall_resolution_achieved": False,
+        "round_summary": "Positions shifted; nothing resolved.",
+    })
+    monkeypatch.setattr(engine, "_call_llm", lambda *a, **k: zero_resolution_round)
+    rounds, resolved = engine.run_debate({}, conflicts, "ctx")
+    assert len(rounds) == 2      # round 1 grace (positions moved), round 2 breaks
+    assert resolved == set()
+
+
+def test_stalemate_without_movement_still_breaks_round_one(monkeypatch):
+    engine = DebateEngine()
+    conflicts, _, _ = engine.detect_conflicts({})
+    frozen_round = json.dumps({
+        "debate_exchanges": [
+            {"conflict_topic": c.topic, "resolved": False} for c in conflicts
+        ],
+        "revised_positions": {},
+        "overall_resolution_achieved": False,
+        "round_summary": "No movement.",
+    })
+    monkeypatch.setattr(engine, "_call_llm", lambda *a, **k: frozen_round)
+    rounds, _ = engine.run_debate({}, conflicts, "ctx")
+    assert len(rounds) == 1      # nothing moved — the old stalemate break holds

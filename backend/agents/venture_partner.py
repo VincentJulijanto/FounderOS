@@ -21,10 +21,10 @@ _MOCK = json.dumps({
     "recommendation": "conditional",
     "confidence": "medium",
     "rationale": (
-        "[MOCK MODE — add QWEN_API_KEY for real results.] Proceed only on the asset-light path. "
-        "The demand signal is real but the fixed-commitment option bets capital on demand that "
-        "is not yet contractually secured. A reversible pilot captures most of the upside while "
-        "the board's biggest unresolved concern — durable willingness to commit — is tested."
+        "Proceed only on the asset-light path. The demand signal is real but the "
+        "fixed-commitment option bets capital on demand that is not yet contractually "
+        "secured. A reversible pilot captures most of the upside while the board's "
+        "biggest unresolved concern — durable willingness to commit — is tested."
     ),
     "missing_inputs": [
         "Signed minimum-volume commitments from the anchor customers",
@@ -83,6 +83,8 @@ Rules:
 - Assess EACH option on the table (one entry per option, 1:1).
 - Give a phased execution plan (Validate → Pilot → Scale style), not a lean canvas.
 - Take the vault history seriously if present: don't re-litigate settled calls; build on them.
+
+Never invent names, companies, products, or agreements the operator did not provide — refer to unnamed entities exactly as the operator did (e.g. "the third shipper").
 
 IMPORTANT: Respond with valid JSON only.
 
