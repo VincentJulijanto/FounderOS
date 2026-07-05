@@ -20,6 +20,7 @@ out/
 *.log
 .idea/
 .vscode/
+.notes.txt
 
 # Next.js / TS build artifacts
 frontend/tsconfig.tsbuildinfo
