@@ -6,8 +6,8 @@ from ..mcp.client import mcp_client, run_sync
 
 _MOCK = json.dumps({
     "financial_view": (
-        "[MOCK] Finance analysis. Add QWEN_API_KEY for real results. The decision is affordable "
-        "within the stated budget but compresses margin for 2-3 quarters before payback."
+        "The decision is affordable within the stated budget but compresses "
+        "margin for 2-3 quarters before payback."
     ),
     "feasibility_score": 6.5,
     "payback_view": "Break-even around month 9-12 on base-case assumptions.",
@@ -26,6 +26,8 @@ the P&L and cash impact of the options on the table, payback, and whether the co
 afford the downside.
 
 Be conservative. Surface the funding/margin risk honestly.
+
+Never invent names, companies, products, or agreements the operator did not provide — refer to unnamed entities exactly as the operator did (e.g. "the third shipper").
 
 IMPORTANT: Respond with valid JSON only.
 

@@ -6,8 +6,8 @@ from ..mcp.client import mcp_client, run_sync
 
 _MOCK = json.dumps({
     "market_read": (
-        "[MOCK] Trend analysis. Add QWEN_API_KEY for real results. Demand signals for this "
-        "decision are moderately favourable but timing risk is real."
+        "Demand signals for this decision are moderately favourable but timing "
+        "risk is real."
     ),
     "demand_score": 7.0,
     "signals": ["Rising demand in adjacent markets", "Incumbents moving slowly"],
@@ -24,6 +24,8 @@ commentary. Use the live signals provided. Judge whether the timing and demand s
 options on the table.
 
 Score demand 0-10 (10 = strong tailwind) and be explicit about timing risk.
+
+Never invent names, companies, products, or agreements the operator did not provide — refer to unnamed entities exactly as the operator did (e.g. "the third shipper").
 
 IMPORTANT: Respond with valid JSON only.
 

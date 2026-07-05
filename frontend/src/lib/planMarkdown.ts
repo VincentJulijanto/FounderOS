@@ -1,16 +1,26 @@
 import type { BoardResponse } from '@/lib/types'
 import { labelFor } from '@/components/agentRoster'
 
+export interface MemoMeta {
+  /** Company DISPLAY name (picker label) — falls back to the company_id slug. */
+  companyName?: string
+  /** The decision question the board was convened on. */
+  question?: string
+}
+
 /**
  * Serialize a BoardResponse into a portable board-memo Markdown document.
  * Pure client-side — reads only data already in the payload. Mirrors the memo
- * the operator sees on screen (recommendation → dissent → trust posture → plan).
+ * the operator sees on screen: the call → options → dissent → trust posture →
+ * execution plan → how the board reasoned.
  */
-export function memoToMarkdown(res: BoardResponse): string {
+export function memoToMarkdown(res: BoardResponse, meta?: MemoMeta): string {
   const rec = res.recommendation
   const lines: string[] = []
 
-  lines.push(`# Board memo — ${res.company_id}`)
+  lines.push(`# Board memo — ${meta?.companyName || res.company_id}`)
+  if (meta?.question) lines.push(`\n> ${meta.question}`)
+  if (res.created_at) lines.push(`\n_${res.created_at.slice(0, 10)}_`)
   lines.push(`\n**Recommendation: ${cap(rec.recommendation)}** · ${rec.confidence} confidence`)
   if (rec.rationale) lines.push(`\n${rec.rationale}`)
 
@@ -20,15 +30,6 @@ export function memoToMarkdown(res: BoardResponse): string {
       lines.push(`\n### ${o.option}${o.verdict ? ` — _${o.verdict}_` : ''}`)
       if (o.assessment) lines.push(o.assessment)
     }
-  }
-
-  if (rec.execution_plan?.phases?.length) {
-    lines.push(`\n## Execution plan`)
-    rec.execution_plan.phases.forEach((ph, i) => {
-      lines.push(`\n### Phase ${i + 1}: ${ph.name}${ph.timeframe ? ` (${ph.timeframe})` : ''}`)
-      if (ph.objective) lines.push(ph.objective)
-      ph.actions?.forEach((a) => lines.push(`- ${a}`))
-    })
   }
 
   if (rec.dissent?.length) {
@@ -48,6 +49,15 @@ export function memoToMarkdown(res: BoardResponse): string {
   if (rec.risks?.length) {
     lines.push(`\n## Risks`)
     rec.risks.forEach((r) => lines.push(`- ${r}`))
+  }
+
+  if (rec.execution_plan?.phases?.length) {
+    lines.push(`\n## Execution plan`)
+    rec.execution_plan.phases.forEach((ph, i) => {
+      lines.push(`\n### Phase ${i + 1}: ${ph.name}${ph.timeframe ? ` (${ph.timeframe})` : ''}`)
+      if (ph.objective) lines.push(ph.objective)
+      ph.actions?.forEach((a) => lines.push(`- ${a}`))
+    })
   }
 
   // Council reasoning — attribute the memo back to the board.

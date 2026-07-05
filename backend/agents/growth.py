@@ -5,8 +5,8 @@ from ..models import CompanyProfile, AgentOutput
 
 _MOCK = json.dumps({
     "execution_read": (
-        "[MOCK] Growth analysis. Add QWEN_API_KEY for real results. The company can execute "
-        "the chosen option but go-to-market depends on channels it has not yet proven."
+        "The company can execute the chosen option but go-to-market depends on "
+        "channels it has not yet proven."
     ),
     "go_to_market": "Lead with the two anchor customers, then expand via referrals.",
     "growth_score": 7.0,
@@ -24,6 +24,8 @@ the motion, and how quickly it can show traction. Use what you know about the co
 stage and model. Be specific about the levers and the execution risks.
 
 Score execution readiness 0-10.
+
+Never invent names, companies, products, or agreements the operator did not provide — refer to unnamed entities exactly as the operator did (e.g. "the third shipper").
 
 IMPORTANT: Respond with valid JSON only.
 

@@ -24,8 +24,8 @@ _MOCK = json.dumps({
     "strengths": ["Disciplined delivery track record", "Adequate financial capacity"],
     "gaps": ["No cross-border operating experience", "Thin org bandwidth for a second front"],
     "summary": (
-        "[MOCK] Capability analysis. Add QWEN_API_KEY for real results. The organization is "
-        "capable but stretched; readiness is the binding constraint, not appetite."
+        "The organization is capable but stretched; readiness is the binding "
+        "constraint, not appetite."
     ),
 })
 
@@ -45,6 +45,8 @@ rationale grounded in the company profile:
 5. org_bandwidth         — Is there spare capacity, or is the org already stretched thin?
 
 Be honest. A capability gap is more useful surfaced than hidden.
+
+Never invent names, companies, products, or agreements the operator did not provide — refer to unnamed entities exactly as the operator did (e.g. "the third shipper").
 
 IMPORTANT: Respond with valid JSON only — no preamble, no markdown, no explanation.
 

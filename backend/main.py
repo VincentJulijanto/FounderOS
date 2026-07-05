@@ -82,6 +82,7 @@ async def build_response(
         recommendation=state["recommendation"],
         mcp_used=mcp_used,
         mcp_sources=mcp_sources,
+        mock_mode=not settings.is_live,
     )
     return response, bundle.used_paths
 

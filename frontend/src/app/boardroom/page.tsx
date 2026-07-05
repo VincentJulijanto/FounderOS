@@ -22,9 +22,14 @@ const PHASE_LABELS: Record<Phase, string> = {
   results: 'Board Memo',
 }
 
+// Minimum time the "Board at Work" phase stays on screen, so a mock/fast run
+// still shows the pipeline pass instead of flashing past it.
+const MIN_WORK_DWELL_MS = 3200
+
 export default function Boardroom() {
   const [phase, setPhase] = useState<Phase>('input')
   const [response, setResponse] = useState<BoardResponse | null>(null)
+  const [request, setRequest] = useState<AnalyzeRequest | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
@@ -32,6 +37,8 @@ export default function Boardroom() {
     setPhase('analyzing')
     setError(null)
     setResponse(null)
+    setRequest(req)
+    const startedAt = Date.now()
 
     try {
       const res = await fetch(`${API_URL}/api/analyze`, {
@@ -46,10 +53,12 @@ export default function Boardroom() {
       }
 
       const data: BoardResponse = await res.json()
-      // Real data has arrived — drive the debate view from it, then let the
-      // operator advance to the memo. (No fake timer-based phase transition.)
+      // Real data has arrived — the wait state compresses its remaining staging
+      // (responseReady), then we advance. Live runs outlast the dwell and switch
+      // immediately; mock runs hold ~3s so the phase is visible.
       setResponse(data)
-      setPhase('debating')
+      const wait = Math.max(0, MIN_WORK_DWELL_MS - (Date.now() - startedAt))
+      setTimeout(() => setPhase('debating'), wait)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
       setPhase('input')
@@ -121,6 +130,7 @@ export default function Boardroom() {
         {(phase === 'analyzing' || phase === 'debating') && (
           <AgentDebate
             phase={phase}
+            responseReady={response != null}
             agentOutputs={response?.agent_outputs}
             debateRounds={response?.debate_rounds}
             debateSummary={debateSummary}
@@ -131,14 +141,16 @@ export default function Boardroom() {
 
         {/* Phase: Results — the board memo */}
         {phase === 'results' && response && (() => {
+          const companyName = request?.profile?.company_name || response.company_id
+          const memoMeta = { companyName, question: request?.decision.question }
           const copyMemo = () => {
-            navigator.clipboard.writeText(memoToMarkdown(response))
+            navigator.clipboard.writeText(memoToMarkdown(response, memoMeta))
             setCopied(true)
             setTimeout(() => setCopied(false), 2000)
           }
           const downloadMemo = () => {
             const slug = response.company_id || 'company'
-            downloadTextFile(`founderos-board-memo-${slug}.md`, memoToMarkdown(response))
+            downloadTextFile(`founderos-board-memo-${slug}.md`, memoToMarkdown(response, memoMeta))
           }
 
           return (
@@ -148,14 +160,17 @@ export default function Boardroom() {
                 <span className="w-9 h-9 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-600">
                   <ScrollText className="w-5 h-5" aria-hidden="true" />
                 </span>
-                <div>
-                  <h2 className="text-xl font-semibold">Board memo</h2>
-                  <p className="text-sm text-muted">{response.company_id}</p>
-                </div>
+                <h2 className="text-xl font-semibold">Board memo</h2>
               </div>
 
               {/* The memo itself */}
-              <BoardMemo rec={response.recommendation} />
+              <BoardMemo
+                rec={response.recommendation}
+                companyName={companyName}
+                question={request?.decision.question}
+                date={response.created_at}
+                sampleData={response.mock_mode}
+              />
 
               {/* How the board reasoned — attributed */}
               <CouncilReasoning outputs={response.agent_outputs} />
@@ -182,6 +197,13 @@ export default function Boardroom() {
                   </button>
                 </div>
               </div>
+
+              {/* Disclaimer — advisory, not fiduciary; closes the document */}
+              {response.recommendation.disclaimer && (
+                <p className="text-xs text-muted italic border-t border-hairline pt-4">
+                  {response.recommendation.disclaimer}
+                </p>
+              )}
 
               {/* Restart */}
               <div className="text-center pt-2">

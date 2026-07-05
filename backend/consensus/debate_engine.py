@@ -190,7 +190,12 @@ _MOCK_ROUNDS = [
 ]
 
 
-_DEBATE_SYSTEM = "You are the debate moderator on an AI board of directors. Respond with valid JSON only."
+_DEBATE_SYSTEM = (
+    "You are the debate moderator on an AI board of directors. "
+    "Never invent names, companies, products, or agreements the operator did not provide — "
+    "refer to unnamed entities exactly as the operator did (e.g. \"the third shipper\"). "
+    "Respond with valid JSON only."
+)
 
 
 def _label_for(score: float, total_conflicts: int) -> str:
@@ -315,7 +320,7 @@ class DebateEngine:
             )
 
             mock_fixture = _MOCK_ROUNDS[min(round_num - 1, len(_MOCK_ROUNDS) - 1)]
-            raw = self._call_llm(prompt, mock_fixture=mock_fixture, max_tokens=2500)
+            raw = self._call_llm(prompt, mock_fixture=mock_fixture, max_tokens=6000)
             data = self._parse_json(raw)
 
             # Per-conflict resolution from this round's exchanges (authoritative
@@ -356,7 +361,12 @@ class DebateEngine:
             all_resolved = all(c.topic in resolved_topics for c in conflicts)
             if all_resolved or overall_resolved:
                 break
-            if resolved_this_round == 0:
+            # Stalemate: a zero-resolution round ends the debate — except on
+            # round 1, where moved positions earn one more round. Live runs
+            # routinely resolve nothing in round 1 while positions shift; a
+            # hard break there made rounds 2+ unreachable in practice.
+            positions_moved = bool(data.get("revised_positions"))
+            if resolved_this_round == 0 and (round_num > 1 or not positions_moved):
                 break  # stalemate — no progress; surface what remains
 
         return debate_rounds, resolved_topics

@@ -1,8 +1,12 @@
+from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Resolve .env relative to this file so it works regardless of launch directory
+_ENV_FILE = Path(__file__).parent.parent / ".env"
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
+    model_config = SettingsConfigDict(env_file=str(_ENV_FILE), case_sensitive=False)
 
     # === QwenCloud (OpenAI-compatible) — paste key in .env when ready ===
     qwen_api_key: str = ""

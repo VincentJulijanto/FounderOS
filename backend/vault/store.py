@@ -54,9 +54,18 @@ _STOPWORDS = {
 }
 
 
+_MAX_SLUG_LEN = 60
+
+
 def _slugify(text: str) -> str:
     slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
-    return slug[:60] or "decision"
+    if len(slug) > _MAX_SLUG_LEN:
+        cut = slug[:_MAX_SLUG_LEN]
+        # Never cut mid-word: if the cap lands inside a word, drop that word.
+        if slug[_MAX_SLUG_LEN] != "-" and "-" in cut:
+            cut = cut.rsplit("-", 1)[0]
+        slug = cut.rstrip("-")
+    return slug or "decision"
 
 
 def _parse_frontmatter(raw: str) -> tuple[dict, str]:

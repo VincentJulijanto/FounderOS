@@ -11,8 +11,8 @@ _MOCK = json.dumps({
         "Hold and deepen the current market before expanding",
     ],
     "framing": (
-        "[MOCK] Scout framing. Add QWEN_API_KEY for real results. The decision reduces to "
-        "how much fixed commitment to take on versus preserving optionality."
+        "The decision reduces to how much fixed commitment to take on versus "
+        "preserving optionality."
     ),
     "recommended_frame": "Weigh speed-to-market against capital-at-risk and reversibility.",
 })
@@ -28,6 +28,8 @@ if they left options empty, generate 2–4 credible alternatives (always include
 "do nothing / hold" option where relevant).
 
 Ground your framing in the company's stage, sector, and the live market data provided.
+
+Never invent names, companies, products, or agreements the operator did not provide — refer to unnamed entities exactly as the operator did (e.g. "the third shipper").
 
 IMPORTANT: You MUST respond with valid JSON only — no preamble, no markdown, no explanation.
 

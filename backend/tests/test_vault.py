@@ -158,3 +158,20 @@ def test_second_run_reads_prior_history(company, decision, isolated_vault):
     from backend.vault import store
     bundle = store.read("kirana", decision.question)
     assert bundle.used_paths                              # prior note retrieved
+
+
+def test_slug_never_cuts_mid_word():
+    from backend.vault.store import _slugify, _MAX_SLUG_LEN
+
+    q = "Should we scale the Vietnam cross-border lane beyond the pilot programme this year"
+    slug = _slugify(q)
+    full = q.lower().replace(" ", "-")  # the uncapped slug of the same question
+    assert len(slug) <= _MAX_SLUG_LEN
+    assert not slug.endswith("-")
+    # The cap must land on a word boundary: the full slug continues with "-",
+    # never with the rest of a split word.
+    assert full.startswith(slug)
+    assert full == slug or full[len(slug)] == "-"
+    # Short questions are untouched; empty input still yields a filename.
+    assert _slugify("Raise rates?") == "raise-rates"
+    assert _slugify("???") == "decision"

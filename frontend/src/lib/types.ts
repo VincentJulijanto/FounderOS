@@ -137,6 +137,8 @@ export interface BoardResponse {
   recommendation: BoardRecommendation // the memo
   mcp_used: boolean
   mcp_sources: string[]
+  /** True when the backend ran on mock fixtures (no API key). */
+  mock_mode?: boolean
   created_at?: string
 }
 
