@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import type { BoardRecommendation, Verdict } from '@/lib/types'
 import { labelFor } from '@/components/agentRoster'
+import { consultedDecisionNotes, humanizeNotePath } from '@/lib/planMarkdown'
 
 interface Props {
   rec: BoardRecommendation
@@ -17,6 +18,8 @@ interface Props {
   date?: string
   /** True when the response was built from mock fixtures. */
   sampleData?: boolean
+  /** Vault provenance — which notes informed this run (_-prefixed = identity). */
+  usedPaths?: string[]
 }
 
 const VERDICT: Record<Verdict, { label: string; Icon: typeof CheckCircle2; tone: string; text: string }> = {
@@ -32,19 +35,22 @@ const optionVerdictTone = (v?: string | null) => {
   return 'bg-brand-500/10 text-brand-700 border-brand-500/20'
 }
 
-export default function BoardMemo({ rec, companyName, question, date, sampleData }: Props) {
+export default function BoardMemo({ rec, companyName, question, date, sampleData, usedPaths }: Props) {
   const v = VERDICT[rec.recommendation] ?? VERDICT.conditional
   const VIcon = v.Icon
   const dateStr = date
     ? new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
     : null
+  // Decision notes only — _profile.md rides along on every read as identity,
+  // not memory. Cold start (nothing consulted) renders nothing, never "0".
+  const consulted = consultedDecisionNotes(usedPaths)
 
   return (
     <div className="space-y-8">
 
       {/* The call — a document header, then the verdict at headline scale */}
       <div className="card">
-        {(companyName || question || sampleData) && (
+        {(companyName || question || sampleData || consulted.length > 0) && (
           <div className="flex flex-wrap items-start justify-between gap-3 mb-5 pb-5 border-b border-hairline">
             <div className="min-w-0">
               {companyName && (
@@ -54,6 +60,14 @@ export default function BoardMemo({ rec, companyName, question, date, sampleData
               )}
               {question && (
                 <p className="text-lg font-medium text-graphite mt-1 leading-snug">&ldquo;{question}&rdquo;</p>
+              )}
+              {consulted.length > 0 && (
+                <p
+                  className="text-xs text-muted mt-1.5"
+                  title={consulted.map(humanizeNotePath).join('\n')}
+                >
+                  Board memory consulted: {consulted.length} prior decision{consulted.length === 1 ? '' : 's'}
+                </p>
               )}
             </div>
             {sampleData && (

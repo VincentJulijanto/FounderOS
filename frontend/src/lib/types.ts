@@ -139,6 +139,8 @@ export interface BoardResponse {
   mcp_sources: string[]
   /** True when the backend ran on mock fixtures (no API key). */
   mock_mode?: boolean
+  /** Vault notes that informed this run (provenance; _-prefixed = identity, not memory). */
+  used_paths?: string[]
   created_at?: string
 }
 

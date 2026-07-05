@@ -258,3 +258,23 @@ def test_hydration_without_stored_profile_is_422(isolated_vault):
         "decision": {"question": "Should we do X?", "constraints": {}}})
     assert r.status_code == 422
     assert "No stored profile" in r.json()["detail"]
+
+
+def test_used_paths_surface_in_response(company, decision, isolated_vault):
+    client = TestClient(app)
+    cid = "kirana-provenance"
+    payload = {"company_id": cid, "profile": company.model_dump(), "decision": decision.model_dump()}
+
+    # Cold start: nothing in the vault yet — no decision notes consulted.
+    r1 = client.post("/api/analyze", json=payload)
+    assert r1.status_code == 200
+    assert [p for p in r1.json()["used_paths"] if not p.startswith("_")] == []
+
+    # Returning company: the first decision's note (and _profile.md) inform run 2.
+    r2 = client.post("/api/analyze", json=payload)
+    assert r2.status_code == 200
+    used = r2.json()["used_paths"]
+    assert "_profile.md" in used
+    decision_notes = [p for p in used if not p.startswith("_")]
+    assert len(decision_notes) == 1
+    assert decision_notes[0].endswith(".md")
