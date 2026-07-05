@@ -47,6 +47,25 @@ from ..models import (
 # How many notes the selector is allowed to pull into context per run.
 MAX_SELECTED_NOTES = 4
 
+# The company-identity note. Underscore-prefixed DELIBERATELY: index() skips
+# `_*` files, so the profile is never ranked by the selector and never counts
+# against MAX_SELECTED_NOTES — it is not a rankable memory, it is who the
+# company is. read() loads it explicitly and always includes it in the
+# ContextBundle as company-identity context.
+PROFILE_NOTE = "_profile.md"
+
+# Stable "- Label: attr" lines — the render/parse round-trip for hydration.
+_PROFILE_LINES: list[tuple[str, str]] = [
+    ("Company name", "company_name"),
+    ("Sector", "sector"),
+    ("Stage", "stage"),
+    ("Business model", "business_model"),
+    ("Size band", "size_band"),
+    ("Revenue band", "financials.revenue_band"),
+    ("Margin", "financials.margin"),
+    ("Cash position", "financials.cash_position"),
+]
+
 _FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n?(.*)$", re.DOTALL)
 _STOPWORDS = {
     "the", "a", "an", "to", "of", "and", "or", "for", "in", "on", "we",
@@ -66,6 +85,43 @@ def _slugify(text: str) -> str:
             cut = cut.rsplit("-", 1)[0]
         slug = cut.rstrip("-")
     return slug or "decision"
+
+
+def _get_profile_field(profile: CompanyProfile, dotted: str) -> str:
+    obj = profile
+    for part in dotted.split("."):
+        obj = getattr(obj, part)
+    return obj or ""
+
+
+def _render_profile_body(profile: CompanyProfile) -> str:
+    lines = "\n".join(
+        f"- {label}: {_get_profile_field(profile, attr)}"
+        for label, attr in _PROFILE_LINES
+    )
+    return f"# {profile.company_name} — company profile\n\n{lines}"
+
+
+def _parse_profile_body(body: str) -> Optional[CompanyProfile]:
+    """Invert _render_profile_body. Returns None if the note isn't parseable."""
+    values: dict = {}
+    for label, attr in _PROFILE_LINES:
+        m = re.search(rf"^- {re.escape(label)}:[ \t]*(.*)$", body, re.MULTILINE)
+        values[attr] = m.group(1).strip() if m else ""
+    if not values.get("company_name"):
+        return None
+    return CompanyProfile(
+        company_name=values["company_name"],
+        sector=values["sector"],
+        stage=values["stage"],
+        business_model=values["business_model"],
+        size_band=values["size_band"],
+        financials={
+            "revenue_band": values["financials.revenue_band"],
+            "margin": values["financials.margin"] or None,
+            "cash_position": values["financials.cash_position"] or None,
+        },
+    )
 
 
 def _parse_frontmatter(raw: str) -> tuple[dict, str]:
@@ -125,25 +181,66 @@ class Vault:
             ))
         return notes
 
+    # ── profile (company identity) ───────────────────────────────────────
+    def write_profile(self, company_id: str, profile: CompanyProfile) -> None:
+        """Create _profile.md on first write; overwrite only when fields changed."""
+        existing = self.read_profile(company_id)
+        if existing is not None and existing == profile:
+            return
+        company_dir = self._company_dir(company_id)
+        company_dir.mkdir(parents=True, exist_ok=True)
+        fm = {
+            "type": "profile",
+            "updated": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        }
+        (company_dir / PROFILE_NOTE).write_text(
+            f"{_dump_frontmatter(fm)}\n\n{_render_profile_body(profile)}\n",
+            encoding="utf-8",
+        )
+
+    def read_profile(self, company_id: str) -> Optional[CompanyProfile]:
+        """Parse _profile.md back into a CompanyProfile (None if absent/unparseable)."""
+        path = self._company_dir(company_id) / PROFILE_NOTE
+        if not path.exists():
+            return None
+        try:
+            _fm, body = _parse_frontmatter(path.read_text(encoding="utf-8"))
+        except OSError:
+            return None
+        return _parse_profile_body(body)
+
     # ── read (selective retrieval) ───────────────────────────────────────
     def read(self, company_id: str, query: str) -> ContextBundle:
-        """Select the notes relevant to `query` and return only their bodies."""
-        index = self.index(company_id)
-        if not index:
-            return ContextBundle(notes=[], used_paths=[])
+        """Select the notes relevant to `query` and return only their bodies.
 
-        selected = self._select(index, query)
+        The company profile (_profile.md) is not part of selection: it is always
+        included first when present, as identity context outside the
+        MAX_SELECTED_NOTES budget.
+        """
         notes, used = [], []
         company_dir = self._company_dir(company_id)
-        for note in selected:
+
+        profile_path = company_dir / PROFILE_NOTE
+        if profile_path.exists():
             try:
-                _fm, body = _parse_frontmatter(
-                    (company_dir / note.path).read_text(encoding="utf-8")
-                )
+                _fm, pbody = _parse_frontmatter(profile_path.read_text(encoding="utf-8"))
+                notes.append(pbody)
+                used.append(PROFILE_NOTE)
             except OSError:
-                continue
-            notes.append(body)
-            used.append(note.path)
+                pass
+
+        index = self.index(company_id)
+        if index:
+            selected = self._select(index, query)
+            for note in selected:
+                try:
+                    _fm, body = _parse_frontmatter(
+                        (company_dir / note.path).read_text(encoding="utf-8")
+                    )
+                except OSError:
+                    continue
+                notes.append(body)
+                used.append(note.path)
         return ContextBundle(notes=notes, used_paths=used)
 
     def _select(self, index: List[VaultNote], query: str) -> List[VaultNote]:
@@ -203,10 +300,16 @@ class Vault:
         decision: Decision,
         recommendation: BoardRecommendation,
         learnings: Optional[List[str]] = None,
+        profile: Optional[CompanyProfile] = None,
     ) -> str:
         """Append a decision note and return its decision_id (used by the outcome loop)."""
         company_dir = self._company_dir(company_id)
         company_dir.mkdir(parents=True, exist_ok=True)
+
+        # Persist company identity alongside the decision (created on the first
+        # write, refreshed when the operator sends a changed profile).
+        if profile is not None:
+            self.write_profile(company_id, profile)
 
         decision_id = str(uuid.uuid4())
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -289,8 +392,13 @@ def read(company_id: str, query: str) -> ContextBundle:
 
 def write_back(company_id: str, decision: Decision,
                recommendation: BoardRecommendation,
-               learnings: Optional[List[str]] = None) -> str:
-    return _vault.write_back(company_id, decision, recommendation, learnings)
+               learnings: Optional[List[str]] = None,
+               profile: Optional[CompanyProfile] = None) -> str:
+    return _vault.write_back(company_id, decision, recommendation, learnings, profile)
+
+
+def read_profile(company_id: str) -> Optional[CompanyProfile]:
+    return _vault.read_profile(company_id)
 
 
 def record_outcome(company_id: str, decision_id: str, outcome: str, notes: str = "") -> bool:

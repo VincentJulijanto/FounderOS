@@ -200,23 +200,42 @@ BoardResponse:
     recommendation:  BoardRecommendation     # the memo
     mcp_used:        bool                     # carried over from Phase 6
     mcp_sources:     list[str]
+    mock_mode:       bool                     # True when built from mock fixtures — drives the
+                                              # frontend "Sample data" disclosure badge
     created_at:      datetime
 ```
+
+**Amendment (recorded):** `mock_mode` was added to the envelope so fixture output is always
+disclosed in the UI; it is `not settings.is_live` at build time.
 
 `AgentOutput`, `DebateRound`, `ConsensusReport`, `ConflictPoint` keep their existing shapes from
 the current `models.py` — only their *content* becomes company/decision-centric.
 
-### Vault interface (signatures only — no implementation this session)
+### Vault interface (implemented — amendments recorded inline)
 
 ```
 read(company_id: str, query: str) -> ContextBundle
-    # LLM selects the relevant notes from the vault index (frontmatter + filename +
+    # Selects the relevant notes from the vault index (frontmatter + filename +
     # one-line summary) and returns only those. Never loads the whole vault.
+    # Amendment: LLM-driven selection runs LIVE-ONLY, and only when the index
+    # exceeds MAX_SELECTED_NOTES; mock mode and any selector failure fall back to
+    # deterministic keyword overlap. The company profile (_profile.md) is ALWAYS
+    # included first as identity context, outside the MAX_SELECTED_NOTES budget.
 
 write_back(company_id: str, decision: Decision,
-           recommendation: BoardRecommendation, learnings: list[str]) -> None
+           recommendation: BoardRecommendation, learnings: list[str],
+           profile: Optional[CompanyProfile] = None) -> str
     # Appends a decision note + updates the index. This is also the outcome loop:
     # a later outcome is written back against the same decision note.
+    # Amendment: returns the decision_id the outcome loop addresses (not None).
+    # Amendment: when profile is passed, it is persisted as _profile.md — created
+    # on the company's first write, rewritten only when fields change. The note
+    # sits on the underscore (skipped) side of the index: never ranked by the
+    # selector, loaded explicitly by read().
+
+read_profile(company_id: str) -> Optional[CompanyProfile]
+    # Amendment (new export): parses _profile.md back into a CompanyProfile —
+    # the hydration source for requests that omit the profile.
 
 # Vault index the selection step reads (one entry per note):
 VaultNote:
@@ -228,6 +247,10 @@ ContextBundle:
     notes:       list[str]    # bodies of the selected notes only
     used_paths:  list[str]    # provenance — which notes informed this run
 ```
+
+**Amendment — hydration is live:** `AnalyzeRequest.profile` is now truly optional: `profile=None`
+hydrates the profile from the company's `_profile.md` via `read_profile`; if no stored profile
+exists the API returns **422** with a clear message. The old minimal-placeholder branch is gone.
 
 ### Canonical agent-name strings
 
