@@ -170,6 +170,7 @@ export default function Boardroom() {
                 question={request?.decision.question}
                 date={response.created_at}
                 sampleData={response.mock_mode}
+                usedPaths={response.used_paths}
               />
 
               {/* How the board reasoned — attributed */}

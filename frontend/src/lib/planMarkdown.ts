@@ -9,6 +9,25 @@ export interface MemoMeta {
 }
 
 /**
+ * The DECISION notes that informed a run: _-prefixed paths (e.g. _profile.md)
+ * are identity context that rides along on every read — memory they are not.
+ */
+export function consultedDecisionNotes(usedPaths?: string[]): string[] {
+  return (usedPaths ?? []).filter((p) => !p.startsWith('_'))
+}
+
+/** "2026-07-02-should-we-scale-the-lane-0a82cbc3.md" → "Should we scale the lane" */
+export function humanizeNotePath(path: string): string {
+  const name = path
+    .replace(/\.md$/, '')
+    .replace(/^\d{4}-\d{2}-\d{2}-/, '')   // date prefix
+    .replace(/-[0-9a-f]{8}$/, '')          // decision_id suffix
+    .replace(/-/g, ' ')
+    .trim()
+  return name.charAt(0).toUpperCase() + name.slice(1)
+}
+
+/**
  * Serialize a BoardResponse into a portable board-memo Markdown document.
  * Pure client-side — reads only data already in the payload. Mirrors the memo
  * the operator sees on screen: the call → options → dissent → trust posture →
@@ -21,6 +40,13 @@ export function memoToMarkdown(res: BoardResponse, meta?: MemoMeta): string {
   lines.push(`# Board memo — ${meta?.companyName || res.company_id}`)
   if (meta?.question) lines.push(`\n> ${meta.question}`)
   if (res.created_at) lines.push(`\n_${res.created_at.slice(0, 10)}_`)
+  const consulted = consultedDecisionNotes(res.used_paths)
+  if (consulted.length) {
+    lines.push(
+      `\n_Board memory consulted: ${consulted.length} prior decision${consulted.length === 1 ? '' : 's'}` +
+      ` — ${consulted.map(humanizeNotePath).join(' · ')}_`
+    )
+  }
   lines.push(`\n**Recommendation: ${cap(rec.recommendation)}** · ${rec.confidence} confidence`)
   if (rec.rationale) lines.push(`\n${rec.rationale}`)
 

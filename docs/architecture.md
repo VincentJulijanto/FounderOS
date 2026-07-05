@@ -202,6 +202,8 @@ BoardResponse:
     mcp_sources:     list[str]
     mock_mode:       bool                     # True when built from mock fixtures — drives the
                                               # frontend "Sample data" disclosure badge
+    used_paths:      list[str]                # vault notes that informed this run (provenance;
+                                              # _-prefixed = identity context, not memory)
     created_at:      datetime
 ```
 

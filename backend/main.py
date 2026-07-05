@@ -83,6 +83,7 @@ async def build_response(
         mcp_used=mcp_used,
         mcp_sources=mcp_sources,
         mock_mode=not settings.is_live,
+        used_paths=bundle.used_paths,
     )
     return response, bundle.used_paths
 
