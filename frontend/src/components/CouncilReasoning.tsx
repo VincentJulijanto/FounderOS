@@ -3,6 +3,7 @@
 import { Check, AlertTriangle } from 'lucide-react'
 import type { AgentOutput } from '@/lib/types'
 import { iconFor, labelFor } from '@/components/agentRoster'
+import { cleanProse } from '@/lib/planMarkdown'
 
 interface Props {
   outputs: AgentOutput[]
@@ -45,7 +46,7 @@ export default function CouncilReasoning({ outputs }: Props) {
               </header>
 
               {a.analysis && (
-                <p className="text-sm text-graphite/80 leading-relaxed mb-3">{a.analysis}</p>
+                <p className="text-sm text-graphite/80 leading-relaxed mb-3">{cleanProse(a.analysis)}</p>
               )}
 
               {a.key_findings?.length > 0 && (
@@ -53,7 +54,7 @@ export default function CouncilReasoning({ outputs }: Props) {
                   {a.key_findings.map((f, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-graphite/80">
                       <Check className="w-3.5 h-3.5 mt-0.5 shrink-0 text-brand-600" aria-hidden="true" />
-                      {f}
+                      {cleanProse(f)}
                     </li>
                   ))}
                 </ul>
@@ -64,7 +65,7 @@ export default function CouncilReasoning({ outputs }: Props) {
                   {a.concerns.map((c, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-muted">
                       <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0 text-accent-600" aria-hidden="true" />
-                      {c}
+                      {cleanProse(c)}
                     </li>
                   ))}
                 </ul>

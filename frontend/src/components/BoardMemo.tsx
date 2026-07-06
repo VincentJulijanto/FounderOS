@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import type { BoardRecommendation, Verdict } from '@/lib/types'
 import { labelFor } from '@/components/agentRoster'
-import { consultedDecisionNotes, humanizeNotePath } from '@/lib/planMarkdown'
+import { cleanProse, consultedDecisionNotes, humanizeNotePath } from '@/lib/planMarkdown'
 
 interface Props {
   rec: BoardRecommendation
@@ -84,7 +84,7 @@ export default function BoardMemo({ rec, companyName, question, date, sampleData
           </span>
           <span className="text-sm text-muted">{rec.confidence} confidence</span>
         </div>
-        <p className="text-graphite/85 leading-relaxed">{rec.rationale}</p>
+        <p className="text-graphite/85 leading-relaxed">{cleanProse(rec.rationale)}</p>
       </div>
 
       {/* Options assessed */}
@@ -99,7 +99,7 @@ export default function BoardMemo({ rec, companyName, question, date, sampleData
                     <span className={`badge border shrink-0 ${optionVerdictTone(o.verdict)}`}>{o.verdict}</span>
                   )}
                 </div>
-                <p className="text-sm text-graphite/80 leading-relaxed">{o.assessment}</p>
+                <p className="text-sm text-graphite/80 leading-relaxed">{cleanProse(o.assessment)}</p>
               </article>
             ))}
           </div>
@@ -123,7 +123,7 @@ export default function BoardMemo({ rec, companyName, question, date, sampleData
                         unresolved
                       </span>
                     </div>
-                    <span className="text-sm text-graphite/80">{d.position}</span>
+                    <span className="text-sm text-graphite/80">{cleanProse(d.position)}</span>
                   </li>
                 )
               })}
@@ -141,13 +141,13 @@ export default function BoardMemo({ rec, companyName, question, date, sampleData
         {rec.what_would_change_this_call && (
           <div className="card !p-5">
             <SubHead Icon={HelpCircle} title="What would change this call" />
-            <p className="text-sm text-graphite/80 leading-relaxed">{rec.what_would_change_this_call}</p>
+            <p className="text-sm text-graphite/80 leading-relaxed">{cleanProse(rec.what_would_change_this_call)}</p>
           </div>
         )}
         {rec.financial_view && (
           <div className="card !p-5">
             <SubHead Icon={Wallet} title="Financial view" />
-            <p className="text-sm text-graphite/80 leading-relaxed">{rec.financial_view}</p>
+            <p className="text-sm text-graphite/80 leading-relaxed">{cleanProse(rec.financial_view)}</p>
           </div>
         )}
         {rec.missing_inputs.length > 0 && (
@@ -156,7 +156,7 @@ export default function BoardMemo({ rec, companyName, question, date, sampleData
             <ul className="space-y-1.5">
               {rec.missing_inputs.map((m, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-graphite/80">
-                  <span className="mt-1.5 w-1 h-1 rounded-full bg-muted shrink-0" aria-hidden="true" />{m}
+                  <span className="mt-1.5 w-1 h-1 rounded-full bg-muted shrink-0" aria-hidden="true" />{cleanProse(m)}
                 </li>
               ))}
             </ul>
@@ -168,7 +168,7 @@ export default function BoardMemo({ rec, companyName, question, date, sampleData
             <ul className="space-y-1.5">
               {rec.risks.map((r, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-muted">
-                  <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0 text-accent-600" aria-hidden="true" />{r}
+                  <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0 text-accent-600" aria-hidden="true" />{cleanProse(r)}
                 </li>
               ))}
             </ul>
@@ -189,13 +189,13 @@ export default function BoardMemo({ rec, companyName, question, date, sampleData
                   <h3 className="text-sm font-semibold text-graphite">{ph.name}</h3>
                   {ph.timeframe && <span className="text-xs text-muted">{ph.timeframe}</span>}
                 </div>
-                {ph.objective && <p className="text-sm text-graphite/80 mb-2">{ph.objective}</p>}
+                {ph.objective && <p className="text-sm text-graphite/80 mb-2">{cleanProse(ph.objective)}</p>}
                 {ph.actions?.length > 0 && (
                   <ul className="space-y-1">
                     {ph.actions.map((a, j) => (
                       <li key={j} className="flex items-start gap-2 text-sm text-graphite/80">
                         <span className="mt-1.5 w-1 h-1 rounded-full bg-brand-500 shrink-0" aria-hidden="true" />
-                        {a}
+                        {cleanProse(a)}
                       </li>
                     ))}
                   </ul>
