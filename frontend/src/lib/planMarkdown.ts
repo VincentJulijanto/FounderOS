@@ -9,6 +9,26 @@ export interface MemoMeta {
 }
 
 /**
+ * Strip markdown emphasis the LLM emits in prose — display surfaces render raw
+ * text, so `*could*` shows its asterisks on screen and in the PDF. PAIRED
+ * markers only; unpaired asterisks are data, not markup. The .md export is NOT
+ * sanitized — emphasis is legitimate markdown there.
+ *
+ *   cleanProse('board *could* smooth')   → 'board could smooth'
+ *   cleanProse('a **hard** threshold')   → 'a hard threshold'
+ *   cleanProse('`spot` lanes')           → 'spot lanes'
+ *   cleanProse('5*10 grid, 2*3 too')     → unchanged (mid-word asterisks)
+ *   cleanProse('see footnote*')          → unchanged (unpaired)
+ */
+export function cleanProse(text: string): string {
+  return text
+    .replace(/\*\*([^*\n]+?)\*\*/g, '$1')
+    // italic: opening * at start/after space or "(", closing * before space/punct/end
+    .replace(/(^|[\s(])\*([^*\n]+?)\*(?=$|[\s).,;:!?])/g, '$1$2')
+    .replace(/`([^`\n]+)`/g, '$1')
+}
+
+/**
  * The DECISION notes that informed a run: _-prefixed paths (e.g. _profile.md)
  * are identity context that rides along on every read — memory they are not.
  */

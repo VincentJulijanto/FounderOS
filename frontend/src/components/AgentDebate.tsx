@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Gavel, AlertTriangle, Check, ArrowRight } from 'lucide-react'
 import type { AgentOutput, DebateRound, ConsensusReport } from '@/lib/types'
 import { ROSTER, iconFor, labelFor, roleFor } from '@/components/agentRoster'
+import { cleanProse } from '@/lib/planMarkdown'
 
 interface Props {
   phase: 'analyzing' | 'debating'
@@ -62,25 +63,25 @@ function buildTurns(rounds: DebateRound[]): Turn[] {
     round.conflicts_identified.forEach((c, ci) => {
       turns.push({
         key: `r${ri}-c${ci}-a`, speaker: c.agent_a, role: roleFor(c.agent_a),
-        text: c.agent_a_position, kind: 'argument', topic: c.topic,
+        text: cleanProse(c.agent_a_position), kind: 'argument', topic: c.topic,
         isChallenge: c.agent_a === SKEPTIC,
       })
       turns.push({
         key: `r${ri}-c${ci}-b`, speaker: c.agent_b, role: roleFor(c.agent_b),
-        text: c.agent_b_position, kind: 'argument', topic: c.topic,
+        text: cleanProse(c.agent_b_position), kind: 'argument', topic: c.topic,
         isChallenge: c.agent_b === SKEPTIC,
       })
     })
     Object.entries(round.revised_positions).forEach(([agent, stance], i) => {
       turns.push({
         key: `r${ri}-rev${i}`, speaker: agent, role: roleFor(agent),
-        text: stance, kind: 'rebuttal', isChallenge: false,
+        text: cleanProse(stance), kind: 'rebuttal', isChallenge: false,
       })
     })
     if (round.moderator_summary) {
       turns.push({
         key: `r${ri}-mod`, speaker: 'Moderator', role: 'Tracks conflicts toward consensus',
-        text: round.moderator_summary, kind: 'moderator', isChallenge: false,
+        text: cleanProse(round.moderator_summary), kind: 'moderator', isChallenge: false,
       })
     }
   })
@@ -260,7 +261,7 @@ export default function AgentDebate({ phase, responseReady, agentOutputs, debate
 
           {turns.length === 0 && (
             <div className="card text-sm text-graphite/80">
-              {debateSummary || 'All agents reached consensus without debate.'}
+              {debateSummary ? cleanProse(debateSummary) : 'All agents reached consensus without debate.'}
             </div>
           )}
 
@@ -354,7 +355,7 @@ export default function AgentDebate({ phase, responseReady, agentOutputs, debate
           {/* Consensus summary */}
           {revealed >= turns.length && debateSummary && turns.length > 0 && (
             <div className="card text-sm text-graphite/80 whitespace-pre-line">
-              <span className="font-medium text-graphite">Consensus — </span>{debateSummary}
+              <span className="font-medium text-graphite">Consensus — </span>{cleanProse(debateSummary)}
             </div>
           )}
 

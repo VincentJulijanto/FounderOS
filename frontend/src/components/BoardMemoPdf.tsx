@@ -1,6 +1,6 @@
 import type { BoardResponse } from '@/lib/types'
 import { labelFor, roleFor } from '@/components/agentRoster'
-import { consultedDecisionNotes, humanizeNotePath } from '@/lib/planMarkdown'
+import { cleanProse, consultedDecisionNotes, humanizeNotePath } from '@/lib/planMarkdown'
 
 interface Props {
   response: BoardResponse
@@ -113,7 +113,7 @@ export default function BoardMemoPdf({ response, companyName, question }: Props)
           </span>
         </div>
         {rec.rationale && (
-          <p style={{ margin: 0, fontSize: 14, color: C.text, lineHeight: 1.6 }}>{rec.rationale}</p>
+          <p style={{ margin: 0, fontSize: 14, color: C.text, lineHeight: 1.6 }}>{cleanProse(rec.rationale)}</p>
         )}
       </div>
 
@@ -138,7 +138,7 @@ export default function BoardMemoPdf({ response, companyName, question }: Props)
                           </span>
                         )}
                       </div>
-                      {o.assessment && <p style={{ margin: 0, fontSize: 13, color: C.text, lineHeight: 1.5 }}>{o.assessment}</p>}
+                      {o.assessment && <p style={{ margin: 0, fontSize: 13, color: C.text, lineHeight: 1.5 }}>{cleanProse(o.assessment)}</p>}
                     </div>
                   </div>
                 )
@@ -158,9 +158,9 @@ export default function BoardMemoPdf({ response, companyName, question }: Props)
                 Phase {i + 1}: {ph.name}
                 {ph.timeframe && <span style={{ fontWeight: 400, color: C.muted, marginLeft: 6 }}>({ph.timeframe})</span>}
               </div>
-              {ph.objective && <p style={{ margin: '2px 0 6px', fontSize: 13, color: C.muted }}>{ph.objective}</p>}
+              {ph.objective && <p style={{ margin: '2px 0 6px', fontSize: 13, color: C.muted }}>{cleanProse(ph.objective)}</p>}
               {ph.actions?.map((a, j) => (
-                <div key={j} style={bullet}>• {a}</div>
+                <div key={j} style={bullet}>• {cleanProse(a)}</div>
               ))}
             </div>
           ))}
@@ -174,7 +174,7 @@ export default function BoardMemoPdf({ response, companyName, question }: Props)
           rec.dissent.map((d, i) => (
             <div key={i} style={{ marginBottom: i < rec.dissent.length - 1 ? 8 : 0, padding: '8px 12px', background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: 6 }}>
               <span style={{ fontWeight: 600, fontSize: 13, color: '#92400E' }}>{labelFor(d.agent)}</span>
-              <span style={{ color: C.text, fontSize: 13 }}> — {d.position}</span>
+              <span style={{ color: C.text, fontSize: 13 }}> — {cleanProse(d.position)}</span>
             </div>
           ))
         ) : (
@@ -192,14 +192,14 @@ export default function BoardMemoPdf({ response, companyName, question }: Props)
               {rec.what_would_change_this_call && (
                 <div style={{ ...card }}>
                   <p style={{ ...sectionTitle, marginBottom: 6 }}>What would change this call</p>
-                  <p style={{ margin: 0, fontSize: 13, color: C.text, lineHeight: 1.5 }}>{rec.what_would_change_this_call}</p>
+                  <p style={{ margin: 0, fontSize: 13, color: C.text, lineHeight: 1.5 }}>{cleanProse(rec.what_would_change_this_call)}</p>
                 </div>
               )}
               {rec.missing_inputs?.length > 0 && (
                 <div style={{ ...card }}>
                   <p style={{ ...sectionTitle, marginBottom: 6 }}>Missing inputs</p>
                   {rec.missing_inputs.map((m, i) => (
-                    <div key={i} style={bullet}>• {m}</div>
+                    <div key={i} style={bullet}>• {cleanProse(m)}</div>
                   ))}
                 </div>
               )}
@@ -209,14 +209,14 @@ export default function BoardMemoPdf({ response, companyName, question }: Props)
               {rec.financial_view && (
                 <div style={{ ...card }}>
                   <p style={{ ...sectionTitle, marginBottom: 6 }}>Financial view</p>
-                  <p style={{ margin: 0, fontSize: 13, color: C.text, lineHeight: 1.5 }}>{rec.financial_view}</p>
+                  <p style={{ margin: 0, fontSize: 13, color: C.text, lineHeight: 1.5 }}>{cleanProse(rec.financial_view)}</p>
                 </div>
               )}
               {rec.risks?.length > 0 && (
                 <div style={{ ...card }}>
                   <p style={{ ...sectionTitle, marginBottom: 6 }}>Risks</p>
                   {rec.risks.map((r, i) => (
-                    <div key={i} style={bullet}>• {r}</div>
+                    <div key={i} style={bullet}>• {cleanProse(r)}</div>
                   ))}
                 </div>
               )}
@@ -246,17 +246,17 @@ export default function BoardMemoPdf({ response, companyName, question }: Props)
                   )}
                 </div>
               </div>
-              {a.analysis && <p style={{ margin: '0 0 8px', fontSize: 13, color: C.text, lineHeight: 1.5 }}>{a.analysis}</p>}
+              {a.analysis && <p style={{ margin: '0 0 8px', fontSize: 13, color: C.text, lineHeight: 1.5 }}>{cleanProse(a.analysis)}</p>}
               {a.key_findings?.length > 0 && (
                 <div style={{ marginBottom: 6 }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 3 }}>Key findings</div>
-                  {a.key_findings.map((f, j) => <div key={j} style={bullet}>• {f}</div>)}
+                  {a.key_findings.map((f, j) => <div key={j} style={bullet}>• {cleanProse(f)}</div>)}
                 </div>
               )}
               {a.concerns?.length > 0 && (
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 3 }}>Concerns</div>
-                  {a.concerns.map((c, j) => <div key={j} style={bullet}>• {c}</div>)}
+                  {a.concerns.map((c, j) => <div key={j} style={bullet}>• {cleanProse(c)}</div>)}
                 </div>
               )}
             </div>
