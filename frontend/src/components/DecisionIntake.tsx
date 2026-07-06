@@ -57,8 +57,11 @@ const BLANK_PROFILE: CompanyProfile = {
 }
 
 /** company_id from a free-text company name (stubbed picker → vault folder). */
+// Must satisfy the backend company_id pattern ^[a-z0-9][a-z0-9\-_]{0,49}$ —
+// cap at 50 chars so a long company name can't 422 the request.
 const slugId = (name: string) =>
-  name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'new-company'
+  name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    .slice(0, 50).replace(/-$/, '') || 'new-company'
 
 export default function DecisionIntake({ onSubmit }: Props) {
   const [presetId, setPresetId] = useState<string>(COMPANY_PRESETS[0].id)
@@ -181,19 +184,19 @@ export default function DecisionIntake({ onSubmit }: Props) {
 
         {/* Company profile */}
         <div className="grid sm:grid-cols-2 gap-4 pt-2">
-          <Field label="Company name *" value={profile.company_name}
+          <Field label="Company name *" maxLength={100} value={profile.company_name}
             onChange={v => {
               setProfileField('company_name', v)
               if (errors.company_name) setErrors(e => ({ ...e, company_name: undefined }))
             }}
             placeholder="e.g. Harborline Logistics" error={errors.company_name} />
-          <Field label="Sector" value={profile.sector}
+          <Field label="Sector" maxLength={200} value={profile.sector}
             onChange={v => setProfileField('sector', v)} placeholder="e.g. regional logistics" />
-          <Field label="Stage" value={profile.stage}
+          <Field label="Stage" maxLength={100} value={profile.stage}
             onChange={v => setProfileField('stage', v)} placeholder="e.g. scaling" />
-          <Field label="Business model" value={profile.business_model}
+          <Field label="Business model" maxLength={200} value={profile.business_model}
             onChange={v => setProfileField('business_model', v)} placeholder="e.g. B2B freight + 3PL" />
-          <Field label="Size band" value={profile.size_band}
+          <Field label="Size band" maxLength={50} value={profile.size_band}
             onChange={v => setProfileField('size_band', v)} placeholder="e.g. 11–50" />
           <Field label="Revenue band" value={profile.financials.revenue_band}
             onChange={v => setFinField('revenue_band', v)} placeholder="e.g. SGD 8–12M revenue" />
@@ -284,15 +287,16 @@ export default function DecisionIntake({ onSubmit }: Props) {
   )
 }
 
-function Field({ label, value, onChange, placeholder, error }: {
+function Field({ label, value, onChange, placeholder, error, maxLength }: {
   label: string; value: string; onChange: (v: string) => void; placeholder?: string; error?: string
+  maxLength?: number
 }) {
   return (
     <div>
       <label className="label">{label}</label>
       <input
         className={`input ${error ? 'border-red-300 focus:border-red-400' : ''}`}
-        placeholder={placeholder} value={value}
+        placeholder={placeholder} value={value} maxLength={maxLength}
         onChange={e => onChange(e.target.value)}
         aria-invalid={error ? true : undefined}
       />

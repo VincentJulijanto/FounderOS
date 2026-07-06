@@ -9,6 +9,7 @@ Endpoints (contract in docs/architecture.md § API Architecture):
 """
 
 import logging
+import os
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -34,7 +35,14 @@ from . import vault
 # App Setup
 # ─────────────────────────────────────────────
 
-limiter = Limiter(key_func=get_remote_address)
+# Rate limits are env-tunable (e.g. raise ANALYZE_RATE_LIMIT on demo day, or
+# set RATE_LIMIT_ENABLED=false in tests) — no code change needed.
+ANALYZE_RATE_LIMIT = os.environ.get("ANALYZE_RATE_LIMIT", "5/minute")
+FEEDBACK_RATE_LIMIT = os.environ.get("FEEDBACK_RATE_LIMIT", "20/minute")
+limiter = Limiter(
+    key_func=get_remote_address,
+    enabled=os.environ.get("RATE_LIMIT_ENABLED", "true").lower() != "false",
+)
 
 app = FastAPI(
     title="FounderOS API",
@@ -122,7 +130,7 @@ def root():
 
 
 @app.post("/api/analyze", response_model=BoardResponse)
-@limiter.limit("5/minute")
+@limiter.limit(ANALYZE_RATE_LIMIT)
 async def analyze(request: Request, body: AnalyzeRequest):
     """
     Evaluate one company decision and return a board memo.
@@ -176,7 +184,7 @@ def get_response(response_id: str):
 
 
 @app.post("/api/feedback")
-@limiter.limit("20/minute")
+@limiter.limit(FEEDBACK_RATE_LIMIT)
 def submit_feedback(request: Request, body: FeedbackRequest):
     """
     The outcome loop — record what actually happened against the decision note.

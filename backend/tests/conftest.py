@@ -9,7 +9,14 @@ behaves the same with or without credentials. A live smoke test (Sprint B) is
 run deliberately and separately, never through this suite.
 """
 
+import os
+
 import pytest
+
+# Rate limiting off for the hermetic suite — TestClient shares one client IP,
+# so a real per-IP limit would 429 later analyze-tests. Must be set before
+# backend.main is imported (the Limiter reads it at module import).
+os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
 
 from backend.config import settings
 from backend.mcp.client import mcp_client

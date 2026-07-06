@@ -1,8 +1,13 @@
 import type { BoardResponse } from '@/lib/types'
 import { labelFor, roleFor } from '@/components/agentRoster'
+import { consultedDecisionNotes, humanizeNotePath } from '@/lib/planMarkdown'
 
 interface Props {
   response: BoardResponse
+  /** Company DISPLAY name (picker label) — falls back to the company_id slug. */
+  companyName?: string
+  /** The decision question the board was convened on. */
+  question?: string
 }
 
 const C = {
@@ -52,12 +57,14 @@ const bullet: React.CSSProperties = {
   lineHeight: 1.5,
 }
 
-export default function BoardMemoPdf({ response }: Props) {
+export default function BoardMemoPdf({ response, companyName, question }: Props) {
   const rec = response.recommendation
   const vs = verdictStyle(rec.recommendation)
   const exportDate = new Date().toLocaleDateString('en-GB', {
     day: 'numeric', month: 'long', year: 'numeric',
   })
+  // Decision notes only — _profile.md is identity, not memory (same rule as on screen).
+  const consulted = consultedDecisionNotes(response.used_paths)
 
   return (
     <div style={{ background: C.pageBg, padding: 32, fontFamily: 'system-ui, -apple-system, sans-serif', color: C.text, fontSize: 14, lineHeight: 1.6 }}>
@@ -70,10 +77,24 @@ export default function BoardMemoPdf({ response }: Props) {
         <div style={{ display: 'table-row' }}>
           <div style={{ display: 'table-cell', verticalAlign: 'bottom' }}>
             <div style={{ fontSize: 20, fontWeight: 700, color: C.text }}>FounderOS Board Memo</div>
-            <div style={{ fontSize: 13, color: C.muted, marginTop: 2 }}>{response.company_id}</div>
+            <div style={{ fontSize: 13, color: C.muted, marginTop: 2 }}>{companyName || response.company_id}</div>
+            {question && (
+              <div style={{ fontSize: 14, fontWeight: 500, color: C.text, marginTop: 6 }}>&ldquo;{question}&rdquo;</div>
+            )}
+            {consulted.length > 0 && (
+              <div style={{ fontSize: 11, color: C.muted, marginTop: 6 }}>
+                Board memory consulted: {consulted.length} prior decision{consulted.length === 1 ? '' : 's'} —{' '}
+                {consulted.map(humanizeNotePath).join(' · ')}
+              </div>
+            )}
           </div>
           <div style={{ display: 'table-cell', verticalAlign: 'bottom', textAlign: 'right', fontSize: 12, color: C.muted }}>
             {exportDate}
+            {response.mock_mode && (
+              <div style={{ marginTop: 6, display: 'inline-block', border: `1px solid ${C.border}`, borderRadius: 6, padding: '3px 10px', fontSize: 11, color: C.muted, background: '#FAFAF8' }}>
+                Sample data — mock fixtures, not a live board run
+              </div>
+            )}
           </div>
         </div>
       </div>
