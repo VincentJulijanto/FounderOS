@@ -16,8 +16,8 @@ class Settings(BaseSettings):
     # === MCP tool server — paste URL in .env when ready ===
     mcp_server_url: str = ""
 
-    # === Database ===
-    database_url: str = "postgresql+asyncpg://postgres:password@localhost:5432/founderos"
+    # === Database (off-path — vault is the only persistence layer, Decision #1) ===
+    database_url: str = "postgresql+asyncpg://localhost:5432/founderos"
 
     # === App ===
     app_env: str = "development"

@@ -250,6 +250,16 @@ ContextBundle:
     used_paths:  list[str]    # provenance — which notes informed this run
 ```
 
+**Amendment — input hardening (recorded):** the contract shapes are unchanged, but the backend
+now enforces limits on them: `CompanyProfile` fields carry Pydantic `max_length` caps
+(company_name 100 · sector 200 · stage 100 · business_model 200 · size_band 50), `Decision.question`
+caps at 500 and `context` at 2000, and `company_id` must match `^[a-z0-9][a-z0-9\-_]{0,49}$`.
+`Vault._company_dir` independently validates the id and blocks path traversal outside the vault
+root. `/api/analyze` is rate-limited (`ANALYZE_RATE_LIMIT`, default `5/minute`; `RATE_LIMIT_ENABLED`
+kills it for tests) — all env-tunable. The frontend mirrors the caps in `types.ts` (`PROFILE_LIMITS`
+/ `DECISION_LIMITS`) and as intake `maxLength`s, and `slugId` caps at 50 so a long company name
+cannot 422.
+
 **Amendment — hydration is live:** `AnalyzeRequest.profile` is now truly optional: `profile=None`
 hydrates the profile from the company's `_profile.md` via `read_profile`; if no stored profile
 exists the API returns **422** with a clear message. The old minimal-placeholder branch is gone.

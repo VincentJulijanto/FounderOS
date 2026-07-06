@@ -17,12 +17,20 @@ export interface Financials {
   cash_position?: string | null
 }
 
+// Backend enforces max lengths (Pydantic Field caps) — mirror them in any input UI.
+export const PROFILE_LIMITS = {
+  company_name: 100, sector: 200, stage: 100, business_model: 200, size_band: 50,
+} as const
+export const DECISION_LIMITS = { question: 500, context: 2000 } as const
+/** company_id must match ^[a-z0-9][a-z0-9\-_]{0,49}$ (validated server-side). */
+export const COMPANY_ID_MAX = 50
+
 export interface CompanyProfile {
-  company_name: string
-  sector: string          // e.g. "regional logistics", "D2C skincare"
-  stage: string           // e.g. "early-revenue", "scaling", "mature"
-  business_model: string  // e.g. "B2B SaaS", "marketplace", "retail"
-  size_band: string       // e.g. "1–10", "11–50", "51–200" employees
+  company_name: string    // ≤100 chars (server-enforced)
+  sector: string          // ≤200 · e.g. "regional logistics", "D2C skincare"
+  stage: string           // ≤100 · e.g. "early-revenue", "scaling", "mature"
+  business_model: string  // ≤200 · e.g. "B2B SaaS", "marketplace", "retail"
+  size_band: string       // ≤50 · e.g. "1–10", "11–50", "51–200" employees
   financials: Financials
 }
 
@@ -32,7 +40,7 @@ export interface Constraints {
 }
 
 export interface Decision {
-  question: string        // the call being brought to the board
+  question: string        // ≤500 chars (server-enforced)
   context?: string | null // background the operator wants on the table
   constraints: Constraints
   /** Alternative approaches to THIS one decision; Scout frames them if empty. */

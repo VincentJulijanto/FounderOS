@@ -8,9 +8,17 @@ Endpoints (contract in docs/architecture.md § API Architecture):
   GET  /api/company/{company_id} — The company's decision history (from the vault)
 """
 
-from fastapi import FastAPI, HTTPException
+import logging
+import os
+
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 import asyncio
+
+logger = logging.getLogger(__name__)
 
 from .config import settings
 from .models import (
@@ -27,11 +35,23 @@ from . import vault
 # App Setup
 # ─────────────────────────────────────────────
 
+# Rate limits are env-tunable (e.g. raise ANALYZE_RATE_LIMIT on demo day, or
+# set RATE_LIMIT_ENABLED=false in tests) — no code change needed.
+ANALYZE_RATE_LIMIT = os.environ.get("ANALYZE_RATE_LIMIT", "5/minute")
+FEEDBACK_RATE_LIMIT = os.environ.get("FEEDBACK_RATE_LIMIT", "20/minute")
+limiter = Limiter(
+    key_func=get_remote_address,
+    enabled=os.environ.get("RATE_LIMIT_ENABLED", "true").lower() != "false",
+)
+
 app = FastAPI(
     title="FounderOS API",
     description="AI board of directors — evaluate one company decision, get a board memo",
     version="2.0.0",
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -110,7 +130,8 @@ def root():
 
 
 @app.post("/api/analyze", response_model=BoardResponse)
-async def analyze(request: AnalyzeRequest):
+@limiter.limit(ANALYZE_RATE_LIMIT)
+async def analyze(request: Request, body: AnalyzeRequest):
     """
     Evaluate one company decision and return a board memo.
     Runs the full board (LangGraph) and writes the decision back to the vault.
@@ -118,36 +139,39 @@ async def analyze(request: AnalyzeRequest):
     # Profile: use the supplied one, else hydrate from the vault's _profile.md
     # (stubbed company picker → vault folder). Resolved BEFORE the try so the
     # 422 isn't swallowed into a 500 by the pipeline catch-all.
-    profile = request.profile or vault.read_profile(request.company_id)
+    profile = body.profile or vault.read_profile(body.company_id)
     if profile is None:
         raise HTTPException(
             status_code=422,
-            detail=f"No stored profile for company '{request.company_id}' — "
+            detail=f"No stored profile for company '{body.company_id}' — "
                    "include a company profile with the first decision.",
         )
 
     try:
-        response, _used = await build_response(request.company_id, profile, request.decision)
+        response, _used = await build_response(body.company_id, profile, body.decision)
 
         # Persist the decision + company identity to the vault (durable) + the
         # request store (for GET).
         decision_id = vault.write_back(
-            company_id=request.company_id,
-            decision=request.decision,
+            company_id=body.company_id,
+            decision=body.decision,
             recommendation=response.recommendation,
             learnings=[d.position for d in response.recommendation.dissent],
             profile=profile,
         )
         responses_store[response.response_id] = {
             "response": response.model_dump(),
-            "company_id": request.company_id,
+            "company_id": body.company_id,
             "decision_id": decision_id,
         }
 
         return response
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Board pipeline failed: {str(e)}")
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("Board pipeline failed for company %s", body.company_id)
+        raise HTTPException(status_code=500, detail="Board pipeline failed. Please try again.")
 
 
 @app.get("/api/response/{response_id}")
@@ -160,22 +184,22 @@ def get_response(response_id: str):
 
 
 @app.post("/api/feedback")
-def submit_feedback(request: FeedbackRequest):
+@limiter.limit(FEEDBACK_RATE_LIMIT)
+def submit_feedback(request: Request, body: FeedbackRequest):
     """
     The outcome loop — record what actually happened against the decision note.
     """
-    record = responses_store.get(request.response_id)
+    record = responses_store.get(body.response_id)
     if not record:
         raise HTTPException(status_code=404, detail="Response not found")
 
     ok = vault.record_outcome(
         company_id=record["company_id"],
         decision_id=record["decision_id"],
-        outcome=request.outcome or "",
-        notes=request.notes or "",
+        outcome=body.outcome or "",
+        notes=body.notes or "",
     )
-    # Mirror onto the in-memory snapshot too.
-    record["response"]["_outcome"] = request.outcome
+    record["response"]["_outcome"] = body.outcome
 
     return {
         "status": "ok",
@@ -187,10 +211,16 @@ def submit_feedback(request: FeedbackRequest):
 @app.get("/api/company/{company_id}")
 def get_company(company_id: str):
     """The company's decision history from the vault index."""
-    return {
-        "company_id": company_id,
-        "history": vault.history(company_id),
-    }
+    try:
+        return {
+            "company_id": company_id,
+            "history": vault.history(company_id),
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception:
+        logger.exception("Failed to fetch history for company %s", company_id)
+        raise HTTPException(status_code=500, detail="Could not retrieve company history.")
 
 
 # ─────────────────────────────────────────────
