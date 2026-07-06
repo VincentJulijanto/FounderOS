@@ -5,19 +5,23 @@
 > what to do next. Read this first at the start of any new session. The **canonical, frozen Phase 0
 > contract** lives in `docs/architecture.md`; the **standing brief** for both build lanes is `CLAUDE.md`.
 
-**Last updated:** 2026-07-03
-**Current phase:** **Phases 8–10 merged to `main`** (backend hardening), on top of Vincent's PR #8
-(`862e5fd`, options-1:1 + frontend memo/validation fixes). Reconciled cleanly — my phases touch no
-file PR #8 changed. **Suite 40 passed** (mock/offline).
-- **Phase 8** — `test_system.py`: seed-vault integrity + retrieval, frontend↔backend contract shape.
-- **Phase 9** — Xero/Shopify-style `fetch_financials` connector grounding the Finance agent.
-- **Phase 10** — vault filename-collision fix (unique note names; a rigorous dry-run found silent
-  data loss when two identical same-day decisions collided).
-- **Phase 11 (options-1:1) DROPPED** — Vincent's PR #8 already fixed the same bug; verified his fix
-  passes the exact-count probe (1–6). Two independent finds of the same real bug.
-**Branch:** merged via `main`. Build complete; remaining work is deploy (Docker/HF/Vercel) + a live
-end-to-end run. Whole system verified in mock: lifecycle, seed memory, connector provenance, options
-1:1, frontend runtime (`/boardroom` 200, `/studio` 404, tsc clean).
+**Last updated:** 2026-07-06
+**Current phase:** **SHIPPED & LIVE-VERIFIED — feature freeze in effect.** Everything through
+PR #12 is merged to `main` and deployed: frontend at **founderos-zeta.vercel.app** (Vercel Hobby),
+backend at **vincent-playground-founderos-api.hf.space** (HF Docker Space, CPU Basic, live Qwen).
+- **Live-validated end to end:** three full runs through the HF proxy (93s / 132s / 100s, all
+  HTTP 200, zero parse failures on the raised token ceilings). The **MVP loop is proven live**:
+  cold-start company typed fresh → live board run → `_profile.md` + decision note written →
+  second run hydrates the profile (`profile=None` → 200) and the memo cites the prior decision.
+- **Shipped since the pivot build:** live-run fixes (anti-invention prompts, debate 6000-token
+  ceiling, round-2 stalemate grace, "Contested — dissent recorded" reframe, ~110s wait pacing,
+  5-note seed depth so `_llm_select` fires, slug word-boundary) · vault profile persistence +
+  hydration (PR #10) · "Board memory consulted" provenance line (PR #11) · **PDF export +
+  security hardening (PR #12)** — client-side board-memo PDF (blank-capture bug found and fixed,
+  A4 pagination verified page-by-page on the deployed stack), env-tunable rate limits, input
+  caps + `company_id` pattern + path-traversal guard, mirrored client-side.
+**Remaining (docs/prep only):** archive the Kestrel cold-start receipt, rehearse the 3-minute
+script (`docs/demo_script.md`) with a stopwatch, morning-of ritual per the script.
 
 ---
 
@@ -35,9 +39,9 @@ by default), or **Joint**.
 | Day 6 | Vincent: landing + agentRoster. Steven: main.py endpoints, wire vault into the run, tests. (Backend assist window if Vincent is free) | Split | **Steven: DONE.** **Vincent: DONE** (roster to canonical strings Phase 4; landing CTAs + copy sweep Phase 6) |
 | Day 6.5 | Steven: Decision #8 deploy wiring — Dockerfile + `.dockerignore` + Space README + seed vault | Steven (Lane A) | **DONE** (Phase 3, `phase-3-deployment`) |
 | Day 6.6 | Lane B frontend pivot: contract mirror + roster (P4), evaluator app intake + memo (P5), `/studio → /boardroom` rename + copy sweep (P6) | Lane B | **DONE** (Phases 4–6) |
-| Day 7 | Buffer / MCP connector stretch. Vincent: renderer polish. Steven: Xero or Shopify into Finance if ahead | Split | Not started |
-| Day 8 | Integration: real backend to real frontend, fix drift. Feature freeze end of day | Joint | Not started |
-| Day 9 | Demo prep + buffer | Joint | Not started |
+| Day 7 | Buffer / MCP connector stretch. Vincent: renderer polish. Steven: Xero or Shopify into Finance if ahead | Split | **DONE** (P9 book-financials connector, mock-safe; live-run fix pass PR #9) |
+| Day 8 | Integration: real backend to real frontend, fix drift. Feature freeze end of day | Joint | **DONE** — deployed (HF Space + Vercel), 3 live proxy runs green, profile persistence + provenance + PDF export shipped (PRs #10–#12). **Feature freeze in effect.** |
+| Day 9 | Demo prep + buffer | Joint | **In progress** — script v2 locked (`docs/demo_script.md`); remaining: Kestrel receipt archival + stopwatch rehearsals |
 
 The canonical lane/ownership split and shared-file watchlist already live in this file (below) and
 in `CLAUDE.md`; update the **Status** column as work lands. The rows map onto the blueprint's build
