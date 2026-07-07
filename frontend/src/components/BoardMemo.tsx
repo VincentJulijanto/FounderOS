@@ -8,6 +8,15 @@ import type { BoardRecommendation, Verdict } from '@/lib/types'
 import { labelFor } from '@/components/agentRoster'
 import { cleanProse, consultedDecisionNotes, humanizeNotePath } from '@/lib/planMarkdown'
 
+/** Dedupe + word-boundary-truncate note names, capped at 2 + "and N more". */
+const formatConsulted = (paths: string[]): string => {
+  const names = Array.from(new Set(paths.map(humanizeNotePath)))
+  const short = (s: string) => (s.length > 48 ? s.slice(0, 48).replace(/\s+\S*$/, '') + '\u2026' : s)
+  const shown = names.slice(0, 2).map(short)
+  const more = names.length - shown.length
+  return shown.join(' \u00b7 ') + (more > 0 ? ` and ${more} more` : '')
+}
+
 interface Props {
   rec: BoardRecommendation
   /** Company DISPLAY name (from the picker's label, never the vault slug). */
@@ -64,7 +73,7 @@ export default function BoardMemo({ rec, companyName, question, date, sampleData
               {consulted.length > 0 && (
                 <p
                   className="text-xs text-muted mt-1.5"
-                  title={consulted.map(humanizeNotePath).join('\n')}
+                  title={formatConsulted(consulted)}
                 >
                   Board memory consulted: {consulted.length} prior decision{consulted.length === 1 ? '' : 's'}
                 </p>
@@ -89,11 +98,20 @@ export default function BoardMemo({ rec, companyName, question, date, sampleData
 
       {/* Options assessed */}
       {rec.options_assessed.length > 0 && (
-        <Section title="Options assessed" Icon={Scale}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Section
+          title="Options assessed"
+          Icon={Scale}
+          hint={`The board weighed ${rec.options_assessed.length} option${rec.options_assessed.length === 1 ? '' : 's'} against the call above`}
+        >
+          {/* 2-up only when content-balanced: exactly two short assessments. */}
+          <div className={
+            rec.options_assessed.length === 2 && rec.options_assessed.every(o => (o.assessment || '').length <= 260)
+              ? 'grid grid-cols-1 md:grid-cols-2 gap-4'
+              : 'grid grid-cols-1 gap-4'
+          }>
             {rec.options_assessed.map((o, i) => (
               <article key={i} className="card !p-5">
-                <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="flex items-center justify-between gap-3 mb-2">
                   <h3 className="text-sm font-semibold text-graphite">{o.option}</h3>
                   {o.verdict && (
                     <span className={`badge border shrink-0 ${optionVerdictTone(o.verdict)}`}>{o.verdict}</span>
@@ -108,15 +126,14 @@ export default function BoardMemo({ rec, companyName, question, date, sampleData
 
       {/* Dissent on record — a feature of the output, not a failure. Always
           rendered: an empty record is itself part of the trust posture. */}
-      <Section title="Dissent on record" Icon={ShieldAlert}>
+      <Section title="Dissent on record" Icon={ShieldAlert} hint="Objections that did not resolve — on the record">
         {rec.dissent.length > 0 ? (
           <>
-            <p className="text-sm text-muted -mt-2 mb-3">Objections that did not get resolved — surfaced, not buried.</p>
             <ul className="space-y-2">
               {rec.dissent.map((d, i) => {
                 const isSkeptic = d.agent === 'skeptic'
                 return (
-                  <li key={i} className={`card !p-4 ${isSkeptic ? 'border-red-200 bg-red-50/40' : 'border-amber-200 bg-amber-50/50'}`}>
+                  <li key={i} className={`card !p-5 ${isSkeptic ? 'border-red-200 bg-red-50/40' : 'border-amber-200 bg-amber-50/50'}`}>
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-semibold text-graphite">{labelFor(d.agent)}</span>
                       <span className={`badge border text-[10px] uppercase tracking-wide ${isSkeptic ? 'bg-red-100 text-red-700 border-red-200' : 'bg-amber-100 text-amber-700 border-amber-200'}`}>
@@ -130,14 +147,16 @@ export default function BoardMemo({ rec, companyName, question, date, sampleData
             </ul>
           </>
         ) : (
-          <p className="card !p-4 text-sm text-muted -mt-1">
+          <p className="card !p-5 text-sm text-muted -mt-1">
             No dissent recorded — the board aligned on this call.
           </p>
         )}
       </Section>
 
       {/* Trust posture — what would change the call, what's missing, the risks */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <p className="text-xs text-muted mb-3">What the board doesn&rsquo;t know, and what would change its mind</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {rec.what_would_change_this_call && (
           <div className="card !p-5">
             <SubHead Icon={HelpCircle} title="What would change this call" />
@@ -174,11 +193,12 @@ export default function BoardMemo({ rec, companyName, question, date, sampleData
             </ul>
           </div>
         )}
+        </div>
       </div>
 
       {/* Execution plan (phased) — the appendix: the call and its reservations come first */}
       {rec.execution_plan?.phases?.length > 0 && (
-        <Section title="Execution plan" Icon={MapIcon}>
+        <Section title="Execution plan" Icon={MapIcon} hint="The recommended path, phased">
           <ol className="space-y-4">
             {rec.execution_plan.phases.map((ph, i) => (
               <li key={i} className="card !p-5">
@@ -209,15 +229,16 @@ export default function BoardMemo({ rec, companyName, question, date, sampleData
   )
 }
 
-function Section({ title, Icon, children }: { title: string; Icon: typeof CheckCircle2; children: React.ReactNode }) {
+function Section({ title, Icon, hint, children }: { title: string; Icon: typeof CheckCircle2; hint?: string; children: React.ReactNode }) {
   return (
     <section>
-      <div className="flex items-center gap-2.5 mb-4">
+      <div className={`flex items-center gap-2.5 ${hint ? 'mb-1' : 'mb-4'}`}>
         <span className="w-8 h-8 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-600">
           <Icon className="w-4 h-4" aria-hidden="true" />
         </span>
         <h2 className="text-xl font-semibold tracking-[-0.01em]">{title}</h2>
       </div>
+      {hint && <p className="text-xs text-muted mb-4 ml-[42px]">{hint}</p>}
       {children}
     </section>
   )
