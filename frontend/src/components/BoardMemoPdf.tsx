@@ -2,6 +2,15 @@ import type { BoardResponse } from '@/lib/types'
 import { labelFor, roleFor } from '@/components/agentRoster'
 import { cleanProse, consultedDecisionNotes, humanizeNotePath } from '@/lib/planMarkdown'
 
+/** Dedupe + word-boundary-truncate note names, capped at 2 + "and N more". */
+const formatConsulted = (paths: string[]): string => {
+  const names = Array.from(new Set(paths.map(humanizeNotePath)))
+  const short = (s: string) => (s.length > 48 ? s.slice(0, 48).replace(/\s+\S*$/, '') + '\u2026' : s)
+  const shown = names.slice(0, 2).map(short)
+  const more = names.length - shown.length
+  return shown.join(' \u00b7 ') + (more > 0 ? ` and ${more} more` : '')
+}
+
 interface Props {
   response: BoardResponse
   /** Company DISPLAY name (picker label) — falls back to the company_id slug. */
@@ -39,6 +48,12 @@ const card: React.CSSProperties = {
   pageBreakInside: 'avoid',
 }
 
+const sectionHint: React.CSSProperties = {
+  fontSize: 11,
+  color: '#6B6B72',
+  margin: '-8px 0 12px',
+}
+
 const sectionTitle: React.CSSProperties = {
   fontSize: 11,
   fontWeight: 600,
@@ -51,7 +66,8 @@ const sectionTitle: React.CSSProperties = {
 
 const bullet: React.CSSProperties = {
   margin: '3px 0',
-  paddingLeft: 16,
+  paddingLeft: 28,
+  textIndent: -12,   // hanging indent: wrapped lines align under the text, not the dot
   color: C.text,
   fontSize: 13,
   lineHeight: 1.5,
@@ -75,7 +91,7 @@ export default function BoardMemoPdf({ response, companyName, question }: Props)
       {/* Document header */}
       <div style={{ display: 'table', width: '100%', marginBottom: 24 }}>
         <div style={{ display: 'table-row' }}>
-          <div style={{ display: 'table-cell', verticalAlign: 'bottom' }}>
+          <div style={{ display: 'table-cell', verticalAlign: 'bottom', paddingRight: 20 }}>
             <div style={{ fontSize: 20, fontWeight: 700, color: C.text }}>FounderOS Board Memo</div>
             <div style={{ fontSize: 13, color: C.muted, marginTop: 2 }}>{companyName || response.company_id}</div>
             {question && (
@@ -84,15 +100,15 @@ export default function BoardMemoPdf({ response, companyName, question }: Props)
             {consulted.length > 0 && (
               <div style={{ fontSize: 11, color: C.muted, marginTop: 6 }}>
                 Board memory consulted: {consulted.length} prior decision{consulted.length === 1 ? '' : 's'} —{' '}
-                {consulted.map(humanizeNotePath).join(' · ')}
+                {formatConsulted(consulted)}
               </div>
             )}
           </div>
           <div style={{ display: 'table-cell', verticalAlign: 'bottom', textAlign: 'right', fontSize: 12, color: C.muted }}>
-            {exportDate}
+            <div style={{ whiteSpace: 'nowrap' as const }}>{exportDate}</div>
             {response.mock_mode && (
-              <div style={{ marginTop: 6, display: 'inline-block', border: `1px solid ${C.border}`, borderRadius: 6, padding: '3px 10px', fontSize: 11, color: C.muted, background: '#FAFAF8' }}>
-                Sample data — mock fixtures, not a live board run
+              <div style={{ marginTop: 6, display: 'inline-flex', alignItems: 'center', border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 10px', fontSize: 11, color: C.muted, background: '#FAFAF8', textAlign: 'left' as const, whiteSpace: 'nowrap' as const }}>
+                Sample data — mock run, not live
               </div>
             )}
           </div>
@@ -117,41 +133,27 @@ export default function BoardMemoPdf({ response, companyName, question }: Props)
         )}
       </div>
 
-      {/* Options Assessed */}
+      {/* Options Assessed — stacked full-width; the section wrapper is flattened so
+          the page breaker can pull the header + first card up and break BETWEEN cards. */}
       {rec.options_assessed?.length > 0 && (
-        <div style={{ marginBottom: 12 }}>
-          <p style={sectionTitle}>Options Assessed</p>
-          <div style={{ display: 'table', width: '100%', borderSpacing: '6px 0' }}>
-            <div style={{ display: 'table-row' }}>
-              {rec.options_assessed.map((o, i) => {
-                const ov = o.verdict
-                  ? verdictStyle(o.verdict === 'favoured' ? 'proceed' : o.verdict === 'avoid' ? 'hold' : 'conditional')
-                  : null
-                return (
-                  <div key={i} style={{ display: 'table-cell', width: '50%', verticalAlign: 'top', paddingRight: i % 2 === 0 ? 8 : 0 }}>
-                    <div style={{ ...card, marginBottom: 6 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6, gap: 8 }}>
-                        <span style={{ fontWeight: 600, fontSize: 13, color: C.text, flex: 1 }}>{o.option}</span>
-                        {o.verdict && ov && (
-                          <span style={{ background: ov.bg, color: ov.text, borderRadius: 4, padding: '2px 7px', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' as const }}>
-                            {cap(o.verdict)}
-                          </span>
-                        )}
-                      </div>
-                      {o.assessment && <p style={{ margin: 0, fontSize: 13, color: C.text, lineHeight: 1.5 }}>{cleanProse(o.assessment)}</p>}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+        <>
+          <div style={{ pageBreakInside: 'avoid' as const }}>
+            <p style={sectionTitle}>Options Assessed</p>
+            <p style={sectionHint}>The board weighed {rec.options_assessed.length} option{rec.options_assessed.length === 1 ? '' : 's'} against the call above</p>
+            <OptionCard o={rec.options_assessed[0]} />
           </div>
-        </div>
+          {rec.options_assessed.slice(1).map((o, i) => (
+            <OptionCard key={i} o={o} />
+          ))}
+          <div style={{ height: 6 }} />
+        </>
       )}
 
       {/* Execution Plan */}
       {rec.execution_plan?.phases?.length > 0 && (
         <div style={{ ...card }}>
           <p style={sectionTitle}>Execution Plan</p>
+          <p style={sectionHint}>The recommended path, phased</p>
           {rec.execution_plan.phases.map((ph, i) => (
             <div key={i} style={{ marginBottom: i < rec.execution_plan.phases.length - 1 ? 14 : 0, pageBreakInside: 'avoid' }}>
               <div style={{ fontWeight: 600, fontSize: 13, color: C.text, marginBottom: 3 }}>
@@ -170,6 +172,7 @@ export default function BoardMemoPdf({ response, companyName, question }: Props)
       {/* Dissent on Record */}
       <div style={{ ...card }}>
         <p style={sectionTitle}>Dissent on Record</p>
+        <p style={sectionHint}>Objections that did not resolve — on the record</p>
         {rec.dissent?.length > 0 ? (
           rec.dissent.map((d, i) => (
             <div key={i} style={{ marginBottom: i < rec.dissent.length - 1 ? 8 : 0, padding: '8px 12px', background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: 6 }}>
@@ -182,95 +185,140 @@ export default function BoardMemoPdf({ response, companyName, question }: Props)
         )}
       </div>
 
-      {/* Trust Posture — 2-column */}
-      <div style={{ marginBottom: 12 }}>
-        <p style={sectionTitle}>Trust Posture</p>
-        <div style={{ display: 'table', width: '100%', borderSpacing: 0 }}>
-          <div style={{ display: 'table-row' }}>
-            {/* Left col */}
-            <div style={{ display: 'table-cell', width: '50%', verticalAlign: 'top', paddingRight: 8 }}>
-              {rec.what_would_change_this_call && (
-                <div style={{ ...card }}>
-                  <p style={{ ...sectionTitle, marginBottom: 6 }}>What would change this call</p>
-                  <p style={{ margin: 0, fontSize: 13, color: C.text, lineHeight: 1.5 }}>{cleanProse(rec.what_would_change_this_call)}</p>
-                </div>
-              )}
-              {rec.missing_inputs?.length > 0 && (
-                <div style={{ ...card }}>
-                  <p style={{ ...sectionTitle, marginBottom: 6 }}>Missing inputs</p>
-                  {rec.missing_inputs.map((m, i) => (
-                    <div key={i} style={bullet}>• {cleanProse(m)}</div>
-                  ))}
-                </div>
-              )}
+      {/* Trust Posture — single column; flattened for the page breaker (see Options). */}
+      {(() => {
+        const cards = [
+          rec.what_would_change_this_call && (
+            <div key="wc" style={{ ...card }}>
+              <p style={{ ...sectionTitle, marginBottom: 6 }}>What would change this call</p>
+              <p style={{ margin: 0, fontSize: 13, color: C.text, lineHeight: 1.5 }}>{cleanProse(rec.what_would_change_this_call)}</p>
             </div>
-            {/* Right col */}
-            <div style={{ display: 'table-cell', width: '50%', verticalAlign: 'top' }}>
-              {rec.financial_view && (
-                <div style={{ ...card }}>
-                  <p style={{ ...sectionTitle, marginBottom: 6 }}>Financial view</p>
-                  <p style={{ margin: 0, fontSize: 13, color: C.text, lineHeight: 1.5 }}>{cleanProse(rec.financial_view)}</p>
-                </div>
-              )}
-              {rec.risks?.length > 0 && (
-                <div style={{ ...card }}>
-                  <p style={{ ...sectionTitle, marginBottom: 6 }}>Risks</p>
-                  {rec.risks.map((r, i) => (
-                    <div key={i} style={bullet}>• {cleanProse(r)}</div>
-                  ))}
-                </div>
-              )}
+          ),
+          rec.financial_view && (
+            <div key="fv" style={{ ...card }}>
+              <p style={{ ...sectionTitle, marginBottom: 6 }}>Financial view</p>
+              <p style={{ margin: 0, fontSize: 13, color: C.text, lineHeight: 1.5 }}>{cleanProse(rec.financial_view)}</p>
             </div>
+          ),
+          rec.missing_inputs?.length > 0 && (
+            <div key="mi" style={{ ...card }}>
+              <p style={{ ...sectionTitle, marginBottom: 6 }}>Missing inputs</p>
+              {rec.missing_inputs.map((m, i) => (
+                <div key={i} style={bullet}>• {cleanProse(m)}</div>
+              ))}
+            </div>
+          ),
+          rec.risks?.length > 0 && (
+            <div key="rk" style={{ ...card }}>
+              <p style={{ ...sectionTitle, marginBottom: 6 }}>Risks</p>
+              {rec.risks.map((r, i) => (
+                <div key={i} style={bullet}>• {cleanProse(r)}</div>
+              ))}
+            </div>
+          ),
+        ].filter(Boolean)
+        if (!cards.length) return null
+        return (
+          <>
+            <div style={{ pageBreakInside: 'avoid' as const }}>
+              <p style={sectionTitle}>Trust Posture</p>
+              <p style={sectionHint}>What the board doesn&rsquo;t know, and what would change its mind</p>
+              {cards[0]}
+            </div>
+            {cards.slice(1)}
+            <div style={{ height: 6 }} />
+          </>
+        )
+      })()}
+
+      {/* How the Board Reasoned — flattened for the page breaker; the header travels
+          with the first agent card, and the LAST agent card travels with the disclaimer
+          so the final page is never the disclaimer alone. */}
+      {response.agent_outputs?.length > 0 ? (
+        <>
+          <div style={{ pageBreakInside: 'avoid' as const }}>
+            <p style={sectionTitle}>How the Board Reasoned</p>
+            <p style={sectionHint}>Each agent&rsquo;s independent read before debate</p>
+            <AgentCard a={response.agent_outputs[0]} />
+            {response.agent_outputs.length === 1 && <Disclaimer text={rec.disclaimer} />}
           </div>
+          {response.agent_outputs.slice(1, -1).map((a, i) => (
+            <AgentCard key={i} a={a} />
+          ))}
+          {response.agent_outputs.length > 1 && (
+            <div style={{ pageBreakInside: 'avoid' as const }}>
+              <AgentCard a={response.agent_outputs[response.agent_outputs.length - 1]} />
+              <Disclaimer text={rec.disclaimer} />
+            </div>
+          )}
+        </>
+      ) : (
+        <Disclaimer text={rec.disclaimer} />
+      )}
+    </div>
+  )
+}
+
+function AgentCard({ a }: { a: BoardResponse['agent_outputs'][number] }) {
+  return (
+    <div style={{ ...card }}>
+      <div style={{ display: 'table', width: '100%', marginBottom: 8 }}>
+        <div style={{ display: 'table-row' }}>
+          <div style={{ display: 'table-cell', verticalAlign: 'top' }}>
+            <div style={{ fontWeight: 700, fontSize: 14, color: C.text }}>{labelFor(a.agent_name)}</div>
+            <div style={{ fontSize: 12, color: C.muted }}>{roleFor(a.agent_name)}</div>
+          </div>
+          {a.score != null && (
+            <div style={{ display: 'table-cell', verticalAlign: 'top', textAlign: 'right' }}>
+              <span style={{ background: '#F4F3FF', color: '#4338CA', borderRadius: 6, padding: '3px 10px', fontSize: 13, fontWeight: 600 }}>
+                {a.score}/10
+              </span>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* How the Board Reasoned */}
-      {response.agent_outputs?.length > 0 && (
-        <div style={{ marginBottom: 12 }}>
-          <p style={sectionTitle}>How the Board Reasoned</p>
-          {response.agent_outputs.map((a, i) => (
-            <div key={i} style={{ ...card }}>
-              <div style={{ display: 'table', width: '100%', marginBottom: 8 }}>
-                <div style={{ display: 'table-row' }}>
-                  <div style={{ display: 'table-cell', verticalAlign: 'top' }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: C.text }}>{labelFor(a.agent_name)}</div>
-                    <div style={{ fontSize: 12, color: C.muted }}>{roleFor(a.agent_name)}</div>
-                  </div>
-                  {a.score != null && (
-                    <div style={{ display: 'table-cell', verticalAlign: 'top', textAlign: 'right' }}>
-                      <span style={{ background: '#F4F3FF', color: '#4338CA', borderRadius: 6, padding: '3px 10px', fontSize: 13, fontWeight: 600 }}>
-                        {a.score}/10
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-              {a.analysis && <p style={{ margin: '0 0 8px', fontSize: 13, color: C.text, lineHeight: 1.5 }}>{cleanProse(a.analysis)}</p>}
-              {a.key_findings?.length > 0 && (
-                <div style={{ marginBottom: 6 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 3 }}>Key findings</div>
-                  {a.key_findings.map((f, j) => <div key={j} style={bullet}>• {cleanProse(f)}</div>)}
-                </div>
-              )}
-              {a.concerns?.length > 0 && (
-                <div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 3 }}>Concerns</div>
-                  {a.concerns.map((c, j) => <div key={j} style={bullet}>• {cleanProse(c)}</div>)}
-                </div>
-              )}
-            </div>
-          ))}
+      {a.analysis && <p style={{ margin: '0 0 8px', fontSize: 13, color: C.text, lineHeight: 1.5 }}>{cleanProse(a.analysis)}</p>}
+      {a.key_findings?.length > 0 && (
+        <div style={{ marginBottom: 6 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 3 }}>Key findings</div>
+          {a.key_findings.map((f, j) => <div key={j} style={bullet}>• {cleanProse(f)}</div>)}
         </div>
       )}
-
-      {/* Disclaimer */}
-      {rec.disclaimer && (
-        <>
-          <hr style={{ border: 'none', borderTop: `1px solid ${C.border}`, marginBottom: 16 }} />
-          <p style={{ margin: 0, fontSize: 12, color: C.muted, fontStyle: 'italic', lineHeight: 1.5 }}>{rec.disclaimer}</p>
-        </>
+      {a.concerns?.length > 0 && (
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 3 }}>Concerns</div>
+          {a.concerns.map((c, j) => <div key={j} style={bullet}>• {cleanProse(c)}</div>)}
+        </div>
       )}
+    </div>
+  )
+}
+
+function Disclaimer({ text }: { text?: string }) {
+  if (!text) return null
+  return (
+    <>
+      <hr style={{ border: 'none', borderTop: `1px solid ${C.border}`, marginBottom: 16 }} />
+      <p style={{ margin: 0, fontSize: 12, color: C.muted, fontStyle: 'italic', lineHeight: 1.5 }}>{text}</p>
+    </>
+  )
+}
+
+function OptionCard({ o }: { o: BoardResponse['recommendation']['options_assessed'][number] }) {
+  const ov = o.verdict
+    ? verdictStyle(o.verdict === 'favoured' ? 'proceed' : o.verdict === 'avoid' ? 'hold' : 'conditional')
+    : null
+  return (
+    <div style={{ ...card, marginBottom: 8 }}>
+      <div style={{ marginBottom: 6 }}>
+        <span style={{ fontWeight: 600, fontSize: 13, color: C.text }}>{o.option}</span>
+        {o.verdict && ov && (
+          <span style={{ background: ov.bg, color: ov.text, borderRadius: 4, padding: '2px 7px', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' as const, marginLeft: 8 }}>
+            {cap(o.verdict)}
+          </span>
+        )}
+      </div>
+      {o.assessment && <p style={{ margin: 0, fontSize: 13, color: C.text, lineHeight: 1.5 }}>{cleanProse(o.assessment)}</p>}
     </div>
   )
 }
