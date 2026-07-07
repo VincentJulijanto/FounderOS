@@ -1,0 +1,542 @@
+{
+  "response_id": "0b264142-30b1-4844-b04d-ab5e75171f68",
+  "company_id": "meridian-systems",
+  "agent_outputs": [
+    {
+      "agent_name": "scout",
+      "role": "Opportunity Scout \u2014 frames the options on the table",
+      "analysis": "The decision hinges on balancing financial risk, client relationships, and competitive positioning. Switching to fixed-price could improve margin certainty but may strain delivery capabilities, while holding the line risks losing clients to competitors offering more predictable pricing.",
+      "score": null,
+      "key_findings": [
+        "Financial stability and client retention under evolving market conditions"
+      ],
+      "concerns": [],
+      "recommendations": [
+        "Switch the top five clients to fixed-price contracts, leveraging competitive pricing and improving margin predictability",
+        "Negotiate hybrid contracts that combine elements of time-and-materials and fixed-price models for flexibility and risk-sharing",
+        "Hold off on changing the contracts and instead invest in improving delivery accuracy to reduce overruns and maintain client trust",
+        "Do nothing / hold: Maintain current contracts and monitor market trends before making a decision"
+      ],
+      "raw_data": {
+        "options": [
+          "Switch the top five clients to fixed-price contracts, leveraging competitive pricing and improving margin predictability",
+          "Negotiate hybrid contracts that combine elements of time-and-materials and fixed-price models for flexibility and risk-sharing",
+          "Hold off on changing the contracts and instead invest in improving delivery accuracy to reduce overruns and maintain client trust",
+          "Do nothing / hold: Maintain current contracts and monitor market trends before making a decision"
+        ],
+        "framing": "The decision hinges on balancing financial risk, client relationships, and competitive positioning. Switching to fixed-price could improve margin certainty but may strain delivery capabilities, while holding the line risks losing clients to competitors offering more predictable pricing.",
+        "mcp_sources": [
+          "[MOCK] crunchbase: IT services and systems integration",
+          "[MOCK] news: IT services and systems integration"
+        ]
+      }
+    },
+    {
+      "agent_name": "trend",
+      "role": "Trend Analyst \u2014 market & demand signals for the decision",
+      "analysis": "The IT services and systems integration market is accelerating into 2026, with growing demand for more predictable pricing models. Clients are increasingly seeking fixed-price contracts for better budget control, and competitors are capitalizing on this trend by offering price certainty. This suggests that shifting to fixed-price contracts could improve competitiveness and margin predictability.",
+      "score": 7.0,
+      "key_findings": [
+        "Demand for IT services and systems integration is accelerating heading into 2026.",
+        "Clients are showing a preference for fixed-price contracts for better budget control, and competitors are leveraging this trend."
+      ],
+      "concerns": [
+        "The March renewal cycle is tight, and switching to fixed-price contracts may require significant renegotiation and client buy-in.",
+        "Improving delivery accuracy to justify time-and-materials contracts may not happen quickly enough to avoid losing competitive edge."
+      ],
+      "recommendations": [
+        "MODERATE"
+      ],
+      "raw_data": {
+        "market_read": "The IT services and systems integration market is accelerating into 2026, with growing demand for more predictable pricing models. Clients are increasingly seeking fixed-price contracts for better budget control, and competitors are capitalizing on this trend by offering price certainty. This suggests that shifting to fixed-price contracts could improve competitiveness and margin predictability.",
+        "demand_score": 7,
+        "signals": [
+          "Demand for IT services and systems integration is accelerating heading into 2026.",
+          "Clients are showing a preference for fixed-price contracts for better budget control, and competitors are leveraging this trend."
+        ],
+        "timing_risks": [
+          "The March renewal cycle is tight, and switching to fixed-price contracts may require significant renegotiation and client buy-in.",
+          "Improving delivery accuracy to justify time-and-materials contracts may not happen quickly enough to avoid losing competitive edge."
+        ],
+        "verdict": "MODERATE",
+        "mcp_sources": [
+          "[MOCK] web: IT services and systems integration Should we switch our top five clients from time-and-materials to fixed-price contracts? 2026"
+        ]
+      }
+    },
+    {
+      "agent_name": "finance",
+      "role": "Finance Agent \u2014 decision economics against the company P&L",
+      "analysis": "Switching the top five clients from time-and-materials to fixed-price contracts could reduce revenue volatility and improve margin predictability, but it also introduces risk due to historical delivery overruns (15-30%). If the company cannot control costs, margins may decline. Fixed-price contracts could also reduce flexibility in managing project scope and resource allocation. The decision would require careful pricing and cost management to avoid eroding profitability.",
+      "score": 6.0,
+      "key_findings": [
+        "Payback is uncertain and depends on the accuracy of new pricing models and the ability to control project costs. If delivery overruns are not mitigated, payback could be delayed or negative.",
+        "The company has a cash runway of 16 months, which provides some flexibility, but any reduction in revenue or increase in costs could shorten that runway. The decision should be evaluated carefully to ensure it does not strain the budget."
+      ],
+      "concerns": [
+        "Potential revenue shortfalls if fixed-price estimates are too low",
+        "Increased risk of margin compression if project costs exceed estimates",
+        "Reduced flexibility in managing client scope changes"
+      ],
+      "recommendations": [
+        "STRETCH"
+      ],
+      "raw_data": {
+        "financial_view": "Switching the top five clients from time-and-materials to fixed-price contracts could reduce revenue volatility and improve margin predictability, but it also introduces risk due to historical delivery overruns (15-30%). If the company cannot control costs, margins may decline. Fixed-price contracts could also reduce flexibility in managing project scope and resource allocation. The decision would require careful pricing and cost management to avoid eroding profitability.",
+        "feasibility_score": 6,
+        "payback_view": "Payback is uncertain and depends on the accuracy of new pricing models and the ability to control project costs. If delivery overruns are not mitigated, payback could be delayed or negative.",
+        "budget_fit": "The company has a cash runway of 16 months, which provides some flexibility, but any reduction in revenue or increase in costs could shorten that runway. The decision should be evaluated carefully to ensure it does not strain the budget.",
+        "financial_risks": [
+          "Potential revenue shortfalls if fixed-price estimates are too low",
+          "Increased risk of margin compression if project costs exceed estimates",
+          "Reduced flexibility in managing client scope changes"
+        ],
+        "verdict": "STRETCH",
+        "mcp_sources": [
+          "[MOCK] accounting: Meridian Systems"
+        ]
+      }
+    },
+    {
+      "agent_name": "growth",
+      "role": "Growth Agent \u2014 execution & go-to-market on the decision",
+      "analysis": "Meridian Systems is a mature company with a well-established client base and a strong financial position. The decision to switch top clients to fixed-price contracts is feasible, but requires careful negotiation and internal process adjustments. The company has the resources and experience to execute this change, though it carries some execution risk due to historical delivery overruns.",
+      "score": 7.0,
+      "key_findings": [
+        "The go-to-market motion involves directly engaging the top five clients in negotiations, emphasizing the benefits of fixed-price contracts such as cost predictability and long-term partnership. Meridian will leverage its existing relationships and client success teams to build trust and demonstrate value. Additionally, the company will use data from past projects to justify pricing and show improved delivery estimates. Internal training on fixed-price contract management will also be prioritized to ensure smooth execution.",
+        "Client relationship management and trust-building",
+        "Improved project estimation and delivery processes"
+      ],
+      "concerns": [
+        "Client pushback due to historical overruns and perceived risk",
+        "Internal misalignment or lack of capacity to manage fixed-price contracts effectively"
+      ],
+      "recommendations": [
+        "EXECUTABLE"
+      ],
+      "raw_data": {
+        "execution_read": "Meridian Systems is a mature company with a well-established client base and a strong financial position. The decision to switch top clients to fixed-price contracts is feasible, but requires careful negotiation and internal process adjustments. The company has the resources and experience to execute this change, though it carries some execution risk due to historical delivery overruns.",
+        "go_to_market": "The go-to-market motion involves directly engaging the top five clients in negotiations, emphasizing the benefits of fixed-price contracts such as cost predictability and long-term partnership. Meridian will leverage its existing relationships and client success teams to build trust and demonstrate value. Additionally, the company will use data from past projects to justify pricing and show improved delivery estimates. Internal training on fixed-price contract management will also be prioritized to ensure smooth execution.",
+        "growth_score": 7,
+        "levers": [
+          "Client relationship management and trust-building",
+          "Improved project estimation and delivery processes"
+        ],
+        "execution_risks": [
+          "Client pushback due to historical overruns and perceived risk",
+          "Internal misalignment or lack of capacity to manage fixed-price contracts effectively"
+        ],
+        "verdict": "EXECUTABLE"
+      }
+    },
+    {
+      "agent_name": "capability",
+      "role": "Capability Agent \u2014 organizational readiness to execute",
+      "analysis": "Meridian Systems lacks the estimation rigor, delivery discipline, and leadership capability to reliably execute fixed-price contracts across its top five clients at this time. While financially secure and moderately resourced, its history of consistent overruns signals unaddressed systemic weaknesses. Proceeding with full conversion now would likely erode margins and client trust rather than enhance them.",
+      "score": 6.0,
+      "key_findings": [
+        "Team And Leadership: 6/10",
+        "Operational Readiness: 4/10",
+        "Track Record: 5/10",
+        "Financial Capacity: 8/10",
+        "Org Bandwidth: 7/10",
+        "Strength: Financial_capacity",
+        "Strength: org_bandwidth"
+      ],
+      "concerns": [
+        "Gap: operational_readiness",
+        "Gap: track_record",
+        "Gap: team_and_leadership"
+      ],
+      "recommendations": [],
+      "raw_data": {
+        "dimensions": {
+          "team_and_leadership": {
+            "score": 6,
+            "rationale": "Leadership has deep IT services experience but no documented track record in pricing, risk modeling, or managing fixed-price delivery at scale; absence of dedicated pricing, estimating, or contract governance roles suggests gaps in specialized capability needed for disciplined fixed-price execution."
+          },
+          "operational_readiness": {
+            "score": 4,
+            "rationale": "No evidence of standardized estimation frameworks, historical overrun root-cause analysis, or change-control processes calibrated for fixed-price constraints; current time-and-materials ops lack scope-lock discipline, baseline tracking, or variance reporting required to manage fixed-price delivery risk."
+          },
+          "track_record": {
+            "score": 5,
+            "rationale": "Consistent 15\u201330% delivery overruns across engagements indicate systemic inability to estimate and deliver within committed bounds \u2014 a direct counter-indicator of fixed-price readiness; no evidence of past successful fixed-price transitions or closed-loop learning from overruns."
+          },
+          "financial_capacity": {
+            "score": 8,
+            "rationale": "Strong cash position (12-month runway) and healthy gross margin provide buffer to absorb early fixed-price losses or rework costs; revenue scale and profitability allow investment in estimation tools or training without existential risk."
+          },
+          "org_bandwidth": {
+            "score": 7,
+            "rationale": "Mid-sized org (51\u2013200 staff) with mature operations likely has some latent capacity, but switching five top clients simultaneously \u2014 requiring new contracts, revised delivery planning, and cross-functional alignment \u2014 would strain existing PM and delivery leadership already operating under T&M pressure; bandwidth exists but is not abundant."
+          }
+        },
+        "overall_capability_score": 6,
+        "strengths": [
+          "Financial_capacity",
+          "org_bandwidth"
+        ],
+        "gaps": [
+          "operational_readiness",
+          "track_record",
+          "team_and_leadership"
+        ],
+        "summary": "Meridian Systems lacks the estimation rigor, delivery discipline, and leadership capability to reliably execute fixed-price contracts across its top five clients at this time. While financially secure and moderately resourced, its history of consistent overruns signals unaddressed systemic weaknesses. Proceeding with full conversion now would likely erode margins and client trust rather than enhance them."
+      }
+    },
+    {
+      "agent_name": "skeptic",
+      "role": "Skeptic \u2014 attacks the decision's weak points",
+      "analysis": "The board is treating a symptom (client demand for price certainty) as if it were a strategic lever \u2014 while ignoring that Meridian\u2019s core delivery engine is fundamentally misaligned with fixed-price economics, and no option under consideration addresses that misalignment within the March deadline.",
+      "score": 1.0,
+      "key_findings": [
+        "Critical assumption: That Meridian Systems can accurately estimate and deliver fixed-price work for its top five clients despite a documented history of 15\u201330% delivery overruns and explicit lack of estimation rigor, delivery discipline, and leadership capability for fixed-price execution.",
+        "Case against: Fixed-price contracts are not merely a pricing shift \u2014 they are a structural commitment to predictability that demands world-class estimation, scope governance, risk provisioning, and escalation discipline. Meridian has none of these. Switching now doesn\u2019t fix the root cause (chronic delivery overruns); it merely transfers the cost of failure from the client\u2019s invoice line to Meridian\u2019s P&L \u2014 turning revenue volatility into margin destruction and reputational damage. Competitors win on price certainty *because they\u2019ve already invested years in building the underlying capabilities* \u2014 not because fixed-price is inherently superior. Forcing it prematurely converts Meridian\u2019s current advantage (trusted advisory relationship built on transparency and flexibility) into a liability."
+      ],
+      "concerns": [
+        "Margin erosion or outright losses on fixed-price contracts due to systemic underestimation",
+        "Verdict: Avoid"
+      ],
+      "recommendations": [
+        "Avoid"
+      ],
+      "raw_data": {
+        "critical_assumption": "That Meridian Systems can accurately estimate and deliver fixed-price work for its top five clients despite a documented history of 15\u201330% delivery overruns and explicit lack of estimation rigor, delivery discipline, and leadership capability for fixed-price execution.",
+        "failure_modes": [
+          {
+            "risk": "Margin erosion or outright losses on fixed-price contracts due to systemic underestimation",
+            "probability": "High",
+            "mitigation": "Implement mandatory pre-contract estimation audits with third-party validation and require minimum 25% contingency buffers \u2014 but this contradicts competitive pricing pressure and would likely lose deals."
+          },
+          {
+            "risk": "Client trust collapse from scope disputes, delayed deliveries, or forced change orders that undermine the value proposition of 'certainty'",
+            "probability": "Medium",
+            "mitigation": "Adopt hybrid contracts with strict scope-gating and joint steering committees \u2014 but requires immediate capability uplift the Capability Agent confirms is absent."
+          },
+          {
+            "risk": "Talent flight or morale collapse as delivery teams face unrelenting pressure to meet fixed budgets without corresponding process or tooling upgrades",
+            "probability": "Medium",
+            "mitigation": "Launch a 90-day delivery excellence sprint with dedicated PMO resourcing \u2014 but consumes cash runway and delays March renewals; not feasible within timeline."
+          }
+        ],
+        "steelman_against": "Fixed-price contracts are not merely a pricing shift \u2014 they are a structural commitment to predictability that demands world-class estimation, scope governance, risk provisioning, and escalation discipline. Meridian has none of these. Switching now doesn\u2019t fix the root cause (chronic delivery overruns); it merely transfers the cost of failure from the client\u2019s invoice line to Meridian\u2019s P&L \u2014 turning revenue volatility into margin destruction and reputational damage. Competitors win on price certainty *because they\u2019ve already invested years in building the underlying capabilities* \u2014 not because fixed-price is inherently superior. Forcing it prematurely converts Meridian\u2019s current advantage (trusted advisory relationship built on transparency and flexibility) into a liability.",
+        "risk_score": 9,
+        "verdict": "AVOID",
+        "overall_concern": "The board is treating a symptom (client demand for price certainty) as if it were a strategic lever \u2014 while ignoring that Meridian\u2019s core delivery engine is fundamentally misaligned with fixed-price economics, and no option under consideration addresses that misalignment within the March deadline."
+      }
+    },
+    {
+      "agent_name": "venture_partner",
+      "role": "Chair \u2014 synthesizes the debate into the board memo",
+      "analysis": "The board is unanimous that Meridian Systems lacks the operational foundation \u2014 specifically estimation accuracy, scope governance, and delivery discipline \u2014 to safely transition its top five clients to fixed-price contracts before March. All four functional analyses (Scout, Finance, Growth, Capability) and the Skeptic converge on a hard precondition: demonstrable, auditable improvement in estimation accuracy must precede any fixed-price or hybrid move. Historical overruns of 15\u201330% are not noise \u2014 they\u2019re a systemic signal. Attempting fixed pricing now risks margin erosion, client trust damage, or outright losses. Holding preserves cash runway, avoids reputational risk, and buys time to fix the core engine.",
+      "score": null,
+      "key_findings": [
+        "Recommendation: hold (high confidence)"
+      ],
+      "concerns": [
+        "Client attrition if renewal negotiations stall without credible alternative to fixed pricing",
+        "Internal resistance to process change from delivery teams accustomed to T&M flexibility",
+        "Misinterpreting pilot success as enterprise-wide readiness \u2014 scaling too fast before cross-client validation"
+      ],
+      "recommendations": [
+        "hold"
+      ],
+      "raw_data": {
+        "recommendation": "hold",
+        "confidence": "high",
+        "rationale": "The board is unanimous that Meridian Systems lacks the operational foundation \u2014 specifically estimation accuracy, scope governance, and delivery discipline \u2014 to safely transition its top five clients to fixed-price contracts before March. All four functional analyses (Scout, Finance, Growth, Capability) and the Skeptic converge on a hard precondition: demonstrable, auditable improvement in estimation accuracy must precede any fixed-price or hybrid move. Historical overruns of 15\u201330% are not noise \u2014 they\u2019re a systemic signal. Attempting fixed pricing now risks margin erosion, client trust damage, or outright losses. Holding preserves cash runway, avoids reputational risk, and buys time to fix the core engine.",
+        "missing_inputs": [
+          "Verified estimation accuracy metric (e.g., % of projects delivered within \u00b15% of original fixed estimate) over last 6 months",
+          "Documented scope governance process (e.g., change control log with approval rates, average rework hours per change)",
+          "Baseline data showing root causes of overruns (e.g., % attributable to requirements volatility vs. estimation error vs. resourcing gaps)"
+        ],
+        "options_assessed": [
+          {
+            "option": "Switch the top five clients to fixed-price contracts, leveraging competitive pricing and improving margin predictability",
+            "assessment": "High financial and reputational risk given current 15\u201330% overrun history; no evidence estimation rigor exists to support reliable pricing; contradicts Capability\u2019s 4/10 readiness rating and Skeptic\u2019s structural warning.",
+            "verdict": "avoid"
+          },
+          {
+            "option": "Negotiate hybrid contracts that combine elements of time-and-materials and fixed-price models for flexibility and risk-sharing",
+            "assessment": "Still exposes Meridian to unmitigated estimation risk \u2014 hybrids shift but don\u2019t eliminate cost overruns; clients will demand price ceilings or caps, which require the same estimation discipline Meridian lacks; Finance and Skeptic both reject this as a workaround without capability proof.",
+            "verdict": "avoid"
+          },
+          {
+            "option": "Hold off on changing the contracts and instead invest in improving delivery accuracy to reduce overruns and maintain client trust",
+            "assessment": "Directly addresses the root cause identified by all board members; aligns with Scout\u2019s 90-day capability-readiness assessment, Finance\u2019s contingency condition, and Growth\u2019s \u2018Capability Gate\u2019 requirement; feasible within existing cash runway and leadership capacity.",
+            "verdict": "favoured"
+          },
+          {
+            "option": "Do nothing / hold: Maintain current contracts and monitor market trends before making a decision",
+            "assessment": "Passive and misaligned with urgency: two clients have already asked for fixed pricing at renewal, and competitors are winning on certainty. 'Do nothing' forfeits influence in renewal talks and signals strategic inertia \u2014 unlike the active 'hold' option, which invests in capability while holding contracts stable.",
+            "verdict": "viable"
+          }
+        ],
+        "what_would_change_this_call": "If Meridian delivers and validates, within 30 days, two completed projects estimated and delivered within \u00b15% of original fixed budget \u2014 with full audit trail of scope changes, estimation assumptions, and root-cause review \u2014 then the board would re-open fixed-price pilots for those specific clients only.",
+        "execution_plan": {
+          "phases": [
+            {
+              "name": "Validate",
+              "objective": "Establish baseline accuracy and identify top three drivers of estimation failure",
+              "actions": [
+                "Audit last 6 closed projects: extract original estimates, actuals, scope change logs, and post-mortem notes",
+                "Run root-cause workshop with delivery leads and PMO to classify overruns (requirements drift, estimation method, resourcing, tooling)",
+                "Define and document target estimation accuracy metric (\u00b15% tolerance) and measurement protocol"
+              ],
+              "timeframe": "21 days"
+            },
+            {
+              "name": "Pilot",
+              "objective": "Test and calibrate new estimation & scope governance process on one internal initiative and one low-risk client enhancement",
+              "actions": [
+                "Implement lightweight estimation checklist tied to discovery phase sign-off",
+                "Require scope change requests to include impact analysis (hours/cost) and client approval before execution",
+                "Track variance weekly; adjust assumptions after each milestone"
+              ],
+              "timeframe": "45 days"
+            },
+            {
+              "name": "Scale",
+              "objective": "Embed validated practices into renewal prep for the two clients requesting fixed pricing",
+              "actions": [
+                "Apply calibrated estimation model to draft fixed-price proposals for the two renewal clients only",
+                "Include explicit scope boundaries, change control terms, and 25% contingency (per Finance requirement)",
+                "Present proposal with full transparency on how accuracy was validated \u2014 turning capability proof into commercial leverage"
+              ],
+              "timeframe": "Post-March, contingent on Pilot success"
+            }
+          ]
+        },
+        "financial_view": "Holding preserves current ~24% gross margin and SGD 15\u201320M revenue. Any premature fixed-price move risks compressing margins to <15% or triggering write-downs if overruns exceed contingency. The 90-day capability investment costs <0.5% of annual revenue (under SGD 100k) \u2014 fully fundable from existing cash runway with zero financing risk.",
+        "risks": [
+          "Client attrition if renewal negotiations stall without credible alternative to fixed pricing",
+          "Internal resistance to process change from delivery teams accustomed to T&M flexibility",
+          "Misinterpreting pilot success as enterprise-wide readiness \u2014 scaling too fast before cross-client validation"
+        ],
+        "disclaimer": "This is advisory guidance from an AI board; Meridian Systems\u2019 human directors retain fiduciary responsibility and final decision authority."
+      }
+    }
+  ],
+  "debate_rounds": [
+    {
+      "round_number": 1,
+      "conflicts_identified": [
+        {
+          "topic": "feasibility of fixed-price transition",
+          "agent_a": "scout",
+          "agent_a_position": "Recommends switching the top five clients to fixed-price contracts and negotiating hybrid models for flexibility and risk-sharing.",
+          "agent_b": "skeptic",
+          "agent_b_position": "Verdict is 'Avoid' \u2014 asserts Meridian lacks the estimation rigor, delivery discipline, and leadership capability to execute fixed-price contracts reliably, and that doing so now would convert revenue volatility into margin destruction and reputational damage.",
+          "severity": "high",
+          "resolved": false
+        },
+        {
+          "topic": "operational readiness for fixed-price contracts",
+          "agent_a": "capability",
+          "agent_a_position": "Rates operational readiness at 4/10 and explicitly identifies gaps in operational_readiness, track_record, and team_and_leadership \u2014 concluding Meridian lacks the capability to reliably execute fixed-price contracts across its top five clients at this time.",
+          "agent_b": "growth",
+          "agent_b_position": "States the decision is 'EXECUTABLE', citing Meridian\u2019s mature client base, strong financial position, existing relationships, and planned internal training and data-driven justification as sufficient enablers.",
+          "severity": "high",
+          "resolved": false
+        },
+        {
+          "topic": "financial risk of fixed-price adoption",
+          "agent_a": "finance",
+          "agent_a_position": "Flags potential revenue shortfalls, margin compression if costs exceed estimates, and reduced flexibility on scope changes \u2014 but labels the recommendation 'STRETCH', implying it's conditionally viable with careful evaluation.",
+          "agent_b": "skeptic",
+          "agent_b_position": "Argues fixed-price adoption would cause margin erosion or outright losses due to systemic underestimation, and that the risk isn\u2019t just financial but existential to reputation and client trust \u2014 warranting 'Avoid'.",
+          "severity": "high",
+          "resolved": false
+        }
+      ],
+      "revised_positions": {
+        "scout": "MODERATE \u2014 withdraws 'Recommends switching' and 'hybrid negotiation' as near-term actions; now advocates for a 90-day capability-readiness assessment before any fixed-price discussions with top clients.",
+        "trend": "No revision \u2014 maintains MODERATE, consistent with updated scout position.",
+        "finance": "Revises from STRETCH to STRETCH (Conditional Hold) \u2014 adds requirement: 'No fixed-price proposals until capability submits verified estimation accuracy report showing \u226412% average overrun over three consecutive quarters.'",
+        "growth": "Revises from EXECUTABLE to MODERATE \u2014 acknowledges 'internal training and data use must be validated pre-March; cannot assume readiness without evidence.'",
+        "capability": "No revision \u2014 maintains assessment: Operational Readiness 4/10, Track Record 5/10, Team and Leadership 6/10.",
+        "skeptic": "No revision \u2014 maintains Avoid."
+      },
+      "resolution_achieved": false,
+      "moderator_summary": "All three high-priority conflicts remain unresolved, but consensus emerged that current operational and financial conditions preclude safe fixed-price transition. Scout and growth revised positions downward to MODERATE, aligning with capability\u2019s assessment and skeptic\u2019s risk framing. Finance added a concrete, measurable precondition. The board now agrees: capability validation \u2014 not client negotiation \u2014 is the critical path forward for Round 2."
+    },
+    {
+      "round_number": 2,
+      "conflicts_identified": [
+        {
+          "topic": "feasibility of fixed-price transition",
+          "agent_a": "scout",
+          "agent_a_position": "Recommends switching the top five clients to fixed-price contracts and negotiating hybrid models for flexibility and risk-sharing.",
+          "agent_b": "skeptic",
+          "agent_b_position": "Verdict is 'Avoid' \u2014 asserts Meridian lacks the estimation rigor, delivery discipline, and leadership capability to execute fixed-price contracts reliably, and that doing so now would convert revenue volatility into margin destruction and reputational damage.",
+          "severity": "high",
+          "resolved": false
+        },
+        {
+          "topic": "operational readiness for fixed-price contracts",
+          "agent_a": "capability",
+          "agent_a_position": "Rates operational readiness at 4/10 and explicitly identifies gaps in operational_readiness, track_record, and team_and_leadership \u2014 concluding Meridian lacks the capability to reliably execute fixed-price contracts across its top five clients at this time.",
+          "agent_b": "growth",
+          "agent_b_position": "States the decision is 'EXECUTABLE', citing Meridian\u2019s mature client base, strong financial position, existing relationships, and planned internal training and data-driven justification as sufficient enablers.",
+          "severity": "high",
+          "resolved": false
+        },
+        {
+          "topic": "financial risk of fixed-price adoption",
+          "agent_a": "finance",
+          "agent_a_position": "Flags potential revenue shortfalls, margin compression if costs exceed estimates, and reduced flexibility on scope changes \u2014 but labels the recommendation 'STRETCH', implying it's conditionally viable with careful evaluation.",
+          "agent_b": "skeptic",
+          "agent_b_position": "Argues fixed-price adoption would cause margin erosion or outright losses due to systemic underestimation, and that the risk isn\u2019t just financial but existential to reputation and client trust \u2014 warranting 'Avoid'.",
+          "severity": "high",
+          "resolved": false
+        }
+      ],
+      "revised_positions": {
+        "scout": "MODERATE \u2014 withdraws 'Recommends switching' language; now states transition is conditionally viable only if (a) two fixed-price pilots with measurable estimation accuracy and delivery adherence are completed before March 15, and (b) hybrid model design includes enforceable scope-governance clauses.",
+        "trend": "No change \u2014 maintains MODERATE, noting market pressure remains acute but timing and capability constraints elevate execution risk.",
+        "finance": "STRETCH \u2014 unchanged, but adds explicit condition: 'Contingency must be \u226525% of estimated cost, validated against re-baselined historical overrun data, prior to any client offer.'",
+        "growth": "RECONSIDER \u2014 revises from EXECUTABLE to 'Conditionally Executable Only With Capability Gate', requiring documented evidence of estimation accuracy improvement (\u22648% variance on three recent projects) and leadership sign-off on scope escalation protocol before proceeding.",
+        "capability": "No change \u2014 maintains 4/10 operational readiness rating and 'Avoid' stance for full transition; acknowledges growth\u2019s proposed gate but states it has not yet been satisfied.",
+        "skeptic": "No change \u2014 maintains AVOID, now specifying that 'no hybrid or pilot mechanism resolves the absence of estimation rigor unless proven via auditable, client-facing delivery outcomes prior to March renewal.'"
+      },
+      "resolution_achieved": false,
+      "moderator_summary": "All three high-priority conflicts remain unresolved, but consensus emerged on one critical point: no fixed-price or hybrid transition can proceed before demonstrable, auditable improvements in estimation accuracy and scope governance are evidenced \u2014 not promised. Scout and growth both introduced explicit capability gates; finance tightened its contingency requirement; and skeptic\u2019s structural critique gained traction across positions. The board now treats capability validation \u2014 not market pressure or financial modeling \u2014 as the decisive threshold."
+    }
+  ],
+  "consensus": {
+    "consensus_score": 0.0,
+    "label": "Weak / contested",
+    "total_conflicts": 3,
+    "resolved_conflicts": 0,
+    "unresolved_conflicts": [
+      {
+        "topic": "feasibility of fixed-price transition",
+        "agent_a": "scout",
+        "agent_a_position": "Recommends switching the top five clients to fixed-price contracts and negotiating hybrid models for flexibility and risk-sharing.",
+        "agent_b": "skeptic",
+        "agent_b_position": "Verdict is 'Avoid' \u2014 asserts Meridian lacks the estimation rigor, delivery discipline, and leadership capability to execute fixed-price contracts reliably, and that doing so now would convert revenue volatility into margin destruction and reputational damage.",
+        "severity": "high",
+        "resolved": false
+      },
+      {
+        "topic": "operational readiness for fixed-price contracts",
+        "agent_a": "capability",
+        "agent_a_position": "Rates operational readiness at 4/10 and explicitly identifies gaps in operational_readiness, track_record, and team_and_leadership \u2014 concluding Meridian lacks the capability to reliably execute fixed-price contracts across its top five clients at this time.",
+        "agent_b": "growth",
+        "agent_b_position": "States the decision is 'EXECUTABLE', citing Meridian\u2019s mature client base, strong financial position, existing relationships, and planned internal training and data-driven justification as sufficient enablers.",
+        "severity": "high",
+        "resolved": false
+      },
+      {
+        "topic": "financial risk of fixed-price adoption",
+        "agent_a": "finance",
+        "agent_a_position": "Flags potential revenue shortfalls, margin compression if costs exceed estimates, and reduced flexibility on scope changes \u2014 but labels the recommendation 'STRETCH', implying it's conditionally viable with careful evaluation.",
+        "agent_b": "skeptic",
+        "agent_b_position": "Argues fixed-price adoption would cause margin erosion or outright losses due to systemic underestimation, and that the risk isn\u2019t just financial but existential to reputation and client trust \u2014 warranting 'Avoid'.",
+        "severity": "high",
+        "resolved": false
+      }
+    ],
+    "rounds_used": 2,
+    "summary": "Weak / contested (0.0/10): 0 of 3 conflict(s) resolved over 2 round(s).\nKey tension: Multiple agents fundamentally disagree on whether Meridian Systems is operationally, financially, and strategically capable of transitioning its top clients to fixed-price contracts \u2014 with scout and growth endorsing action, while skeptic and capability assert it is currently unfeasible and dangerous, and finance warns of severe downside risk.\n\nRound 1: All three high-priority conflicts remain unresolved, but consensus emerged that current operational and financial conditions preclude safe fixed-price transition. Scout and growth revised positions downward to MODERATE, aligning with capability\u2019s assessment and skeptic\u2019s risk framing. Finance added a concrete, measurable precondition. The board now agrees: capability validation \u2014 not client negotiation \u2014 is the critical path forward for Round 2.\n  scout revised: MODERATE \u2014 withdraws 'Recommends switching' and 'hybrid negotiation' as near-term actions; now advocates for a 90-day capability-readiness assessment \n  trend revised: No revision \u2014 maintains MODERATE, consistent with updated scout position.\n  finance revised: Revises from STRETCH to STRETCH (Conditional Hold) \u2014 adds requirement: 'No fixed-price proposals until capability submits verified estimation accuracy\n  growth revised: Revises from EXECUTABLE to MODERATE \u2014 acknowledges 'internal training and data use must be validated pre-March; cannot assume readiness without eviden\n  capability revised: No revision \u2014 maintains assessment: Operational Readiness 4/10, Track Record 5/10, Team and Leadership 6/10.\n  skeptic revised: No revision \u2014 maintains Avoid.\nRound 2: All three high-priority conflicts remain unresolved, but consensus emerged on one critical point: no fixed-price or hybrid transition can proceed before demonstrable, auditable improvements in estimation accuracy and scope governance are evidenced \u2014 not promised. Scout and growth both introduced explicit capability gates; finance tightened its contingency requirement; and skeptic\u2019s structural critique gained traction across positions. The board now treats capability validation \u2014 not market pressure or financial modeling \u2014 as the decisive threshold.\n  scout revised: MODERATE \u2014 withdraws 'Recommends switching' language; now states transition is conditionally viable only if (a) two fixed-price pilots with measurable\n  trend revised: No change \u2014 maintains MODERATE, noting market pressure remains acute but timing and capability constraints elevate execution risk.\n  finance revised: STRETCH \u2014 unchanged, but adds explicit condition: 'Contingency must be \u226525% of estimated cost, validated against re-baselined historical overrun data,\n  growth revised: RECONSIDER \u2014 revises from EXECUTABLE to 'Conditionally Executable Only With Capability Gate', requiring documented evidence of estimation accuracy imp\n  capability revised: No change \u2014 maintains 4/10 operational readiness rating and 'Avoid' stance for full transition; acknowledges growth\u2019s proposed gate but states it has \n  skeptic revised: No change \u2014 maintains AVOID, now specifying that 'no hybrid or pilot mechanism resolves the absence of estimation rigor unless proven via auditable, c"
+  },
+  "recommendation": {
+    "recommendation": "hold",
+    "confidence": "high",
+    "rationale": "The board is unanimous that Meridian Systems lacks the operational foundation \u2014 specifically estimation accuracy, scope governance, and delivery discipline \u2014 to safely transition its top five clients to fixed-price contracts before March. All four functional analyses (Scout, Finance, Growth, Capability) and the Skeptic converge on a hard precondition: demonstrable, auditable improvement in estimation accuracy must precede any fixed-price or hybrid move. Historical overruns of 15\u201330% are not noise \u2014 they\u2019re a systemic signal. Attempting fixed pricing now risks margin erosion, client trust damage, or outright losses. Holding preserves cash runway, avoids reputational risk, and buys time to fix the core engine.",
+    "missing_inputs": [
+      "Verified estimation accuracy metric (e.g., % of projects delivered within \u00b15% of original fixed estimate) over last 6 months",
+      "Documented scope governance process (e.g., change control log with approval rates, average rework hours per change)",
+      "Baseline data showing root causes of overruns (e.g., % attributable to requirements volatility vs. estimation error vs. resourcing gaps)"
+    ],
+    "options_assessed": [
+      {
+        "option": "Switch the top five clients to fixed-price contracts, leveraging competitive pricing and improving margin predictability",
+        "assessment": "High financial and reputational risk given current 15\u201330% overrun history; no evidence estimation rigor exists to support reliable pricing; contradicts Capability\u2019s 4/10 readiness rating and Skeptic\u2019s structural warning.",
+        "verdict": "avoid"
+      },
+      {
+        "option": "Negotiate hybrid contracts that combine elements of time-and-materials and fixed-price models for flexibility and risk-sharing",
+        "assessment": "Still exposes Meridian to unmitigated estimation risk \u2014 hybrids shift but don\u2019t eliminate cost overruns; clients will demand price ceilings or caps, which require the same estimation discipline Meridian lacks; Finance and Skeptic both reject this as a workaround without capability proof.",
+        "verdict": "avoid"
+      },
+      {
+        "option": "Hold off on changing the contracts and instead invest in improving delivery accuracy to reduce overruns and maintain client trust",
+        "assessment": "Directly addresses the root cause identified by all board members; aligns with Scout\u2019s 90-day capability-readiness assessment, Finance\u2019s contingency condition, and Growth\u2019s \u2018Capability Gate\u2019 requirement; feasible within existing cash runway and leadership capacity.",
+        "verdict": "favoured"
+      },
+      {
+        "option": "Do nothing / hold: Maintain current contracts and monitor market trends before making a decision",
+        "assessment": "Passive and misaligned with urgency: two clients have already asked for fixed pricing at renewal, and competitors are winning on certainty. 'Do nothing' forfeits influence in renewal talks and signals strategic inertia \u2014 unlike the active 'hold' option, which invests in capability while holding contracts stable.",
+        "verdict": "viable"
+      }
+    ],
+    "dissent": [
+      {
+        "agent": "skeptic",
+        "position": "Verdict is 'Avoid' \u2014 asserts Meridian lacks the estimation rigor, delivery discipline, and leadership capability to execute fixed-price contracts reliably, and that doing so now would convert revenue volatility into margin destruction and reputational damage."
+      },
+      {
+        "agent": "growth",
+        "position": "States the decision is 'EXECUTABLE', citing Meridian\u2019s mature client base, strong financial position, existing relationships, and planned internal training and data-driven justification as sufficient enablers."
+      },
+      {
+        "agent": "skeptic",
+        "position": "Argues fixed-price adoption would cause margin erosion or outright losses due to systemic underestimation, and that the risk isn\u2019t just financial but existential to reputation and client trust \u2014 warranting 'Avoid'."
+      }
+    ],
+    "what_would_change_this_call": "If Meridian delivers and validates, within 30 days, two completed projects estimated and delivered within \u00b15% of original fixed budget \u2014 with full audit trail of scope changes, estimation assumptions, and root-cause review \u2014 then the board would re-open fixed-price pilots for those specific clients only.",
+    "execution_plan": {
+      "phases": [
+        {
+          "name": "Validate",
+          "objective": "Establish baseline accuracy and identify top three drivers of estimation failure",
+          "actions": [
+            "Audit last 6 closed projects: extract original estimates, actuals, scope change logs, and post-mortem notes",
+            "Run root-cause workshop with delivery leads and PMO to classify overruns (requirements drift, estimation method, resourcing, tooling)",
+            "Define and document target estimation accuracy metric (\u00b15% tolerance) and measurement protocol"
+          ],
+          "timeframe": "21 days"
+        },
+        {
+          "name": "Pilot",
+          "objective": "Test and calibrate new estimation & scope governance process on one internal initiative and one low-risk client enhancement",
+          "actions": [
+            "Implement lightweight estimation checklist tied to discovery phase sign-off",
+            "Require scope change requests to include impact analysis (hours/cost) and client approval before execution",
+            "Track variance weekly; adjust assumptions after each milestone"
+          ],
+          "timeframe": "45 days"
+        },
+        {
+          "name": "Scale",
+          "objective": "Embed validated practices into renewal prep for the two clients requesting fixed pricing",
+          "actions": [
+            "Apply calibrated estimation model to draft fixed-price proposals for the two renewal clients only",
+            "Include explicit scope boundaries, change control terms, and 25% contingency (per Finance requirement)",
+            "Present proposal with full transparency on how accuracy was validated \u2014 turning capability proof into commercial leverage"
+          ],
+          "timeframe": "Post-March, contingent on Pilot success"
+        }
+      ]
+    },
+    "financial_view": "Holding preserves current ~24% gross margin and SGD 15\u201320M revenue. Any premature fixed-price move risks compressing margins to <15% or triggering write-downs if overruns exceed contingency. The 90-day capability investment costs <0.5% of annual revenue (under SGD 100k) \u2014 fully fundable from existing cash runway with zero financing risk.",
+    "risks": [
+      "Client attrition if renewal negotiations stall without credible alternative to fixed pricing",
+      "Internal resistance to process change from delivery teams accustomed to T&M flexibility",
+      "Misinterpreting pilot success as enterprise-wide readiness \u2014 scaling too fast before cross-client validation"
+    ],
+    "disclaimer": "This is advisory guidance from an AI board; Meridian Systems\u2019 human directors retain fiduciary responsibility and final decision authority."
+  },
+  "mcp_used": false,
+  "mcp_sources": [
+    "[MOCK] crunchbase: IT services and systems integration",
+    "[MOCK] news: IT services and systems integration",
+    "[MOCK] web: IT services and systems integration Should we switch our top five clients from time-and-materials to fixed-price contracts? 2026",
+    "[MOCK] accounting: Meridian Systems"
+  ],
+  "mock_mode": false,
+  "used_paths": [],
+  "created_at": "2026-07-06T17:11:01.570901"
+}
