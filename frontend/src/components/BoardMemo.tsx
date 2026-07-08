@@ -96,33 +96,12 @@ export default function BoardMemo({ rec, companyName, question, date, sampleData
         <p className="text-graphite/85 leading-relaxed">{cleanProse(rec.rationale)}</p>
       </div>
 
-      {/* Options assessed */}
-      {rec.options_assessed.length > 0 && (
-        <Section
-          title="Options assessed"
-          Icon={Scale}
-          hint={`The board weighed ${rec.options_assessed.length} option${rec.options_assessed.length === 1 ? '' : 's'} against the call above`}
-        >
-          {/* 2-up only when content-balanced: exactly two short assessments. */}
-          <div className={
-            rec.options_assessed.length === 2 && rec.options_assessed.every(o => (o.assessment || '').length <= 260)
-              ? 'grid grid-cols-1 md:grid-cols-2 gap-4'
-              : 'grid grid-cols-1 gap-4'
-          }>
-            {rec.options_assessed.map((o, i) => (
-              <article key={i} className="card !p-5">
-                <div className="flex items-center justify-between gap-3 mb-2">
-                  <h3 className="text-sm font-semibold text-graphite">{o.option}</h3>
-                  {o.verdict && (
-                    <span className={`badge border shrink-0 ${optionVerdictTone(o.verdict)}`}>{o.verdict}</span>
-                  )}
-                </div>
-                <p className="text-sm text-graphite/80 leading-relaxed">{cleanProse(o.assessment)}</p>
-              </article>
-            ))}
-          </div>
-        </Section>
-      )}
+      {/* ── the thread: WHY — the reasoning and the disagreement ── */}
+      <ThreadLabel label="Why" text="the reasoning and the disagreement" />
+      <p className="text-xs text-muted -mt-8">
+        Seven agents read the decision independently and debated it; what did not resolve is
+        below — each agent&rsquo;s full read closes the memo.
+      </p>
 
       {/* Dissent on record — a feature of the output, not a failure. Always
           rendered: an empty record is itself part of the trust posture. */}
@@ -152,6 +131,37 @@ export default function BoardMemo({ rec, companyName, question, date, sampleData
           </p>
         )}
       </Section>
+
+      {/* ── the thread: WHAT — the options and the unknowns ── */}
+      <ThreadLabel label="What" text="the options weighed, and what the board doesn&rsquo;t know" />
+
+      {/* Options assessed */}
+      {rec.options_assessed.length > 0 && (
+        <Section
+          title="Options assessed"
+          Icon={Scale}
+          hint={`The board weighed ${rec.options_assessed.length} option${rec.options_assessed.length === 1 ? '' : 's'} against the call above`}
+        >
+          {/* 2-up only when content-balanced: exactly two short assessments. */}
+          <div className={
+            rec.options_assessed.length === 2 && rec.options_assessed.every(o => (o.assessment || '').length <= 260)
+              ? 'grid grid-cols-1 md:grid-cols-2 gap-4'
+              : 'grid grid-cols-1 gap-4'
+          }>
+            {rec.options_assessed.map((o, i) => (
+              <article key={i} className="card !p-5">
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <h3 className="text-sm font-semibold text-graphite">{o.option}</h3>
+                  {o.verdict && (
+                    <span className={`badge border shrink-0 ${optionVerdictTone(o.verdict)}`}>{o.verdict}</span>
+                  )}
+                </div>
+                <p className="text-sm text-graphite/80 leading-relaxed">{cleanProse(o.assessment)}</p>
+              </article>
+            ))}
+          </div>
+        </Section>
+      )}
 
       {/* Trust posture — what would change the call, what's missing, the risks */}
       <div>
@@ -196,6 +206,9 @@ export default function BoardMemo({ rec, companyName, question, date, sampleData
         </div>
       </div>
 
+      {/* ── the thread: HOW — the path ── */}
+      <ThreadLabel label="How" text="the recommended path" />
+
       {/* Execution plan (phased) — the appendix: the call and its reservations come first */}
       {rec.execution_plan?.phases?.length > 0 && (
         <Section title="Execution plan" Icon={MapIcon} hint="The recommended path, phased">
@@ -226,6 +239,14 @@ export default function BoardMemo({ rec, companyName, question, date, sampleData
         </Section>
       )}
     </div>
+  )
+}
+
+function ThreadLabel({ label, text }: { label: string; text: string }) {
+  return (
+    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+      {label} <span className="font-normal normal-case tracking-normal">— {text}</span>
+    </p>
   )
 }
 
