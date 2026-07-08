@@ -48,6 +48,21 @@ const card: React.CSSProperties = {
   pageBreakInside: 'avoid',
 }
 
+const threadLabel: React.CSSProperties = {
+  fontSize: 11,
+  fontWeight: 700,
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.08em',
+  color: C.muted,
+  margin: '0 0 2px',
+}
+
+const threadText: React.CSSProperties = {
+  fontWeight: 400,
+  textTransform: 'none' as const,
+  letterSpacing: 'normal',
+}
+
 const sectionHint: React.CSSProperties = {
   fontSize: 11,
   color: '#6B6B72',
@@ -133,42 +148,12 @@ export default function BoardMemoPdf({ response, companyName, question }: Props)
         )}
       </div>
 
-      {/* Options Assessed — stacked full-width; the section wrapper is flattened so
-          the page breaker can pull the header + first card up and break BETWEEN cards. */}
-      {rec.options_assessed?.length > 0 && (
-        <>
-          <div style={{ pageBreakInside: 'avoid' as const }}>
-            <p style={sectionTitle}>Options Assessed</p>
-            <p style={sectionHint}>The board weighed {rec.options_assessed.length} option{rec.options_assessed.length === 1 ? '' : 's'} against the call above</p>
-            <OptionCard o={rec.options_assessed[0]} />
-          </div>
-          {rec.options_assessed.slice(1).map((o, i) => (
-            <OptionCard key={i} o={o} />
-          ))}
-          <div style={{ height: 6 }} />
-        </>
-      )}
-
-      {/* Execution Plan */}
-      {rec.execution_plan?.phases?.length > 0 && (
-        <div style={{ ...card }}>
-          <p style={sectionTitle}>Execution Plan</p>
-          <p style={sectionHint}>The recommended path, phased</p>
-          {rec.execution_plan.phases.map((ph, i) => (
-            <div key={i} style={{ marginBottom: i < rec.execution_plan.phases.length - 1 ? 14 : 0, pageBreakInside: 'avoid' }}>
-              <div style={{ fontWeight: 600, fontSize: 13, color: C.text, marginBottom: 3 }}>
-                Phase {i + 1}: {ph.name}
-                {ph.timeframe && <span style={{ fontWeight: 400, color: C.muted, marginLeft: 6 }}>({ph.timeframe})</span>}
-              </div>
-              {ph.objective && <p style={{ margin: '2px 0 6px', fontSize: 13, color: C.muted }}>{cleanProse(ph.objective)}</p>}
-              {ph.actions?.map((a, j) => (
-                <div key={j} style={bullet}>• {cleanProse(a)}</div>
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
-
+      {/* ── thread: WHY ── */}
+      <p style={threadLabel}>Why <span style={threadText}>— the reasoning and the disagreement</span></p>
+      <p style={{ ...sectionHint, margin: '2px 0 10px' }}>
+        Seven agents read the decision independently and debated it; what did not resolve is below —
+        each agent&rsquo;s full read closes the memo.
+      </p>
       {/* Dissent on Record */}
       <div style={{ ...card }}>
         <p style={sectionTitle}>Dissent on Record</p>
@@ -184,6 +169,24 @@ export default function BoardMemoPdf({ response, companyName, question }: Props)
           <p style={{ margin: 0, color: C.muted, fontSize: 13, fontStyle: 'italic' }}>No dissent recorded.</p>
         )}
       </div>
+
+      {/* ── thread: WHAT ── */}
+      <p style={threadLabel}>What <span style={threadText}>— the options weighed, and what the board doesn&rsquo;t know</span></p>
+      {/* Options Assessed — stacked full-width; the section wrapper is flattened so
+          the page breaker can pull the header + first card up and break BETWEEN cards. */}
+      {rec.options_assessed?.length > 0 && (
+        <>
+          <div style={{ pageBreakInside: 'avoid' as const }}>
+            <p style={sectionTitle}>Options Assessed</p>
+            <p style={sectionHint}>The board weighed {rec.options_assessed.length} option{rec.options_assessed.length === 1 ? '' : 's'} against the call above</p>
+            <OptionCard o={rec.options_assessed[0]} />
+          </div>
+          {rec.options_assessed.slice(1).map((o, i) => (
+            <OptionCard key={i} o={o} />
+          ))}
+          <div style={{ height: 6 }} />
+        </>
+      )}
 
       {/* Trust Posture — single column; flattened for the page breaker (see Options). */}
       {(() => {
@@ -230,6 +233,28 @@ export default function BoardMemoPdf({ response, companyName, question }: Props)
           </>
         )
       })()}
+
+      {/* ── thread: HOW ── */}
+      <p style={threadLabel}>How <span style={threadText}>— the recommended path</span></p>
+      {/* Execution Plan */}
+      {rec.execution_plan?.phases?.length > 0 && (
+        <div style={{ ...card }}>
+          <p style={sectionTitle}>Execution Plan</p>
+          <p style={sectionHint}>The recommended path, phased</p>
+          {rec.execution_plan.phases.map((ph, i) => (
+            <div key={i} style={{ marginBottom: i < rec.execution_plan.phases.length - 1 ? 14 : 0, pageBreakInside: 'avoid' }}>
+              <div style={{ fontWeight: 600, fontSize: 13, color: C.text, marginBottom: 3 }}>
+                Phase {i + 1}: {ph.name}
+                {ph.timeframe && <span style={{ fontWeight: 400, color: C.muted, marginLeft: 6 }}>({ph.timeframe})</span>}
+              </div>
+              {ph.objective && <p style={{ margin: '2px 0 6px', fontSize: 13, color: C.muted }}>{cleanProse(ph.objective)}</p>}
+              {ph.actions?.map((a, j) => (
+                <div key={j} style={bullet}>• {cleanProse(a)}</div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* How the Board Reasoned — flattened for the page breaker; the header travels
           with the first agent card, and the LAST agent card travels with the disclaimer
