@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { ChevronRight, AlertTriangle, ScrollText, ArrowLeft, Copy, Check, Download, FileDown } from 'lucide-react'
 import Logo from '@/components/Logo'
@@ -11,7 +11,6 @@ import CouncilReasoning from '@/components/CouncilReasoning'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { memoToMarkdown, downloadTextFile } from '@/lib/planMarkdown'
 import { exportBoardMemoPdf } from '@/lib/exportPdf'
-import BoardMemoPdf from '@/components/BoardMemoPdf'
 import type { AnalyzeRequest, BoardResponse } from '@/lib/types'
 
 type Phase = 'input' | 'analyzing' | 'debating' | 'results'
@@ -36,7 +35,6 @@ export default function Boardroom() {
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
-  const pdfRef = useRef<HTMLDivElement>(null)
 
   const handleSubmit = async (req: AnalyzeRequest) => {
     setPhase('analyzing')
@@ -158,11 +156,10 @@ export default function Boardroom() {
             downloadTextFile(`founderos-board-memo-${slug}.md`, memoToMarkdown(response, memoMeta))
           }
           const downloadPdf = async () => {
-            if (!pdfRef.current) return
             setIsExporting(true)
             try {
               const slug = response.company_id || 'company'
-              await exportBoardMemoPdf(pdfRef.current, `founderos-board-memo-${slug}.pdf`)
+              await exportBoardMemoPdf(response, companyName, request?.decision.question, `founderos-board-memo-${slug}.pdf`)
             } finally {
               setIsExporting(false)
             }
@@ -228,15 +225,6 @@ export default function Boardroom() {
                   {response.recommendation.disclaimer}
                 </p>
               )}
-
-              {/* Off-screen PDF render target — invisible to users, captured by html2pdf */}
-              <div
-                ref={pdfRef}
-                aria-hidden="true"
-                style={{ position: 'absolute', left: '-9999px', top: 0, width: '794px', background: '#F7F5F1' }}
-              >
-                <BoardMemoPdf response={response} companyName={companyName} question={request?.decision.question} />
-              </div>
 
               {/* Restart */}
               <div className="text-center pt-2">
