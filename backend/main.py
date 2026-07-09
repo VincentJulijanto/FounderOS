@@ -94,6 +94,16 @@ async def build_response(
     mcp_sources = list(dict.fromkeys(mcp_sources))  # dedupe, order-preserving
     mcp_used = any(not s.startswith("[MOCK] ") for s in mcp_sources)
 
+    # Research provenance — the real URLs the Research agent cited (mock sources
+    # carry the "[MOCK] " prefix and are stripped, so this is empty in mock mode).
+    research_out = state["agent_outputs"].get("research")
+    research_sources: list[str] = []
+    if research_out:
+        research_sources = [
+            s for s in research_out.raw_data.get("mcp_sources", [])
+            if not s.startswith("[MOCK] ")
+        ]
+
     response = BoardResponse(
         company_id=company_id,
         agent_outputs=agent_outputs,
@@ -102,6 +112,7 @@ async def build_response(
         recommendation=state["recommendation"],
         mcp_used=mcp_used,
         mcp_sources=mcp_sources,
+        research_sources=research_sources,
         mock_mode=not settings.is_live,
         used_paths=bundle.used_paths,
     )

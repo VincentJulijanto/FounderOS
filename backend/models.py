@@ -311,6 +311,7 @@ class BoardResponse(BaseModel):
     recommendation: BoardRecommendation       # the memo
     mcp_used: bool = False
     mcp_sources: List[str] = []
+    research_sources: List[str] = []          # real (non-mock) URLs the Research agent cited
     mock_mode: bool = False                   # True when built from mock fixtures (no API key)
     used_paths: List[str] = []                # vault notes that informed this run (provenance)
     created_at: datetime = Field(default_factory=datetime.utcnow)

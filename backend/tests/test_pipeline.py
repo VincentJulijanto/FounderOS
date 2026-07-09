@@ -73,11 +73,11 @@ def test_scout_frames_options_when_empty(company, decision_no_options):
 
 # ── Agent society shape ───────────────────────────────────────────────────────
 
-def test_all_seven_agents_appear_in_output(company, decision):
+def test_all_agents_appear_in_output(company, decision):
     resp = run_board("kirana-logistics", company, decision)
     names = {o.agent_name for o in resp.agent_outputs}
     expected = {
-        "scout", "trend", "finance", "growth",
+        "scout", "research", "trend", "finance", "growth",
         "skeptic", "capability", "venture_partner",
     }
     assert expected == names, f"Missing or extra agents: {expected ^ names}"
@@ -188,7 +188,7 @@ async def test_run_graph_state_has_expected_keys(company, decision):
                 "debate_rounds", "recommendation", "errors"):
         assert key in state, f"missing state key: {key}"
 
-    assert len(state["agent_outputs"]) == 7
+    assert len(state["agent_outputs"]) == 8
     assert state["errors"] == []
     assert state["recommendation"] is not None
 
