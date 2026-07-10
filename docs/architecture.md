@@ -65,9 +65,13 @@ Company picker (stubbed) ──► company_id
 │        │  (LLM-selected relevant notes only)              │
 │        ▼                                                  │
 │              ┌───────────────┐                            │
-│              │  Scout        │ ← frames/【generates】       │
+│              │  Scout        │ ← frames/generates         │
 │              └───────┬───────┘   the options on the table │
 │                      │                                    │
+│              ┌───────────────┐                            │
+│              │  Research     │ ← fetches real-world       │
+│              └───────┬───────┘   benchmarks (MCP web/news)│
+│                      │  research_brief → all analysts     │
 │  ┌──────────┐  ┌─────┴────┐  ┌──────────┐  ┌───────────┐ │
 │  │  Trend   │  │ Finance  │  │  Growth  │  │Capability │ ← parallel fan-out
 │  └────┬─────┘  └────┬─────┘  └────┬─────┘  └─────┬─────┘ │
@@ -93,8 +97,9 @@ Company picker (stubbed) ──► company_id
         (memo: recommendation + dissent + missing inputs + phased plan)
 ```
 
-There are **7 agents**: **Scout, Trend, Finance, Growth, Skeptic, Capability, Chair.**
-(`capability` is the rebuilt `founder_fit` — see [§ Agents](#the-seven-agents-company-centric).)
+There are **8 agents**: **Scout, Research, Trend, Finance, Growth, Skeptic, Capability, Chair.**
+(`capability` is the rebuilt `founder_fit`; `research` is the Market Intelligence agent — see
+[§ Agents](#the-eight-agents-company-centric).)
 
 ---
 
@@ -204,6 +209,8 @@ BoardResponse:
                                               # frontend "Sample data" disclosure badge
     used_paths:      list[str]                # vault notes that informed this run (provenance;
                                               # _-prefixed = identity context, not memory)
+    research_sources: list[str]              # real-world URLs returned by the Research agent
+                                              # (deduplicated; empty in mock mode)
     created_at:      datetime
 ```
 
@@ -271,9 +278,13 @@ LangGraph node key, and the VP summary key. Renaming an agent touches both lanes
 with the contract:
 
 ```
-scout · trend · finance · growth · skeptic · capability · venture_partner
+scout · research · trend · finance · growth · skeptic · capability · venture_partner
 ```
 
+- `research` **displays as "Market Intelligence"** — runs between Scout and the analyst fan-out.
+  Fetches real-world benchmarks via MCP (web/news/crunchbase); emits a `research_brief` string
+  that each analyst receives as context. Does not score the decision; does not participate in the
+  debate. See `docs/agent-research.md` for the full spec.
 - `capability` **was `founder_fit`** — rebuilt from "does this *person* fit this idea" into
   "does this *organization* have the capability/readiness to execute this decision."
 - The canonical string `venture_partner` **displays as "Chair"** (the board's chair — final
@@ -283,17 +294,18 @@ scout · trend · finance · growth · skeptic · capability · venture_partner
 
 ---
 
-## The seven agents (company-centric)
+## The eight agents (company-centric)
 
 Each agent is a Python class extending `BaseAgent`. The class scaffolding is unchanged; the
 `SYSTEM_PROMPT`, mock fixture, and the shared profile formatter are re-pointed at a company +
 decision. Every agent still ends its system prompt with **"Respond with valid JSON only."**
 
-| Agent (`name` string) | New company-centric role |
+| Agent (`name` string) | Role |
 |---|---|
 | Opportunity Scout (`scout`) | Frames the **options on the table** for the decision (generates them only if `decision.options` is empty). Not greenfield idea-hunting. |
-| Trend Analyst (`trend`) | Reads market/demand signals **for this decision** (with MCP live data where available). |
-| Finance Agent (`finance`) | Models the decision against the **company's** economics (P&L, unit economics, the budget constraint) — not a personal SGD budget. |
+| Market Intelligence (`research`) | Fetches **real-world benchmarks** (prices, rates, market sizes) via MCP after Scout frames options. Hands a `research_brief` to every analyst. Does not score; does not debate. See `docs/agent-research.md`. |
+| Trend Analyst (`trend`) | Reads market/demand signals **for this decision** (with MCP live data + the research brief). |
+| Finance Agent (`finance`) | Models the decision against the **company's** economics (P&L, unit economics, budget constraint). |
 | Growth Agent (`growth`) | How the company **executes/goes to market** on the chosen option. |
 | Skeptic Agent (`skeptic`) | **The main event.** Attacks the decision's weakest assumptions and most likely failure modes. |
 | Capability Agent (`capability`) | **Rebuilt from `founder_fit`.** Scores the **organization's** capability/readiness to execute — team, ops, track record — not a person's skills. |

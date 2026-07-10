@@ -1,6 +1,6 @@
 # Research Agent — Design Spec
 
-**Status:** Design spec — not yet implemented  
+**Status:** Implemented — `backend/agents/research.py` (`MarketResearchAgent`, 273 lines)  
 **Canonical name:** `research`  
 **Display label:** Market Intelligence
 

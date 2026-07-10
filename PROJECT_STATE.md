@@ -5,23 +5,28 @@
 > what to do next. Read this first at the start of any new session. The **canonical, frozen Phase 0
 > contract** lives in `docs/architecture.md`; the **standing brief** for both build lanes is `CLAUDE.md`.
 
-**Last updated:** 2026-07-06
-**Current phase:** **SHIPPED & LIVE-VERIFIED — feature freeze in effect.** Everything through
-PR #12 is merged to `main` and deployed: frontend at **founderos-zeta.vercel.app** (Vercel Hobby),
-backend at **vincent-playground-founderos-api.hf.space** (HF Docker Space, CPU Basic, live Qwen).
+**Last updated:** 2026-07-10
+**Current phase:** **SHIPPED & LIVE-VERIFIED — Research agent built on `feat/research-agent`, pending merge.**
+Everything through PR #12 is merged to `main` and deployed: frontend at **founderos-zeta.vercel.app**
+(Vercel Hobby), backend at **vincent-playground-founderos-api.hf.space** (HF Docker Space, CPU Basic, live Qwen).
 - **Live-validated end to end:** three full runs through the HF proxy (93s / 132s / 100s, all
   HTTP 200, zero parse failures on the raised token ceilings). The **MVP loop is proven live**:
   cold-start company typed fresh → live board run → `_profile.md` + decision note written →
   second run hydrates the profile (`profile=None` → 200) and the memo cites the prior decision.
-- **Shipped since the pivot build:** live-run fixes (anti-invention prompts, debate 6000-token
-  ceiling, round-2 stalemate grace, "Contested — dissent recorded" reframe, ~110s wait pacing,
-  5-note seed depth so `_llm_select` fires, slug word-boundary) · vault profile persistence +
-  hydration (PR #10) · "Board memory consulted" provenance line (PR #11) · **PDF export +
-  security hardening (PR #12)** — client-side board-memo PDF (blank-capture bug found and fixed,
-  A4 pagination verified page-by-page on the deployed stack), env-tunable rate limits, input
-  caps + `company_id` pattern + path-traversal guard, mirrored client-side.
-**Remaining (docs/prep only):** archive the Kestrel cold-start receipt, rehearse the 3-minute
-script (`docs/demo_script.md`) with a stopwatch, morning-of ritual per the script.
+- **Shipped to `main` (PRs #10–#12):** live-run fixes (anti-invention prompts, debate 6000-token
+  ceiling, round-2 stalemate grace, ~110s wait pacing, slug word-boundary) · vault profile
+  persistence + hydration (PR #10) · "Board memory consulted" provenance line (PR #11) · PDF
+  export + security hardening (PR #12).
+- **On `feat/research-agent` (not yet merged to `main`):** memo legibility + strip markdown
+  emphasis markers (#14) · memo legibility final polish (#15) · memo narrative thread — summary on
+  top, WHY/WHAT/HOW breakdown (#16) · **Market Intelligence (`research`) agent** — `MarketResearchAgent`
+  in `backend/agents/research.py`; fetches real-world benchmarks (web/news/crunchbase) via MCP
+  after Scout and before the analyst fan-out; injects `research_brief` into every analyst's
+  context; `BoardResponse.research_sources` added; graph rewired `scout → research → analysts`;
+  `docs/agent-research.md` design spec shipped with the implementation.
+**Remaining:** merge `feat/research-agent` → `main` (includes docs update on `docs/research-agent-update`
+branch) · rehearse the 3-minute demo script with a stopwatch · archive Kestrel cold-start receipt
+· morning-of ritual per `docs/demo_script.md`.
 
 ---
 
@@ -41,7 +46,7 @@ by default), or **Joint**.
 | Day 6.6 | Lane B frontend pivot: contract mirror + roster (P4), evaluator app intake + memo (P5), `/studio → /boardroom` rename + copy sweep (P6) | Lane B | **DONE** (Phases 4–6) |
 | Day 7 | Buffer / MCP connector stretch. Vincent: renderer polish. Steven: Xero or Shopify into Finance if ahead | Split | **DONE** (P9 book-financials connector, mock-safe; live-run fix pass PR #9) |
 | Day 8 | Integration: real backend to real frontend, fix drift. Feature freeze end of day | Joint | **DONE** — deployed (HF Space + Vercel), 3 live proxy runs green, profile persistence + provenance + PDF export shipped (PRs #10–#12). **Feature freeze in effect.** |
-| Day 9 | Demo prep + buffer | Joint | **In progress** — script v2 locked (`docs/demo_script.md`); remaining: Kestrel receipt archival + stopwatch rehearsals |
+| Day 9 | Demo prep + buffer | Joint | **In progress** — script v2 locked (`docs/demo_script.md`); Research agent added (feat/research-agent); remaining: merge branches, Kestrel receipt archival, stopwatch rehearsals |
 
 The canonical lane/ownership split and shared-file watchlist already live in this file (below) and
 in `CLAUDE.md`; update the **Status** column as work lands. The rows map onto the blueprint's build
