@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { ChevronRight, AlertTriangle, ScrollText, ArrowLeft, Copy, Check, Download, FileDown } from 'lucide-react'
 import Logo from '@/components/Logo'
+import AuthChip from '@/components/AuthChip'
 import DecisionIntake from '@/components/DecisionIntake'
 import AgentDebate from '@/components/AgentDebate'
 import BoardMemo from '@/components/BoardMemo'
@@ -82,19 +83,22 @@ export default function Boardroom() {
           >
             <Logo idSuffix="boardroom-nav" size={32} />
           </Link>
-          <nav className="hidden sm:flex items-center gap-2 text-sm text-muted" aria-label="Progress">
-            {(['input', 'analyzing', 'debating', 'results'] as Phase[]).map((p, i) => (
-              <div key={p} className="flex items-center gap-2">
-                {i > 0 && <ChevronRight className="w-4 h-4 text-hairline" aria-hidden="true" />}
-                <span
-                  className={phase === p ? 'text-graphite font-medium' : ''}
-                  aria-current={phase === p ? 'step' : undefined}
-                >
-                  {PHASE_LABELS[p]}
-                </span>
-              </div>
-            ))}
-          </nav>
+          <div className="flex items-center gap-4">
+            <nav className="hidden sm:flex items-center gap-2 text-sm text-muted" aria-label="Progress">
+              {(['input', 'analyzing', 'debating', 'results'] as Phase[]).map((p, i) => (
+                <div key={p} className="flex items-center gap-2">
+                  {i > 0 && <ChevronRight className="w-4 h-4 text-hairline" aria-hidden="true" />}
+                  <span
+                    className={phase === p ? 'text-graphite font-medium' : ''}
+                    aria-current={phase === p ? 'step' : undefined}
+                  >
+                    {PHASE_LABELS[p]}
+                  </span>
+                </div>
+              ))}
+            </nav>
+            <AuthChip />
+          </div>
         </div>
       </header>
 
