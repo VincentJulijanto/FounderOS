@@ -15,7 +15,7 @@
 Tab B. + New company, a rehearsed two-line profile (name every entity explicitly — never "our
 partner"), one-line decision, no options. Convene the board. Say:
 "FounderOS is an AI board for people who already run a business. I've just given it a company
-it has never seen and one real decision — seven agents are now debating it live. That takes
+it has never seen and one real decision — eight agents are now debating it live. That takes
 about two minutes, so while the board argues, let me show you what it looks like when the
 board knows you."
 

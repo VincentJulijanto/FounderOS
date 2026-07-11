@@ -33,7 +33,7 @@ export default function Hero() {
           </h1>
 
           <p className="mt-7 text-lg text-muted max-w-xl leading-relaxed">
-            FounderOS is an AI board for your business. Seven specialized agents
+            FounderOS is an AI board for your business. Eight specialized agents
             pressure-test the decision you bring, debate the trade-offs, and hand you
             a board-ready memo — a clear recommendation, the dissent behind it, and
             what you&rsquo;re still missing.

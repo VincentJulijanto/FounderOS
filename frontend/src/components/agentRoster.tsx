@@ -1,5 +1,6 @@
 import {
   Telescope,
+  Radar,
   TrendingUp,
   Wallet,
   Rocket,
@@ -14,7 +15,7 @@ export interface AgentMeta {
   /**
    * Canonical name — must match the backend `agent_name` EXACTLY. This is the
    * join key for agent_outputs, debate positions, and dissent. It is the string
-   * scout · trend · finance · growth · skeptic · capability · venture_partner.
+   * scout · research · trend · finance · growth · skeptic · capability · venture_partner.
    */
   name: string
   /** Human-facing display name (e.g. venture_partner → "Chair"). */
@@ -32,11 +33,12 @@ export interface AgentMeta {
 }
 
 /**
- * The canonical 7-agent board. Single source of truth for icons, labels, and
+ * The canonical 8-agent board. Single source of truth for icons, labels, and
  * tints across the intake preview and the debate view. Keyed on the canonical
  * backend strings; `label` carries the human-facing name (venture_partner is the
  * board's "Chair"). `capability` is the rebuilt `founder_fit` — organisational
- * readiness, not a person's skills.
+ * readiness, not a person's skills. `research` (Market Intelligence) runs after
+ * Scout and before the analysts. Order mirrors the pipeline.
  */
 export const ROSTER: AgentMeta[] = [
   {
@@ -47,6 +49,15 @@ export const ROSTER: AgentMeta[] = [
     role: 'Frames the options on the table for this decision.',
     status: 'Framing the options...',
     tone: 'border-brand-700/60 bg-brand-950/40',
+  },
+  {
+    name: 'research',
+    label: 'Market Intelligence',
+    short: 'Research',
+    Icon: Radar,
+    role: 'Gathers cited market data before the analysts weigh in.',
+    status: 'Gathering market intelligence...',
+    tone: 'border-sky-700/60 bg-sky-950/30',
   },
   {
     name: 'trend',

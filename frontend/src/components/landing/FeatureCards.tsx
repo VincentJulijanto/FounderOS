@@ -4,7 +4,7 @@ const FEATURES = [
   {
     icon: Users,
     title: 'A council of specialists',
-    body: 'Seven agents — Scout, Trend Analyst, Finance, Growth, Skeptic, Capability, and Chair — each examine your decision from their own angle.',
+    body: 'Eight agents — Scout, Market Intelligence, Trend Analyst, Finance, Growth, Skeptic, Capability, and Chair — each examine your decision from their own angle.',
   },
   {
     icon: MessagesSquare,

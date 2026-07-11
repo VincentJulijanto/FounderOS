@@ -16,7 +16,8 @@ startup idea plus a launch plan. The pipeline was a **generator**: it invented o
 nothing and its job was divergence. The new product takes a **company + one decision** and
 *evaluates* it: is this call sound, what's missing, what would change it? The pipeline is now an
 **evaluator**: its job is convergence — pressure-test one proposal against what we know about the
-company and surface the gaps. The 7-agent debate machinery carries over unchanged in shape; what
+company and surface the gaps. The debate machinery carries over in shape — now eight agents, with
+Market Intelligence (research) joining after Scout to ground the memo in real numbers; what
 changes is the **inputs** (company + decision, not a person), the **agent framing** (company-centric,
 not founder-centric), the **memory** (a per-company Obsidian markdown vault with selective
 retrieval + write-back, not an in-process per-user store), and the **output** (a board memo, not a
@@ -423,7 +424,7 @@ GET  /api/company/{company_id}
 ## Deployment (Decision #8)
 
 **Backend → Hugging Face Spaces (Docker SDK, free CPU Basic: 2 vCPU / 16 GB RAM).**
-Why a long-running container and not serverless: the full 7-agent debate takes **~90–240s per run**.
+Why a long-running container and not serverless: the full 8-agent debate takes **~90–240s per run**.
 HF Spaces runs a persistent container with **no per-request function timeout**, so a 240s run
 completes. This is *why we do not use Vercel for the backend* — serverless function timeouts can't
 hold a 240s run, and the ephemeral serverless filesystem can't hold the vault's markdown

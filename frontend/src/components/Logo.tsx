@@ -11,7 +11,7 @@ interface LogoProps {
 
 /**
  * The FounderOS council mark: a central node linked to six surrounding nodes —
- * the seven-agent council. Violet-to-gold gradient on the nodes, violet links.
+ * the eight-agent council. Violet-to-gold gradient on the nodes, violet links.
  */
 export default function Logo({
   size = 40,

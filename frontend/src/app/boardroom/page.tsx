@@ -111,7 +111,7 @@ export default function Boardroom() {
               </span>
             </h1>
             <p className="text-lg text-muted max-w-2xl mx-auto">
-              Seven specialised agents pressure-test your call against what they know about the
+              Eight specialised agents pressure-test your call against what they know about the
               company — is this sound, and what are you missing? — then hand you a board-ready memo
               with the dissent left in.
             </p>

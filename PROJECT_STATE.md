@@ -61,7 +61,7 @@ FounderOS is moving from **"aspiring founder: profile → startup idea"** (a *ge
 **AI board/council that helps operators of EXISTING businesses evaluate a specific decision**:
 "is this sound, and what's missing?" (an *evaluator*). Output is a **board-ready memo**. Company
 context persists as a **per-company Obsidian markdown vault** with selective retrieval + write-back,
-so the council remembers across sessions without loading everything into context. The 7-agent
+so the council remembers across sessions without loading everything into context. The 8-agent
 debate machinery carries over; **inputs, agent framing, memory, and output format change**, and the
 **Skeptic + Debate Engine become the main event**.
 

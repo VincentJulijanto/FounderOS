@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import date
 from typing import Dict, Any, List
 
@@ -13,68 +14,6 @@ from ..mcp.client import mcp_client, run_sync
 # brief. Its job is data fetching and citation, not analysis.
 #
 # Canonical string `research`; displays as "Market Intelligence".
-
-_MOCK = json.dumps({
-    "summary": (
-        "Real-world benchmarks point to a viable but capital-sensitive move: warehouse "
-        "space runs USD 12–18/sqm/month and last-mile 3PL rates USD 2.50–4.00/kg in a "
-        "market growing ~14% a year. The one gap is customs clearance cost per shipment."
-    ),
-    "data_points": [
-        {
-            "metric": "warehouse lease rate",
-            "value": "USD 12–18 per sqm/month",
-            "geography": "Ho Chi Minh City, Vietnam",
-            "source_url": "https://mock.research.example.com/cbre-vietnam-industrial-2025",
-            "source_label": "CBRE Vietnam Industrial Market Q3 2025 [MOCK]",
-            "date_retrieved": "2026-07-09",
-            "confidence": "medium",
-        },
-        {
-            "metric": "last-mile delivery rate (3PL partnership)",
-            "value": "USD 2.50–4.00 per kg",
-            "geography": "Vietnam (national)",
-            "source_url": "https://mock.research.example.com/statista-vietnam-logistics-2025",
-            "source_label": "Statista Vietnam Logistics Report 2025 [MOCK]",
-            "date_retrieved": "2026-07-09",
-            "confidence": "medium",
-        },
-        {
-            "metric": "logistics market size",
-            "value": "USD 40B, 14% CAGR",
-            "geography": "Vietnam",
-            "source_url": "https://mock.research.example.com/researchandmarkets-vn-logistics",
-            "source_label": "ResearchAndMarkets Vietnam Logistics 2025 [MOCK]",
-            "date_retrieved": "2026-07-09",
-            "confidence": "low",
-        },
-        {
-            "metric": "competitor last-mile pricing benchmark",
-            "value": "SGD 0.80–1.20 per delivery (SEA average)",
-            "geography": "Southeast Asia",
-            "source_url": "https://mock.research.example.com/sea-logistics-benchmark-2025",
-            "source_label": "SEA Logistics Benchmark Report 2025 [MOCK]",
-            "date_retrieved": "2026-07-09",
-            "confidence": "low",
-        },
-    ],
-    "queries_used": [
-        "warehouse lease price per sqm Ho Chi Minh City 2025",
-        "Vietnam 3PL last-mile delivery rates 2025",
-        "Vietnam logistics market size growth CAGR",
-        "competitor last-mile delivery pricing Southeast Asia",
-    ],
-    "mcp_sources": [
-        "[MOCK] web: warehouse lease price per sqm Ho Chi Minh City 2025",
-        "[MOCK] web: Vietnam 3PL last-mile delivery rates 2025",
-        "[MOCK] news: Vietnam logistics market",
-        "[MOCK] crunchbase: logistics",
-    ],
-    "data_gaps": [
-        "No usable data on customs clearance cost per shipment in Vietnam — "
-        "queries returned generic regulatory pages only",
-    ],
-})
 
 
 SYSTEM_PROMPT_QUERIES = """
@@ -140,14 +79,76 @@ class MarketResearchAgent(BaseAgent):
     max_tokens = 3000
 
     def _mock_response(self) -> str:
-        return _MOCK
+        """Base-class contract. Not on the hot path — analyze() builds a
+        decision-aware fixture via _mock_data(); kept for any external caller."""
+        return json.dumps(self._mock_data(
+            CompanyProfile(company_name="Demo Co", sector="this sector",
+                           stage="", business_model="", size_band=""),
+            Decision(question="Is this decision sound?"),
+        ))
+
+    def _mock_data(self, profile: CompanyProfile, decision: Decision) -> Dict[str, Any]:
+        """Deterministic, keyless, decision-aware fixture — templated on the
+        company's sector and the question so a skincare decision never shows
+        logistics numbers. Order-of-magnitude placeholders, clearly synthetic.
+
+        Source labels carry a "[MOCK]" tag and cite mock.<sector>.example.com URLs
+        (payload honesty); the display surfaces strip both (see cleanProse /
+        stripMockMarkers on the frontend), and main.py filters the "[MOCK] "-
+        prefixed mcp_sources out of research_sources, so nothing synthetic leaks."""
+        sector = (profile.sector or "this sector").strip()
+        question = (decision.question or "").strip()
+        host = re.sub(r"[^a-z0-9]+", "-", sector.lower()).strip("-") or "sector"
+        label = f"{sector} benchmark (synthetic) [MOCK]"
+
+        def _dp(metric: str, value: str, slug: str) -> Dict[str, Any]:
+            return {
+                "metric": metric,
+                "value": value,
+                "geography": "primary market",
+                "source_url": f"https://mock.{host}.example.com/{slug}",
+                "source_label": label,
+                "date_retrieved": "2026-07-09",
+                "confidence": "low",
+            }
+
+        return {
+            "summary": (
+                f"Demo mode — synthetic {sector} benchmarks, not live data. "
+                "Order-of-magnitude market size, growth, and cost figures are shown so the "
+                "board has numbers to react to; add an API key for real, cited sources."
+            ),
+            "data_points": [
+                _dp(f"{sector} — market size", "USD 2–5B (order-of-magnitude estimate)", "market-size"),
+                _dp(f"{sector} — annual growth", "~8–14% CAGR", "growth-rate"),
+                _dp(f"{sector} — cost / margin benchmark",
+                    "operating costs typically 60–80% of revenue", "cost-benchmark"),
+            ],
+            "queries_used": [
+                f"{sector} market size 2026",
+                f"{sector} growth rate CAGR",
+                f"{sector} cost benchmark",
+                (question or f"{sector} outlook")[:80],
+            ],
+            "mcp_sources": [
+                f"[MOCK] web: {sector} market size 2026",
+                f"[MOCK] web: {sector} growth rate",
+                f"[MOCK] news: {sector}",
+                f"[MOCK] crunchbase: {sector}",
+            ],
+            "data_gaps": [
+                f"No live sourcing in demo mode — {sector} figures are placeholders, "
+                "not verified numbers.",
+            ],
+        }
 
     def analyze(self, profile: CompanyProfile, context: Dict[str, Any] = {}) -> AgentOutput:
         decision: Decision = context["decision"]
 
-        # Mock mode short-circuits before any LLM or MCP call — deterministic fixture.
+        # Mock mode short-circuits before any LLM or MCP call — deterministic,
+        # decision-aware fixture (templated on sector + question).
         if self.mock:
-            return self._build_output(json.loads(self._mock_response()))
+            return self._build_output(self._mock_data(profile, decision))
 
         # 1. Generate the search queries from the decision + framed options.
         queries = self._generate_queries(profile, decision)
