@@ -66,9 +66,11 @@ class FinanceAgent(BaseAgent):
         user_message = (
             f"{company_text}\n{decision_text}\n\n"
             f"Book financials pulled from the company's accounting system "
-            f"({book.get('period', 'recent')}):\n{book_block or '- (none available)'}\n\n"
+            f"({book.get('period', 'recent')}):\n{book_block or '- (none available)'}\n"
+            f"{self._format_research_brief(context)}\n"
             "Model the financial impact of this decision on THIS company, using the book "
-            "figures above. Assess affordability, payback, and downside. Be realistic and conservative."
+            "figures and any real-world benchmarks above. Assess affordability, payback, and "
+            "downside. Be realistic and conservative."
         )
 
         raw = self._call_llm(SYSTEM_PROMPT, user_message)

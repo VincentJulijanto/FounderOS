@@ -13,7 +13,7 @@ The single deployment reference both lanes read. Records **Decision #8**: the ba
 
 ## Why this shape (the short version)
 
-- The full 7-agent debate takes **~90–240s per run**. HF Spaces runs a **persistent container with
+- The full 8-agent debate takes **~90–240s per run**. HF Spaces runs a **persistent container with
   no per-request function timeout**, so a 240s run completes.
 - **Not Vercel for the backend** — serverless function timeouts can't hold a 240s run, and the
   ephemeral serverless filesystem can't hold the vault's markdown write-back.

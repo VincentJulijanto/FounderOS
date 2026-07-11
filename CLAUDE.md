@@ -7,11 +7,11 @@ not Anthropic.** Keyless mock mode must keep working throughout.
 ## The pivot (what we're building)
 
 FounderOS is an **AI board/council for operators of existing businesses**. You bring **one
-decision** ("is this sound, what are we missing?"); seven agents evaluate + debate it and return a
+decision** ("is this sound, what are we missing?"); eight agents evaluate + debate it and return a
 **board-ready memo**. This is an **evaluator** (converge on a verdict for a given decision), not the
-old **generator** (invent startup ideas from a personal profile). The 7-agent debate machinery
-carries over; **inputs, agent framing, memory, and output format change**, and the **Skeptic +
-Debate Engine are the main event.**
+old **generator** (invent startup ideas from a personal profile). The 8-agent pipeline carries over;
+**inputs, agent framing, memory, and output format change**, and the **Skeptic + Debate Engine are
+the main event.**
 
 ## The eight decisions (settled — build to these)
 
@@ -51,9 +51,12 @@ Use the **same string** for the roster, the agent `name`/`agent_name`, the LangG
 the VP summary key:
 
 ```
-scout · trend · finance · growth · skeptic · capability · venture_partner
+scout · research · trend · finance · growth · skeptic · capability · venture_partner
 ```
 
+- `research` **displays as "Market Intelligence"** — fetches real-world benchmarks (land prices,
+  logistics rates, market sizes) after Scout frames options, before the analyst fan-out. Does not
+  score the decision and does not participate in the debate. See `docs/agent-research.md`.
 - `capability` **was `founder_fit`** (rebuilt: organizational capability/readiness, not a person's
   skills). **Highest-churn rename** — also touches the VP `_compile_agent_summary` key,
   `StartupCard`'s founder-fit field, and `planMarkdown.ts`. Do it as one change set.

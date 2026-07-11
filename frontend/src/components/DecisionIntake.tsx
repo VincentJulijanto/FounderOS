@@ -127,7 +127,7 @@ export default function DecisionIntake({ onSubmit }: Props) {
       <div className="card">
         <h2 className="text-lg font-semibold">Meet your board</h2>
         <p className="text-sm text-muted mt-0.5 mb-5">
-          Seven specialised agents evaluate your decision, debate it, and hand back a board-ready memo.
+          Eight specialised agents evaluate your decision, debate it, and hand back a board-ready memo.
         </p>
         <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-3.5">
           {ROSTER.map(agent => {
@@ -281,7 +281,7 @@ export default function DecisionIntake({ onSubmit }: Props) {
       </button>
 
       <p className="text-center text-xs text-muted">
-        Seven agents evaluate and debate your decision, then return a board memo. A live run takes ~90–240s.
+        Eight agents evaluate and debate your decision, then return a board memo. A live run takes ~90–240s.
       </p>
     </div>
   )

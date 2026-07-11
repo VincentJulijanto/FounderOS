@@ -21,11 +21,31 @@ export interface MemoMeta {
  *   cleanProse('see footnote*')          → unchanged (unpaired)
  */
 export function cleanProse(text: string): string {
-  return text
+  return stripMockMarkers(text)
     .replace(/\*\*([^*\n]+?)\*\*/g, '$1')
     // italic: opening * at start/after space or "(", closing * before space/punct/end
     .replace(/(^|[\s(])\*([^*\n]+?)\*(?=$|[\s).,;:!?])/g, '$1$2')
     .replace(/`([^`\n]+)`/g, '$1')
+}
+
+/**
+ * Remove mock-mode provenance markers before display. Keyless demo mode tags
+ * synthetic sources with "[MOCK]" and cites mock.<host>.example.com URLs (see the
+ * Research agent fixture); those are payload honesty, not something to show the
+ * operator. The response payload keeps them intact — this strips at the surface.
+ * Also tidies parens/separators emptied by the removal.
+ *
+ *   stripMockMarkers('CBRE Q3 2025 [MOCK]')                 → 'CBRE Q3 2025'
+ *   stripMockMarkers('rate: 4.0/kg (Statista [MOCK])')      → 'rate: 4.0/kg (Statista)'
+ *   stripMockMarkers('see https://mock.x.example.com/a b')  → 'see  b'
+ */
+export function stripMockMarkers(text: string): string {
+  return text
+    .replace(/https?:\/\/mock\.[^\s,)]*\.example\.com[^\s,)]*/gi, '')
+    .replace(/\s*\[MOCK\]/gi, '')
+    .replace(/\(\s*\)/g, '')       // parens emptied by the strip
+    .replace(/[ \t]{2,}/g, ' ')    // collapse runs of spaces the strip left behind
+    .trim()
 }
 
 /**
@@ -111,14 +131,15 @@ export function memoToMarkdown(res: BoardResponse, meta?: MemoMeta): string {
     lines.push(`\n## How the board reasoned`)
     for (const a of res.agent_outputs) {
       lines.push(`\n### ${labelFor(a.agent_name)}${a.score != null ? ` — ${a.score}/10` : ''}`)
-      if (a.analysis) lines.push(a.analysis)
+      // Strip mock markers only (not full cleanProse) — emphasis is legit markdown here.
+      if (a.analysis) lines.push(stripMockMarkers(a.analysis))
       if (a.key_findings?.length) {
         lines.push(`\n**Key findings**`)
-        a.key_findings.forEach((f) => lines.push(`- ${f}`))
+        a.key_findings.forEach((f) => lines.push(`- ${stripMockMarkers(f)}`))
       }
       if (a.concerns?.length) {
         lines.push(`\n**Concerns**`)
-        a.concerns.forEach((c) => lines.push(`- ${c}`))
+        a.concerns.forEach((c) => lines.push(`- ${stripMockMarkers(c)}`))
       }
     }
   }

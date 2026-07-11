@@ -104,6 +104,15 @@ class BaseAgent:
     def _format_options(self, options: list) -> str:
         return "\n".join(f"- {o}" for o in options) if options else "- (Scout will frame options)"
 
+    def _format_research_brief(self, context: Dict[str, Any]) -> str:
+        """Render the Research agent's market-intelligence brief for a prompt, if present.
+
+        Returns an empty string when no brief is available, so an agent's prompt is
+        unchanged from today's behaviour when Research produced nothing.
+        """
+        brief = context.get("research_brief", "")
+        return f"\n## Market Intelligence Brief\n{brief}\n" if brief else ""
+
     # ──────────────────────────────────────────
     # Override in subclasses
     # ──────────────────────────────────────────

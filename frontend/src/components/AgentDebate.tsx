@@ -21,7 +21,7 @@ const SKEPTIC = 'skeptic' // canonical agent-name string
 
 /**
  * The pipeline shape the wait state walks (mirrors graph.py):
- * scout → four analysts in parallel → skeptic → debate → chair.
+ * scout → research → four analysts in parallel → skeptic → debate → chair.
  * Durations pace a ~110s typical live run (validated runs land 90–140s, and
  * the analysts finish in ~10s), reaching the chair by ~80s so even a fast run
  * shows every stage; the last stage holds until the response actually arrives.
@@ -30,10 +30,11 @@ const SKEPTIC = 'skeptic' // canonical agent-name string
  */
 const STAGES: { agents: string[]; status: string; secs: number }[] = [
   { agents: ['scout'], status: 'The Scout is framing the options on the table...', secs: 10 },
-  { agents: ['trend', 'finance', 'growth', 'capability'], status: 'Four analysts are reading the decision in parallel...', secs: 30 },
-  { agents: ['skeptic'], status: 'The Skeptic is attacking the assumptions...', secs: 25 },
-  { agents: [], status: 'The board is debating the conflicts...', secs: 15 },
-  { agents: ['venture_partner'], status: 'The Chair is writing the board memo...', secs: 15 },
+  { agents: ['research'], status: 'Market Intelligence is gathering cited data...', secs: 12 },
+  { agents: ['trend', 'finance', 'growth', 'capability'], status: 'Four analysts are reading the decision in parallel...', secs: 26 },
+  { agents: ['skeptic'], status: 'The Skeptic is attacking the assumptions...', secs: 22 },
+  { agents: [], status: 'The board is debating the conflicts...', secs: 12 },
+  { agents: ['venture_partner'], status: 'The Chair is writing the board memo...', secs: 13 },
 ]
 const COMPRESSED_STAGE_MS = 450
 

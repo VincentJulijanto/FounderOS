@@ -1,10 +1,10 @@
 /**
  * Stats band. All figures are PLACEHOLDERS — replace with real, verified
- * numbers before launch. "7 agents" is the only value tied to the actual
- * product (the backend runs a 7-agent council).
+ * numbers before launch. "8 agents" is the only value tied to the actual
+ * product (the backend runs an 8-agent council).
  */
 const STATS = [
-  { value: '7', label: 'specialized agents on every decision', verified: true },
+  { value: '8', label: 'specialized agents on every decision', verified: true },
   { value: '4', label: 'debate rounds to reach consensus', verified: false },
   { value: '30-day', label: 'phased execution plan with every memo', verified: false },
 ]

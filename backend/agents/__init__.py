@@ -5,6 +5,7 @@ from .skeptic import SkepticAgent
 from .growth import GrowthAgent
 from .capability import CapabilityAgent
 from .venture_partner import VenturePartnerAgent
+from .research import MarketResearchAgent
 
 __all__ = [
     "OpportunityScoutAgent",
@@ -14,4 +15,5 @@ __all__ = [
     "GrowthAgent",
     "CapabilityAgent",
     "VenturePartnerAgent",
+    "MarketResearchAgent",
 ]

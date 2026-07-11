@@ -165,6 +165,7 @@ class VenturePartnerAgent(BaseAgent):
         outputs: Dict[str, AgentOutput] = context.get("agent_outputs", {})
         labels = {
             "scout": "SCOUT (options framing)",
+            "research": "RESEARCH (market data brief)",
             "trend": "TREND",
             "finance": "FINANCE",
             "growth": "GROWTH",

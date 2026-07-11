@@ -82,7 +82,8 @@ class CapabilityAgent(BaseAgent):
         decision_text = self._format_decision(decision)
 
         user_message = (
-            f"{company_text}\n{decision_text}\n\n"
+            f"{company_text}\n{decision_text}\n"
+            f"{self._format_research_brief(context)}\n"
             "Assess whether THIS organization is ready to execute this decision. "
             "Score all 5 dimensions and give an overall capability score grounded in the profile."
         )

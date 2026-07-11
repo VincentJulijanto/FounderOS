@@ -6,10 +6,13 @@ Growth, Capability) fan out in parallel; every other stage runs sequentially bec
 of real data dependencies.
 
 Flow:
-    scout → analysts (trend ∥ finance ∥ growth ∥ capability) → skeptic → debate → venture_partner (Chair)
+    scout → research → analysts (trend ∥ finance ∥ growth ∥ capability) → skeptic → debate → venture_partner (Chair)
 
-Node keys, agent_outputs keys, and the agents' `name` attributes all use the
-canonical strings: scout · trend · finance · growth · skeptic · capability · venture_partner.
+Research (Market Intelligence) runs after Scout frames the options and before the
+analysts fan out — it fetches real-world numbers and hands every analyst a brief.
+
+Node keys, agent_outputs keys, and the agents' `name` attributes all use the canonical
+strings: scout · research · trend · finance · growth · skeptic · capability · venture_partner.
 
 Agents are synchronous (def analyze), so each parallel analyst is run in a worker
 thread via asyncio.to_thread — genuine concurrency in live mode where the LLM call
@@ -26,6 +29,7 @@ from langgraph.graph import StateGraph, END
 from .models import CompanyProfile, Decision, AgentOutput, BoardRecommendation
 from .agents import (
     OpportunityScoutAgent,
+    MarketResearchAgent,
     TrendAnalystAgent,
     FinanceAgent,
     GrowthAgent,
@@ -50,6 +54,7 @@ class GraphState(TypedDict, total=False):
     decision: Decision
     vault_context: str            # prompt block from the vault (selective retrieval)
     options: List[str]            # framed by Scout
+    research_brief: str           # market-intelligence brief injected into analysts
 
     # Reducers let nodes contribute partial updates that merge cleanly.
     agent_outputs: Annotated[Dict[str, AgentOutput], _merge_outputs]
@@ -88,10 +93,51 @@ def scout_node(state: GraphState) -> dict:
     }
 
 
+def _render_research_brief(out: AgentOutput) -> str:
+    """Render the Research agent's data points into the brief the analysts read."""
+    dp = out.raw_data.get("data_points", [])
+    gaps = out.raw_data.get("data_gaps", [])
+    if not dp and not gaps:
+        return ""
+
+    lines: List[str] = []
+    dates = [d.get("date_retrieved") for d in dp if d.get("date_retrieved")]
+    if dates:
+        lines.append(f"Data retrieved: {dates[0]}")
+
+    if dp:
+        lines.append("\n**Headline numbers:**")
+        for d in dp:
+            geo = f" ({d.get('geography')})" if d.get("geography") else ""
+            src = d.get("source_label") or d.get("source_url") or ""
+            conf = f" [{d.get('confidence')} confidence]" if d.get("confidence") else ""
+            lines.append(f"- {d.get('metric', '')}{geo}: {d.get('value', '')} — {src}{conf}")
+
+    if gaps:
+        lines.append("\n**Data gaps:**")
+        lines.extend(f"- {g}" for g in gaps)
+
+    sources = [d.get("source_url") for d in dp if d.get("source_url")]
+    if sources:
+        lines.append("\nSources: " + ", ".join(dict.fromkeys(sources)))
+
+    return "\n".join(lines)
+
+
+def research_node(state: GraphState) -> dict:
+    """Sequential — fetches real-world numbers after Scout frames the options."""
+    profile = state["company_profile"]
+    out = MarketResearchAgent().analyze(profile, _base_context(state))
+    return {
+        "agent_outputs": {"research": out},
+        "research_brief": _render_research_brief(out),
+    }
+
+
 async def analysts_node(state: GraphState) -> dict:
     """Parallel fan-out — Trend, Finance, Growth, Capability run concurrently."""
     profile = state["company_profile"]
-    ctx = _base_context(state)
+    ctx = {**_base_context(state), "research_brief": state.get("research_brief", "")}
 
     trend, finance, growth, capability = (
         TrendAnalystAgent(), FinanceAgent(), GrowthAgent(), CapabilityAgent()
@@ -133,7 +179,11 @@ def skeptic_node(state: GraphState) -> dict:
         for k in ("trend", "finance", "growth", "capability")
         if k in outputs
     )
-    ctx = {**_base_context(state), "analyst_summary": analyst_summary}
+    ctx = {
+        **_base_context(state),
+        "analyst_summary": analyst_summary,
+        "research_brief": state.get("research_brief", ""),
+    }
     out = SkepticAgent().analyze(profile, ctx)
     return {"agent_outputs": {"skeptic": out}}
 
@@ -188,13 +238,15 @@ def build_graph():
     g = StateGraph(GraphState)
 
     g.add_node("scout", scout_node)
+    g.add_node("research", research_node)
     g.add_node("analysts", analysts_node)
     g.add_node("skeptic", skeptic_node)
     g.add_node("debate", debate_node)
     g.add_node("venture_partner", venture_partner_node)
 
     g.set_entry_point("scout")
-    g.add_edge("scout", "analysts")
+    g.add_edge("scout", "research")
+    g.add_edge("research", "analysts")
     g.add_edge("analysts", "skeptic")
     g.add_edge("skeptic", "debate")
     g.add_edge("debate", "venture_partner")
@@ -223,6 +275,7 @@ async def run_graph(
         "decision": decision,
         "vault_context": vault_context,
         "options": [],
+        "research_brief": "",
         "agent_outputs": {},
         "errors": [],
     }

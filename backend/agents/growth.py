@@ -54,7 +54,8 @@ class GrowthAgent(BaseAgent):
         decision_text = self._format_decision(decision)
 
         user_message = (
-            f"{company_text}\n{decision_text}\n\n"
+            f"{company_text}\n{decision_text}\n"
+            f"{self._format_research_brief(context)}\n"
             "Assess how this company would execute and go to market on this decision. "
             "Be concrete about channels, levers, and execution risk."
         )

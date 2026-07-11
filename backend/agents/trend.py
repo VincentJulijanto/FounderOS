@@ -63,7 +63,8 @@ class TrendAnalystAgent(BaseAgent):
         user_message = (
             f"{company_text}\n{decision_text}\n\n"
             "## Current Signals\n"
-            f"{signals_block}\n\n"
+            f"{signals_block}\n"
+            f"{self._format_research_brief(context)}\n"
             "Assess whether market demand and timing support this decision."
         )
 

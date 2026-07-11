@@ -99,7 +99,7 @@ export default function BoardMemo({ rec, companyName, question, date, sampleData
       {/* ── the thread: WHY — the reasoning and the disagreement ── */}
       <ThreadLabel label="Why" text="the reasoning and the disagreement" />
       <p className="text-xs text-muted -mt-8">
-        Seven agents read the decision independently and debated it; what did not resolve is
+        Eight agents read the decision independently and debated it; what did not resolve is
         below — each agent&rsquo;s full read closes the memo.
       </p>
 
