@@ -27,9 +27,12 @@ from .models import (
     BoardResponse,
     CompanyProfile,
     Decision,
+    CouncilBriefRequest,
+    CouncilBriefResponse,
 )
 from .graph import run_graph
 from . import vault
+from .consensus.feedback_council import FeedbackCouncil
 
 # ─────────────────────────────────────────────
 # App Setup
@@ -39,6 +42,7 @@ from . import vault
 # set RATE_LIMIT_ENABLED=false in tests) — no code change needed.
 ANALYZE_RATE_LIMIT = os.environ.get("ANALYZE_RATE_LIMIT", "5/minute")
 FEEDBACK_RATE_LIMIT = os.environ.get("FEEDBACK_RATE_LIMIT", "20/minute")
+COUNCIL_RATE_LIMIT = os.environ.get("COUNCIL_RATE_LIMIT", "10/minute")
 limiter = Limiter(
     key_func=get_remote_address,
     enabled=os.environ.get("RATE_LIMIT_ENABLED", "true").lower() != "false",
@@ -217,6 +221,29 @@ def submit_feedback(request: Request, body: FeedbackRequest):
         "written_to_vault": ok,
         "message": "Outcome recorded. The board will remember this next time.",
     }
+
+
+@app.post("/api/council-brief", response_model=CouncilBriefResponse)
+@limiter.limit(COUNCIL_RATE_LIMIT)
+async def get_council_brief(request: Request, body: CouncilBriefRequest):
+    """
+    Run the Feedback Intelligence Council on all user feedback for a company.
+
+    Track 3: Agent Society — three agents (Analyst → Skeptic → Chair) collaborate
+    through task division, dialogue, and structured conflict resolution to produce a
+    ranked product brief. Response includes the full agent dialogue and a measurable
+    comparison against a single-agent baseline.
+    """
+    try:
+        notes = vault.read_feedback(body.company_id)
+        council = FeedbackCouncil()
+        response = council.run(notes, company_id=body.company_id)
+        return response
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception:
+        logger.exception("Council brief failed for company %s", body.company_id)
+        raise HTTPException(status_code=500, detail="Council brief failed. Please try again.")
 
 
 @app.get("/api/company/{company_id}")
