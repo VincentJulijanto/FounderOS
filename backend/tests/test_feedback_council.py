@@ -38,9 +38,7 @@ def sample_notes():
 @pytest.fixture
 def council_response(sample_notes):
     council = FeedbackCouncil()
-    resp = council.run(sample_notes, mock=True)
-    resp.company_id = "harborline-logistics"
-    return resp
+    return council.run(sample_notes, company_id="harborline-logistics")
 
 
 def test_council_returns_valid_response(council_response):
@@ -106,7 +104,6 @@ def test_mock_mode_flag_propagated(council_response):
 
 def test_empty_feedback_returns_gracefully():
     council = FeedbackCouncil()
-    resp = council.run([], mock=True)
-    resp.company_id = "harborline-logistics"
+    resp = council.run([], company_id="harborline-logistics")
     assert isinstance(resp, CouncilBriefResponse)
     assert resp.feedback_notes_read == 0

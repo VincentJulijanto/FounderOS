@@ -237,9 +237,7 @@ async def get_council_brief(request: Request, body: CouncilBriefRequest):
     try:
         notes = vault.read_feedback(body.company_id)
         council = FeedbackCouncil()
-        mock = settings.use_mock_llm or not settings.qwen_api_key
-        response = council.run(notes, mock=mock)
-        response.company_id = body.company_id
+        response = council.run(notes, company_id=body.company_id)
         return response
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

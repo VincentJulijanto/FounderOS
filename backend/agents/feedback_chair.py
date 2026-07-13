@@ -120,6 +120,6 @@ class FeedbackChairAgent(BaseAgent):
             analysis=raw.get("ranked_brief", ""),
             key_findings=[t["theme"] for t in final_themes],
             concerns=[o["rationale"] for o in overrides if o.get("decision") == "accepted"],
-            recommendations=[o["rationale"] for o in overrides if o.get("decision") != "accepted"],
+            recommendations=[o["rationale"] for o in overrides if o.get("decision") == "reframed"],
             raw_data=raw,
         )
