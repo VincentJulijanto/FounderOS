@@ -159,3 +159,39 @@ export interface FeedbackRequest {
   outcome?: string | null
   notes?: string | null
 }
+
+// ── Feedback Intelligence Council — Track 3: Agent Society ───────────────────
+
+export interface CouncilTurn {
+  agent: string       // "feedback_analyst" | "feedback_skeptic" | "feedback_chair"
+  message: string
+  challenges: string[]
+}
+
+export interface FeedbackTheme {
+  theme: string
+  frequency: number
+  representative_quotes: string[]
+  priority: 'high' | 'medium' | 'low'
+  thesis_aligned: boolean
+}
+
+export interface BaselineComparison {
+  single_agent_summary: string
+  council_corrections: string[]
+  corrections_count: number
+}
+
+export interface CouncilBriefRequest {
+  company_id: string
+}
+
+export interface CouncilBriefResponse {
+  company_id: string
+  feedback_notes_read: number
+  council_dialogue: CouncilTurn[]
+  themes: FeedbackTheme[]
+  baseline_comparison: BaselineComparison
+  ranked_brief: string
+  mock_mode?: boolean
+}

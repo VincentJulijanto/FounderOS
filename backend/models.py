@@ -325,3 +325,52 @@ class FeedbackRequest(BaseModel):
     response_id: str
     outcome: Optional[str] = None             # what actually happened
     notes: Optional[str] = None
+
+
+# ─────────────────────────────────────────────
+# Feedback Intelligence Council — Track 3: Agent Society
+# ─────────────────────────────────────────────
+
+class FeedbackNote(BaseModel):
+    """One user-submitted feedback note read from the vault (type: feedback)."""
+    text: str
+    date: str = ""
+    response_id: str = ""
+
+
+class FeedbackTheme(BaseModel):
+    """A recurring theme clustered from user feedback, post-council deliberation."""
+    theme: str
+    frequency: int = 1
+    representative_quotes: List[str] = []
+    priority: Literal["high", "medium", "low"] = "medium"
+    thesis_aligned: bool = True
+
+
+class CouncilTurn(BaseModel):
+    """One agent's contribution to the council dialogue — makes the debate auditable."""
+    agent: str                                # "feedback_analyst" | "feedback_skeptic" | "feedback_chair"
+    message: str                              # what this agent said to the council
+    challenges: List[str] = []               # skeptic only: specific objections raised
+
+
+class BaselineComparison(BaseModel):
+    """Single-agent baseline vs. council output — the measurable efficiency delta."""
+    single_agent_summary: str                 # flat summary a lone agent would produce (no critical filter)
+    council_corrections: List[str]            # specific things the council caught that baseline missed
+    corrections_count: int                    # integer efficiency delta
+
+
+class CouncilBriefRequest(BaseModel):
+    company_id: str = Field(pattern=_COMPANY_ID_PATTERN)
+
+
+class CouncilBriefResponse(BaseModel):
+    """The Feedback Intelligence Council's output — agent dialogue + ranked brief + baseline delta."""
+    company_id: str
+    feedback_notes_read: int
+    council_dialogue: List[CouncilTurn]       # full agent-to-agent exchange
+    themes: List[FeedbackTheme]               # final ranked themes post-debate
+    baseline_comparison: BaselineComparison
+    ranked_brief: str                         # human-readable final output
+    mock_mode: bool = False

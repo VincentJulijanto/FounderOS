@@ -67,7 +67,7 @@ def test_seed_company_history_is_retrievable():
     assert any("Vietnam" in n or "lane" in n.lower() for n in bundle.notes)
 
     hist = v.history("harborline-logistics")
-    assert len(hist) == 9  # 5 curated seed notes + 4 committed write-back artifacts
+    assert len(hist) == 10  # 5 curated seed notes + 4 committed write-back artifacts + 1 indonesia note
     dates = [h["date"] for h in hist]
     assert dates == sorted(dates, reverse=True), "history must be newest-first"
 
@@ -129,4 +129,4 @@ def test_returning_company_end_to_end_on_seed_copy(tmp_path, monkeypatch):
     assert r.status_code == 200, r.text
 
     hist = client.get("/api/company/harborline-logistics").json()["history"]
-    assert len(hist) == 10, "expected 9 seed notes + 1 newly written decision"
+    assert len(hist) == 11, "expected 10 seed notes + 1 newly written decision"

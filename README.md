@@ -1,43 +1,154 @@
-# FounderOS — an AI board for business decisions
+# FounderOS — Two-Layer AI Agent Society for Business Decisions
 
-> An AI board/council that helps operators of **existing businesses** pressure-test a specific
-> decision. You bring one call — *"is this sound, and what are we missing?"* — and a **society of
-> seven specialized agents** debates it and hands back a **board-ready memo**.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-> **⚠ Pivot in progress.** FounderOS is moving from its original "founder profile → startup idea"
-> generator to the board/council evaluator described here. The **canonical, frozen Phase 0 contract**
-> is in [`docs/architecture.md`](docs/architecture.md); current status and the build plan are in
-> [`PROJECT_STATE.md`](PROJECT_STATE.md); the standing brief for contributors is [`CLAUDE.md`](CLAUDE.md).
-> Some code still reflects the old framing while the pivot lands.
+> **QwenCloud Hackathon 2026 — Track 3: Agent Society**
+>
+> FounderOS runs an **8-agent board debate** to evaluate a business decision, then a **nested
+> 3-agent council** to pressure-test the board's own reasoning — and proves the council catches
+> what a single agent misses.
+
+**Live demo:** [founderos-zeta.vercel.app](https://founderos-zeta.vercel.app) | **Backend:** [vincent-playground-founderos-api.hf.space](https://vincent-playground-founderos-api.hf.space)
 
 ---
 
 ## What it does
 
-FounderOS takes your **company context** and **one decision**, then runs a multi-agent society that
-**frames the options**, **reads the market**, **models the economics**, **stress-tests the plan**,
-and **debates to a verdict** — then writes a board memo with the reasoning and the dissent.
+An operator brings **one business decision** — *"Should we expand into Vietnam next quarter?"* —
+and FounderOS assembles two layers of agents that evaluate, debate, and return a **board-ready memo**:
 
-**From:** `"Should we expand into Indonesia next quarter, or deepen at home first?"`
-**To:** `"Conditional — pilot one corridor first. Here's the dissent, what's missing, and a phased plan."`
+**From:** `"Should we expand into Indonesia next quarter, or deepen at home first?"`  
+**To:** `"Conditional — pilot one corridor. Here's the dissent, what's missing, and a phased plan."`
 
-The memo is explicit about its own limits: a `missing_inputs` list, a `what_would_change_this_call`
-section, an attributed `dissent` record, and a one-line disclaimer. It is advisory — the operator
-owns the call.
+The memo is explicit about its own limits: `missing_inputs[]`, `what_would_change_this_call`,
+an attributed `dissent[]` record, and a one-line disclaimer. Advisory — the operator owns the call.
+
+---
+
+## Track 3 — Agent Society
+
+FounderOS implements two coordinated agent layers. See the [full architecture diagram](docs/architecture-diagram.md).
+
+### Layer 1: The Board (8 agents via LangGraph)
+
+```
+vault.read (LLM-selected notes)
+    │
+    ▼
+Scout → Market Intelligence → [Trend ∥ Finance ∥ Growth ∥ Capability] → Skeptic → Debate Engine → Chair
+                                      (parallel fan-out, asyncio.gather)
+    │
+    ▼
+vault.write_back (decision note + outcome loop)
+```
+
+| Agent (`name`) | Role |
+|---|---|
+| `scout` | Frames the options on the table for this decision |
+| `research` (Market Intelligence) | Fetches real-world benchmarks via MCP (web / news / Crunchbase) |
+| `trend` | Reads market/demand signals |
+| `finance` | Models the decision against company P&L and unit economics |
+| `growth` | Maps execution and go-to-market |
+| `skeptic` | **The main event** — attacks the weakest assumptions |
+| `capability` | Scores organisational readiness to execute |
+| `venture_partner` (Chair) | Synthesises the board memo |
+
+The **Debate Engine** detects conflicts between agents, runs ≤3 revision rounds with severity-weighted
+consensus scoring, and surfaces unresolved conflicts as the auditable `dissent[]` record.
+
+### Layer 2: Feedback Intelligence Council (Track 3 centrepiece)
+
+A **separate 3-agent mini-council** reads user feedback notes from the vault and produces a ranked
+product brief — while demonstrating measurable efficiency gains over single-agent analysis.
+
+```
+Feedback Vault Notes
+    │
+    ▼
+Feedback Analyst → Feedback Skeptic → Feedback Chair
+(cluster themes)   (challenge bias)    (accept/reframe/override)
+    │
+    ▼
+CouncilBriefResponse: council_dialogue[] + overrides[] + baseline_comparison
+```
+
+| Track 3 Criterion | Where it shows |
+|---|---|
+| Task decomposition + role assignment | 11 agents across 2 layers, each with a distinct system prompt |
+| Dialogue and negotiation | `council_dialogue: CouncilTurn[]` — every turn rendered in the UI |
+| Conflict resolution | Debate engine `overrides[]`: accepted / reframed / overridden per Skeptic challenge |
+| **Measurable efficiency gain** | `baseline_comparison.corrections_count` — integer delta, council vs. single agent |
+
+### Cross-Track Elements
+
+| Track | FounderOS element |
+|---|---|
+| **Track 1 — MemoryAgent** | Per-company Obsidian markdown vault: LLM-driven selective retrieval + write-back. The board remembers prior decisions across sessions (no RAG / no vector DB). |
+| **Track 4 — Autopilot Agent** | `execution_plan` in `BoardRecommendation`: a phased business workflow (Validate → Pilot → Scale) generated automatically from the board debate. |
 
 ---
 
 ## Tech stack
 
 | Layer | Technology |
-|-------|-----------|
-| Frontend | Next.js 14, TailwindCSS |
-| Backend | FastAPI (Python) |
-| Agent orchestration | LangGraph (parallel analyst fan-out) |
-| AI model | Qwen (qwen-turbo / qwen-plus via DashScope API) |
-| Memory | Per-company **Obsidian markdown vault** (selective retrieval + write-back) |
-| Retrieval | LLM-driven note selection over a small vault index — **no embeddings / vector DB** |
-| Auth | Stubbed company picker → vault folder (real auth deferred) |
+|---|---|
+| Frontend | Next.js 14, TailwindCSS (Vercel Hobby) |
+| Backend | FastAPI, Python 3.11 (HF Spaces Docker, port 7860) |
+| Agent orchestration | LangGraph — parallel analyst fan-out via `asyncio.gather` |
+| AI model | **Qwen** (qwen-turbo / qwen-plus via DashScope) — JSON mode, 3-attempt retry |
+| Memory | Per-company Obsidian markdown vault — LLM-driven selective retrieval, no embeddings |
+| Retrieval | LLM note-selector over frontmatter index (keyword-overlap fallback in mock mode) |
+| MCP | Crunchbase / web search / news — mock-safe fallback |
+| Auth | Stubbed company picker → vault folder |
+
+---
+
+## Getting started
+
+### Backend
+
+```bash
+python -m venv venv && source venv/bin/activate
+pip install -r backend/requirements.txt
+cp .env.example .env
+# Set QWEN_API_KEY or leave USE_MOCK_LLM=true for keyless mock mode
+uvicorn backend.main:app --reload --port 8000
+```
+
+### Frontend
+
+```bash
+cd frontend && npm install
+# .env.local: NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+npm run dev   # → http://localhost:3000
+```
+
+### Tests (hermetic — no API key needed)
+
+```bash
+python -m pytest -q   # 72/72 passing
+```
+
+---
+
+## API
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/analyze` | `{ company_id, profile?, decision }` → `BoardResponse` |
+| `GET` | `/api/response/{id}` | Fetch saved response |
+| `POST` | `/api/feedback` | Write outcome back to vault |
+| `GET` | `/api/company/{id}` | Decision history |
+| `POST` | `/api/council-brief` | `{ company_id }` → `CouncilBriefResponse` (Track 3) |
+
+Full contract: [`docs/architecture.md`](docs/architecture.md) | Architecture diagram: [`docs/architecture-diagram.md`](docs/architecture-diagram.md)
+
+---
+
+## Deploying
+
+Backend on **Hugging Face Spaces** (Docker, free CPU Basic) — a long-running container holds the
+~90–240s debate run that serverless can't. Frontend on **Vercel Hobby**. Full steps: [`docs/deployment.md`](docs/deployment.md).
 
 ---
 
@@ -45,144 +156,37 @@ owns the call.
 
 ```
 founderos/
-├── frontend/               # Next.js + Tailwind UI
-│   └── src/
-│       ├── app/            # Landing page + /studio app
-│       └── components/     # studio UI, agentRoster, landing/*
+├── frontend/src/
+│   ├── app/boardroom/          # Main decision intake → board memo
+│   │   └── council/            # Feedback Intelligence Council UI (Track 3)
+│   ├── components/
+│   │   ├── CouncilBrief.tsx    # Council dialogue + efficiency gain (Track 3)
+│   │   ├── BoardMemo.tsx       # Board memo renderer
+│   │   ├── AgentDebate.tsx     # Live debate visualisation
+│   │   └── CouncilReasoning.tsx
+│   └── lib/types.ts            # TS mirror of backend/models.py
 │
 ├── backend/
-│   ├── agents/             # 7 specialized agents (being reframed for the pivot)
-│   │   ├── scout.py        # frames the options on the table
-│   │   ├── trend.py        # market / demand signals for the decision
-│   │   ├── finance.py      # models the decision vs company economics
-│   │   ├── growth.py       # how the company executes
-│   │   ├── skeptic.py      # THE main event — attacks the plan
-│   │   ├── founder_fit.py  # → being rebuilt as the Capability agent (org readiness)
-│   │   └── venture_partner.py  # the Chair — writes the board memo
-│   │
+│   ├── agents/                 # 8 board agents + 3 feedback council agents
 │   ├── consensus/
-│   │   └── debate_engine.py    # conflict detection + debate rounds + consensus (reused as-is)
-│   │
-│   ├── mcp/client.py       # live market data (Crunchbase / web / news), mock + live
-│   ├── memory/             # NOTE: episodic.py/semantic.py (Postgres) are UNWIRED and off the
-│   │                       #       pivot path. Persistence is the vault (see architecture.md).
-│   ├── models.py           # Pydantic data models (rewritten to the frozen contract)
-│   ├── config.py           # settings / env vars
-│   ├── graph.py            # LangGraph orchestration
-│   └── main.py             # FastAPI entry point
+│   │   ├── debate_engine.py    # Conflict detection + rounds + severity-weighted consensus
+│   │   └── feedback_council.py # 3-agent mini-council orchestrator (Track 3)
+│   ├── vault/store.py          # Per-company markdown vault (read / write-back / feedback)
+│   ├── graph.py                # LangGraph orchestration
+│   └── models.py               # Pydantic v2 contract (source of truth)
 │
-├── docs/
-│   ├── architecture.md     # ← the canonical, frozen Phase 0 contract
-│   └── demo_script.md
-├── CLAUDE.md               # standing brief for contributors (lanes, conventions, watchlist)
-├── PROJECT_STATE.md        # current status + build plan
-└── README.md
+├── vault/                      # Seed vault baked into Docker image
+│   ├── harborline-logistics/   # 8 decisions + 3 feedback notes + _profile.md
+│   └── lumen-skincare/         # 5 decisions + _profile.md
+│
+└── docs/
+    ├── architecture.md         # Frozen Phase 0 contract
+    ├── architecture-diagram.md # Mermaid system diagram
+    └── deployment.md
 ```
 
 ---
 
-## Getting started
+## License
 
-### 1. Backend
-
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-### 2. Environment
-
-```bash
-cp .env.example .env
-# Set QWEN_API_KEY (DashScope). To run keyless with mock fixtures, set USE_MOCK_LLM=true.
-```
-
-### 3. Run backend
-
-```bash
-uvicorn backend.main:app --reload --port 8000
-```
-
-### 4. Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend runs at `http://localhost:3000`, API at `http://localhost:8000`.
-
----
-
-## Agent society
-
-```
-                  ┌──────────────────┐
-                  │      Trend       │
-                  ├──────────────────┤
-  ┌───────┐       │     Finance      │      ┌─────────┐    ┌───────────────┐    ┌──────────────────┐
-  │ Scout │ ───►  ├──────────────────┤ ──►  │ Skeptic │ ─► │ Debate Engine │ ─► │      Chair       │
-  └───────┘       │      Growth      │      └─────────┘    └───────────────┘    │ (venture_partner)│
-                  │    Capability    │                                          └──────────────────┘
-                  └──────────────────┘
-   frame options   analyze (parallel)        stress-test      resolve conflicts       board memo
-                                                               + dissent record
-
-Scout → [Trend ∥ Finance ∥ Growth ∥ Capability] → Skeptic → Debate Engine → Chair
-```
-
-The analyst agents fan out concurrently via LangGraph (`asyncio.gather` + `asyncio.to_thread`);
-every other stage runs sequentially on real data dependencies. **The Skeptic and the Debate Engine
-are the centerpiece** — judging the decision *is* the product.
-
-| Agent (`name` string) | Role | Output |
-|-------|------|--------|
-| **Scout** (`scout`) | Frames the options on the table | The options assessed |
-| **Trend** (`trend`) | Reads market/demand signals for the decision | Market read |
-| **Finance** (`finance`) | Models the decision vs company economics | Financial view |
-| **Growth** (`growth`) | How the company executes | Go-to-market read |
-| **Skeptic** (`skeptic`) | Attacks the weakest assumptions | Risk + failure modes |
-| **Capability** (`capability`) | Scores organizational capability/readiness (rebuilt from founder-fit) | Readiness read |
-| **Chair** (`venture_partner`) | Synthesizes the memo (canonical string stays `venture_partner`) | Board recommendation |
-
----
-
-## Demo flow
-
-1. Pick the company (stubbed picker → vault folder) and state one decision.
-2. The council **selectively retrieves** the relevant notes from the company's vault.
-3. Agents analyze in parallel; the Skeptic attacks the plan.
-4. The Debate Engine surfaces conflicts; agents revise over rounds; unresolved conflicts become the **dissent record**.
-5. The Chair writes the **board memo** (recommendation + confidence + missing inputs + phased plan).
-6. The decision + memo are **written back to the vault**; a later outcome closes the loop.
-
----
-
-## API endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/analyze` | Submit `{ company_id, profile?, decision }`, get a `BoardResponse` |
-| `GET` | `/api/response/{id}` | Fetch a board response |
-| `POST` | `/api/feedback` | Write a decision outcome back to the vault |
-| `GET` | `/api/company/{company_id}` | Get the company's decision history |
-
-See [`docs/architecture.md`](docs/architecture.md) for the full request/response contract.
-
----
-
-## Deploying
-
-Backend runs on **Hugging Face Spaces** (Docker SDK, free CPU Basic) — a long-running container
-holds the ~90–240s debate run that serverless can't, with no card required. Frontend runs on
-**Vercel Hobby**, pointed at the backend via `NEXT_PUBLIC_API_BASE_URL`. A local + Cloudflare
-Tunnel option is documented for live demos. Full steps, the Dockerfile spec, and the env-var
-contract: **[`docs/deployment.md`](docs/deployment.md)**.
-
-## Hackathon tracks
-
-- **Primary:** Agent Society
-- **Secondary:** MemoryAgent, Autopilot Agent
+MIT — see [LICENSE](LICENSE).

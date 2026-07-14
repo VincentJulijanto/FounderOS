@@ -42,6 +42,7 @@ from ..models import (
     BoardRecommendation,
     VaultNote,
     ContextBundle,
+    FeedbackNote,
 )
 
 # How many notes the selector is allowed to pull into context per run.
@@ -178,6 +179,10 @@ class Vault:
             try:
                 fm, _body = _parse_frontmatter(path.read_text(encoding="utf-8"))
             except OSError:
+                continue
+            # Feedback notes are read via read_feedback() — exclude them from the
+            # decision-context index so they don't pollute the selector or history.
+            if fm.get("type") == "feedback":
                 continue
             notes.append(VaultNote(
                 path=path.name,
@@ -378,6 +383,34 @@ class Vault:
                 return True
         return False
 
+    def read_feedback(self, company_id: str) -> List[FeedbackNote]:
+        """Return all notes with frontmatter type=feedback for this company.
+
+        Follows the same folder-walk + frontmatter-parse pattern as index(), but
+        filters on type == 'feedback' and returns FeedbackNote objects rather than
+        VaultNote index entries. Returns [] gracefully when no notes exist.
+        """
+        company_dir = self._company_dir(company_id)
+        if not company_dir.exists():
+            return []
+        notes: List[FeedbackNote] = []
+        for path in sorted(company_dir.glob("*.md")):
+            if path.name.startswith("_"):
+                continue
+            try:
+                raw = path.read_text(encoding="utf-8")
+            except OSError:
+                continue
+            fm, body = _parse_frontmatter(raw)
+            if fm.get("type") != "feedback":
+                continue
+            notes.append(FeedbackNote(
+                text=body.strip(),
+                date=fm.get("date", ""),
+                response_id=fm.get("response_id", ""),
+            ))
+        return notes
+
     def history(self, company_id: str) -> List[dict]:
         """The company's decision history from the index (for GET /api/company/{id})."""
         return [
@@ -412,3 +445,7 @@ def record_outcome(company_id: str, decision_id: str, outcome: str, notes: str =
 
 def history(company_id: str) -> List[dict]:
     return _vault.history(company_id)
+
+
+def read_feedback(company_id: str) -> List[FeedbackNote]:
+    return _vault.read_feedback(company_id)

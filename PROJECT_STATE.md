@@ -5,9 +5,9 @@
 > what to do next. Read this first at the start of any new session. The **canonical, frozen Phase 0
 > contract** lives in `docs/architecture.md`; the **standing brief** for both build lanes is `CLAUDE.md`.
 
-**Last updated:** 2026-07-10
-**Current phase:** **SHIPPED & LIVE-VERIFIED — Research agent built on `feat/research-agent`, pending merge.**
-Everything through PR #12 is merged to `main` and deployed: frontend at **founderos-zeta.vercel.app**
+**Last updated:** 2026-07-14
+**Current phase:** **SUBMISSION-READY — All Track 3 features merged and live. Submission checklist items complete.**
+Everything through PR #18 is merged to `main` and deployed: frontend at **founderos-zeta.vercel.app**
 (Vercel Hobby), backend at **vincent-playground-founderos-api.hf.space** (HF Docker Space, CPU Basic, live Qwen).
 - **Live-validated end to end:** three full runs through the HF proxy (93s / 132s / 100s, all
   HTTP 200, zero parse failures on the raised token ceilings). The **MVP loop is proven live**:
@@ -24,9 +24,28 @@ Everything through PR #12 is merged to `main` and deployed: frontend at **founde
   after Scout and before the analyst fan-out; injects `research_brief` into every analyst's
   context; `BoardResponse.research_sources` added; graph rewired `scout → research → analysts`;
   `docs/agent-research.md` design spec shipped with the implementation.
-**Remaining:** merge `feat/research-agent` → `main` (includes docs update on `docs/research-agent-update`
-branch) · rehearse the 3-minute demo script with a stopwatch · archive Kestrel cold-start receipt
-· morning-of ritual per `docs/demo_script.md`.
+**Research agent:** merged to `main` via Vincent's PR #17. Branches `feat/research-agent` and
+`docs/research-agent-update` deleted (superseded).
+
+**Feedback Intelligence Council:** merged to `main` via PR #18. 3-agent sub-council (Analyst →
+Skeptic → Chair) for Track 3: Agent Society. 9 hermetic tests passing.
+
+**Submission prep (2026-07-14 session):**
+- `LICENSE` (MIT) added to repo root — satisfies hackathon open-source requirement
+- `frontend/src/app/boardroom/council/page.tsx` — new Feedback Council UI page (Track 3 demo)
+- `frontend/src/components/CouncilBrief.tsx` — council dialogue + efficiency gain + theme ranking
+- Types added to `frontend/src/lib/types.ts`: `CouncilTurn`, `FeedbackTheme`, `BaselineComparison`, `CouncilBriefResponse`
+- Boardroom header now links to `/boardroom/council` (Feedback Council)
+- `docs/architecture-diagram.md` — Mermaid system diagram (two-layer agent society, required by hackathon)
+- `README.md` rewritten around Track 3 submission narrative; cross-track elements (Track 1 memory, Track 4 autopilot) explicit; license badge added
+
+**Remaining before July 20:**
+- Rehearse the 3-minute demo with a stopwatch per `docs/demo_script.md`
+- Archive Kestrel cold-start receipt
+- Deploy frontend (Vercel) + backend (HF Space) with latest `main`
+- Record 3-minute YouTube/Vimeo demo video (required)
+- Submit at devpost with GitHub link, video, architecture diagram, track = Track 3
+- **Optional (blog post award +$500):** technical writeup and publish link
 
 ---
 
@@ -244,6 +263,46 @@ phase. **The full evaluator app works end-to-end against the mock backend.**
   metadata reframed off "Venture Studio"; residual "studio"/"council" copy swept to "boardroom"/
   "board". No `studio` reference remains in `frontend/src`.
 
+## What this session built — Feedback Intelligence Council (Track 3: Agent Society)
+
+Branch: `feat/feedback-council`. **72/72 tests passing.** Two commits:
+- `4e6d264` — feat: Feedback Intelligence Council initial implementation
+- `bc30de9` — fix: feedback council — 5 bugs from council review
+
+### New files
+- **`backend/agents/feedback_analyst.py`** — clusters vault feedback notes into ranked themes + produces single-agent baseline summary
+- **`backend/agents/feedback_skeptic.py`** — challenges Analyst themes for survivorship bias, scope creep, thesis misalignment
+- **`backend/agents/feedback_chair.py`** — synthesises both sides; explicitly accepts/reframes/overrides each Skeptic challenge
+- **`backend/consensus/feedback_council.py`** — orchestrates the three agents sequentially; builds `council_dialogue`, `baseline_comparison`, and `CouncilBriefResponse`
+- **`backend/tests/test_feedback_council.py`** — 9 hermetic tests (mock-pinned)
+- **`vault/harborline-logistics/feedback-2026-07-09-*.md`** — 3 seed feedback notes (port congestion, customs timeline, software recommendation)
+
+### Models added to `backend/models.py` (additive)
+`FeedbackNote`, `FeedbackTheme`, `CouncilTurn`, `BaselineComparison`, `CouncilBriefRequest`, `CouncilBriefResponse`
+
+### Modified files
+- **`backend/vault/store.py`** — `read_feedback(company_id)` added; feedback notes excluded from `index()` (prevents them appearing as prior decisions)
+- **`backend/vault/__init__.py`** — exports `read_feedback`
+- **`backend/agents/__init__.py`** — exports 3 new agent classes
+- **`backend/main.py`** — `POST /api/council-brief` endpoint (rate-limited, COUNCIL_RATE_LIMIT env var)
+- **`backend/tests/test_system.py`** — updated vault note counts (Indonesia note counted; feedback notes excluded from index)
+
+### Track 3 criterion map
+| Criterion | Where it shows |
+|---|---|
+| Task decomposition + role assignment | 3 agents with distinct system prompts and input shapes |
+| Dialogue and negotiation | `council_dialogue: List[CouncilTurn]` — each agent's message is visible |
+| Conflict resolution | Chair's `overrides[]` record: accepted / reframed / overridden per Skeptic challenge |
+| Measurable efficiency gain | `baseline_comparison.corrections_count` — integer delta, council vs. single agent |
+
+### Bugs fixed (council review → `bc30de9`)
+1. Post-hoc `agent.mock = mock` overrides removed (crash: provider.mock desync)
+2. Per-agent try/except with inline `AgentOutput` fallback
+3. Skeptic dialogue turn now uses `skeptic_out.analysis` (was `analyst_out.analysis`)
+4. `run()` accepts `company_id` param; no post-hoc mutation
+5. `_derive_corrections`: unaddressed Chair challenges recorded instead of silently dropped
+6. Chair `recommendations` filter: `== "reframed"` (was `!= "accepted"`, incorrectly included "overridden")
+
 ## What's NOT built yet
 
 - **Real `docker build` + live deploy** (Lane A, from Phase 3) — Docker CLI wasn't available in-session.
@@ -270,15 +329,8 @@ phase. **The full evaluator app works end-to-end against the mock backend.**
 ## Next session should start by
 
 1. Reading this file, then `docs/architecture.md` (the contract) and `CLAUDE.md` (the brief).
-2. **Squash-merge the phase chain in order** — each branch is off the previous, so merge
-   `phase-2-pivot-backend` → `phase-3-deployment` → `phase-4-frontend-contract` →
-   `phase-5-frontend-app` → `phase-6-boardroom-rename`. Together they implement the pivot end-to-end
-   (backend + deploy wiring + full evaluator frontend). Treat any drift between the code and
-   §Frozen I/O Contract as a bug in the code, not the doc.
-3. **Integration (Day 8):** run the real frontend against the real backend. `cd frontend && npm run
-   dev` with `NEXT_PUBLIC_API_BASE_URL=http://localhost:8000`; `uvicorn backend.main:app --port 8000`
-   in mock mode. Walk decision intake → debate → board memo for a seeded company
-   (`harborline-logistics`) and confirm the vault write-back + history. Then a live-key run (~90–240s).
-4. **Lane A remaining:** a real `docker build` on a Docker-capable machine + a live HF Space deploy
-   dry-run (checklist in `docs/deployment.md`); set `ALLOWED_ORIGINS` to the Vercel domain.
-5. **Optional Day-7 stretch:** Xero/Shopify into Finance.
+2. **Merge `feat/feedback-council` → `main`** (squash or regular merge; discuss with Vincent first).
+3. **Demo prep:** rehearse the 3-minute demo with a stopwatch per `docs/demo_script.md`; archive
+   Kestrel cold-start receipt; morning-of ritual.
+4. **Optional:** wire `POST /api/council-brief` to a simple frontend page in the boardroom so
+   the Track 3 demo is visually compelling (Vincent's lane).
