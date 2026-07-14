@@ -28,11 +28,16 @@ export default function CouncilPage() {
     setStatus('loading')
     setError(null)
     setResult(null)
+
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 120_000) // 2 min for the lighter council
+
     try {
       const res = await fetch(`${API_URL}/api/council-brief`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ company_id: companyId }),
+        signal: controller.signal,
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
@@ -41,8 +46,14 @@ export default function CouncilPage() {
       setResult(await res.json())
       setStatus('done')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.')
+      if (err instanceof Error && err.name === 'AbortError') {
+        setError('Request timed out. The council took too long — try again.')
+      } else {
+        setError(err instanceof Error ? err.message : 'Something went wrong.')
+      }
       setStatus('error')
+    } finally {
+      clearTimeout(timeoutId)
     }
   }
 

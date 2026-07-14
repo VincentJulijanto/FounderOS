@@ -162,7 +162,9 @@ class Vault:
         if not re.fullmatch(r'[a-z0-9][a-z0-9\-_]{0,49}', company_id):
             raise ValueError(f"Invalid company_id: {company_id!r}")
         result = (self.root / company_id).resolve()
-        if not str(result).startswith(str(self.root.resolve()) + '/') and result != self.root.resolve():
+        try:
+            result.relative_to(self.root.resolve())
+        except ValueError:
             raise ValueError("Path traversal attempt blocked")
         return result
 
@@ -226,22 +228,41 @@ class Vault:
         The company profile (_profile.md) is not part of selection: it is always
         included first when present, as identity context outside the
         MAX_SELECTED_NOTES budget.
+
+        Single filesystem pass: profile body and index entries are collected in one
+        glob walk to avoid two separate directory scans per board run.
         """
         notes, used = [], []
         company_dir = self._company_dir(company_id)
+        if not company_dir.exists():
+            return ContextBundle(notes=notes, used_paths=used)
 
-        profile_path = company_dir / PROFILE_NOTE
-        if profile_path.exists():
+        index_entries: List[VaultNote] = []
+        for path in sorted(company_dir.glob("*.md")):
+            if path.name == PROFILE_NOTE:
+                try:
+                    _fm, pbody = _parse_frontmatter(path.read_text(encoding="utf-8"))
+                    notes.append(pbody)
+                    used.append(PROFILE_NOTE)
+                except OSError:
+                    pass
+                continue
+            if path.name.startswith("_"):
+                continue
             try:
-                _fm, pbody = _parse_frontmatter(profile_path.read_text(encoding="utf-8"))
-                notes.append(pbody)
-                used.append(PROFILE_NOTE)
+                fm, _body = _parse_frontmatter(path.read_text(encoding="utf-8"))
             except OSError:
-                pass
+                continue
+            if fm.get("type") == "feedback":
+                continue
+            index_entries.append(VaultNote(
+                path=path.name,
+                frontmatter=fm,
+                summary=fm.get("summary", ""),
+            ))
 
-        index = self.index(company_id)
-        if index:
-            selected = self._select(index, query)
+        if index_entries:
+            selected = self._select(index_entries, query)
             for note in selected:
                 try:
                     _fm, body = _parse_frontmatter(
@@ -367,6 +388,8 @@ class Vault:
         if not company_dir.exists():
             return False
         for path in company_dir.glob("*.md"):
+            if path.name.startswith("_"):
+                continue
             try:
                 raw = path.read_text(encoding="utf-8")
             except OSError:

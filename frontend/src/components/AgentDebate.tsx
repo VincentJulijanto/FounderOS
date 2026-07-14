@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Gavel, AlertTriangle, Check, ArrowRight } from 'lucide-react'
 import type { AgentOutput, DebateRound, ConsensusReport } from '@/lib/types'
 import { ROSTER, iconFor, labelFor, roleFor } from '@/components/agentRoster'
@@ -127,7 +127,7 @@ export default function AgentDebate({ phase, responseReady, agentOutputs, debate
     return 'queued'
   }
 
-  const turns = buildTurns(rounds)
+  const turns = useMemo(() => buildTurns(rounds), [rounds])
 
   // Beat 4 — pace the transcript: reveal one turn at a time.
   useEffect(() => {

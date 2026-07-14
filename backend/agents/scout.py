@@ -102,8 +102,15 @@ def _format_market_data(crunchbase: Dict[str, Any], news: Dict[str, Any]) -> str
     """Render MCP results into a compact prompt block."""
     lines = ["Comparable companies (Crunchbase):"]
     for c in crunchbase.get("results", []):
-        lines.append(f"- {c.get('name')} — {c.get('funding_total')} ({c.get('last_round')}): {c.get('description')}")
+        lines.append(
+            f"- {c.get('name') or '(unnamed)'} — "
+            f"{c.get('funding_total') or 'N/A'} ({c.get('last_round') or 'N/A'}): "
+            f"{c.get('description') or ''}"
+        )
     lines.append("Recent news:")
     for a in news.get("articles", []):
-        lines.append(f"- {a.get('headline')} ({a.get('source')}): {a.get('summary')}")
+        lines.append(
+            f"- {a.get('headline') or '(no headline)'} ({a.get('source') or 'unknown'}): "
+            f"{a.get('summary') or ''}"
+        )
     return "\n".join(lines)

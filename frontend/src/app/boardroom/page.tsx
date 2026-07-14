@@ -44,11 +44,15 @@ export default function Boardroom() {
     setRequest(req)
     const startedAt = Date.now()
 
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 300_000) // 5 min — board takes up to 240s
+
     try {
       const res = await fetch(`${API_URL}/api/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(req),
+        signal: controller.signal,
       })
 
       if (!res.ok) {
@@ -64,8 +68,14 @@ export default function Boardroom() {
       const wait = Math.max(0, MIN_WORK_DWELL_MS - (Date.now() - startedAt))
       setTimeout(() => setPhase('debating'), wait)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+      if (err instanceof Error && err.name === 'AbortError') {
+        setError('Request timed out. The board took too long — try again or check the backend.')
+      } else {
+        setError(err instanceof Error ? err.message : 'Something went wrong')
+      }
       setPhase('input')
+    } finally {
+      clearTimeout(timeoutId)
     }
   }
 

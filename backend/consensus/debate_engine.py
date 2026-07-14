@@ -17,9 +17,12 @@ ones and resolving two (6.0). Labels describe agreement only.
 """
 
 import json
+import logging
 import re
 from typing import Any, Dict, List, Tuple
 from ..config import settings
+
+logger = logging.getLogger(__name__)
 from ..models import AgentOutput, ConflictPoint, DebateRound, ConsensusReport
 from ..llm.provider import QwenProvider, DEEP_MODEL
 
@@ -324,11 +327,18 @@ class DebateEngine:
             data = self._parse_json(raw)
 
             # Per-conflict resolution from this round's exchanges (authoritative
-            # for the topics discussed this round).
-            verdicts = {
+            # for the topics discussed this round). Only accept verdicts for topics
+            # that are actually in the unresolved set — the LLM occasionally
+            # hallucinates topic names, which would otherwise flip real conflicts.
+            valid_topics = {c.topic for c in unresolved}
+            raw_verdicts = {
                 ex.get("conflict_topic", ""): bool(ex.get("resolved", False))
                 for ex in data.get("debate_exchanges", [])
             }
+            for topic in raw_verdicts:
+                if topic not in valid_topics:
+                    logger.warning("Debate round %d mentioned unknown conflict topic %r — ignoring", round_num, topic)
+            verdicts = {k: v for k, v in raw_verdicts.items() if k in valid_topics}
             resolved_this_round = 0
             for c in unresolved:
                 if verdicts.get(c.topic):
