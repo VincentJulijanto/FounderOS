@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ChevronRight, AlertTriangle, ScrollText, ArrowLeft, Copy, Check, Download, FileDown } from 'lucide-react'
+import { ChevronRight, AlertTriangle, ScrollText, ArrowLeft, Copy, Check, Download, FileDown, Users } from 'lucide-react'
 import Logo from '@/components/Logo'
 import AuthChip from '@/components/AuthChip'
 import DecisionIntake from '@/components/DecisionIntake'
@@ -97,6 +97,13 @@ export default function Boardroom() {
                 </div>
               ))}
             </nav>
+            <Link
+              href="/boardroom/council"
+              className="hidden sm:flex items-center gap-1.5 text-sm text-muted hover:text-graphite transition-colors"
+            >
+              <Users className="w-4 h-4" aria-hidden="true" />
+              Feedback Council
+            </Link>
             <AuthChip />
           </div>
         </div>

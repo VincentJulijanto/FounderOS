@@ -5,9 +5,9 @@
 > what to do next. Read this first at the start of any new session. The **canonical, frozen Phase 0
 > contract** lives in `docs/architecture.md`; the **standing brief** for both build lanes is `CLAUDE.md`.
 
-**Last updated:** 2026-07-13
-**Current phase:** **SHIPPED & LIVE-VERIFIED — Research agent merged. Feedback Intelligence Council (Track 3) built on `feat/feedback-council`, pending merge.**
-Everything through PR #12 is merged to `main` and deployed: frontend at **founderos-zeta.vercel.app**
+**Last updated:** 2026-07-14
+**Current phase:** **SUBMISSION-READY — All Track 3 features merged and live. Submission checklist items complete.**
+Everything through PR #18 is merged to `main` and deployed: frontend at **founderos-zeta.vercel.app**
 (Vercel Hobby), backend at **vincent-playground-founderos-api.hf.space** (HF Docker Space, CPU Basic, live Qwen).
 - **Live-validated end to end:** three full runs through the HF proxy (93s / 132s / 100s, all
   HTTP 200, zero parse failures on the raised token ceilings). The **MVP loop is proven live**:
@@ -27,11 +27,25 @@ Everything through PR #12 is merged to `main` and deployed: frontend at **founde
 **Research agent:** merged to `main` via Vincent's PR #17. Branches `feat/research-agent` and
 `docs/research-agent-update` deleted (superseded).
 
-**Feedback Intelligence Council (`feat/feedback-council`):** 3-agent sub-council (Analyst → Skeptic → Chair)
-for Track 3: Agent Society. Built, bug-fixed, and committed. **Pending merge to `main`.**
+**Feedback Intelligence Council:** merged to `main` via PR #18. 3-agent sub-council (Analyst →
+Skeptic → Chair) for Track 3: Agent Society. 9 hermetic tests passing.
 
-**Remaining:** merge `feat/feedback-council` → `main` · rehearse the 3-minute demo script with a
-stopwatch · archive Kestrel cold-start receipt · morning-of ritual per `docs/demo_script.md`.
+**Submission prep (2026-07-14 session):**
+- `LICENSE` (MIT) added to repo root — satisfies hackathon open-source requirement
+- `frontend/src/app/boardroom/council/page.tsx` — new Feedback Council UI page (Track 3 demo)
+- `frontend/src/components/CouncilBrief.tsx` — council dialogue + efficiency gain + theme ranking
+- Types added to `frontend/src/lib/types.ts`: `CouncilTurn`, `FeedbackTheme`, `BaselineComparison`, `CouncilBriefResponse`
+- Boardroom header now links to `/boardroom/council` (Feedback Council)
+- `docs/architecture-diagram.md` — Mermaid system diagram (two-layer agent society, required by hackathon)
+- `README.md` rewritten around Track 3 submission narrative; cross-track elements (Track 1 memory, Track 4 autopilot) explicit; license badge added
+
+**Remaining before July 20:**
+- Rehearse the 3-minute demo with a stopwatch per `docs/demo_script.md`
+- Archive Kestrel cold-start receipt
+- Deploy frontend (Vercel) + backend (HF Space) with latest `main`
+- Record 3-minute YouTube/Vimeo demo video (required)
+- Submit at devpost with GitHub link, video, architecture diagram, track = Track 3
+- **Optional (blog post award +$500):** technical writeup and publish link
 
 ---
 
