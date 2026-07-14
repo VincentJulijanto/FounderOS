@@ -9,7 +9,6 @@ import {
   ChevronUp,
   CheckCircle2,
   XCircle,
-  RefreshCw,
   Sparkles,
   AlertTriangle,
 } from 'lucide-react'
@@ -110,7 +109,7 @@ function ThemeRow({ theme, rank }: { theme: FeedbackTheme; rank: number }) {
         </div>
         {theme.representative_quotes.length > 0 && (
           <p className="mt-1 text-xs text-muted italic truncate">
-            "{theme.representative_quotes[0]}"
+            &ldquo;{theme.representative_quotes[0]}&rdquo;
           </p>
         )}
       </div>
@@ -156,19 +155,19 @@ export default function CouncilBrief({ data }: Props) {
         </div>
       </div>
 
-      {/* Council dialogue */}
+      {/* Council dialogue — stable keys on agent name (unique per turn) */}
       <section>
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted mb-4">
           Council Dialogue
         </h2>
         <div className="space-y-3">
           {council_dialogue.map((turn, i) => (
-            <DialogueTurn key={i} turn={turn} index={i} />
+            <DialogueTurn key={turn.agent} turn={turn} index={i} />
           ))}
         </div>
       </section>
 
-      {/* Ranked themes */}
+      {/* Ranked themes — stable keys on theme name */}
       {themes.length > 0 && (
         <section>
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted mb-3">
@@ -180,7 +179,7 @@ export default function CouncilBrief({ data }: Props) {
             </div>
             <div className="px-5 pb-4">
               {themes.map((t, i) => (
-                <ThemeRow key={i} theme={t} rank={i + 1} />
+                <ThemeRow key={t.theme} theme={t} rank={i + 1} />
               ))}
             </div>
           </div>

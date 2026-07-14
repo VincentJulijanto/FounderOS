@@ -1,7 +1,11 @@
+import asyncio
 import json
+import logging
 import re
 from datetime import date
 from typing import Dict, Any, List
+
+logger = logging.getLogger(__name__)
 
 from .base import BaseAgent
 from ..models import CompanyProfile, Decision, AgentOutput
@@ -189,9 +193,13 @@ class MarketResearchAgent(BaseAgent):
             "for this decision."
         )
         try:
-            data = self._parse_json(self.provider.chat(SYSTEM_PROMPT_QUERIES, user_message, 500))
+            data = self._parse_json(self.provider.chat(SYSTEM_PROMPT_QUERIES, user_message, 800))
             queries = [q for q in data.get("queries", []) if isinstance(q, str) and q.strip()]
-        except (ValueError, Exception):
+        except json.JSONDecodeError as e:
+            logger.warning("Research query generation: JSON parse failed — %s", e)
+            queries = []
+        except Exception as e:
+            logger.exception("Research query generation: unexpected error — %s", e)
             queries = []
 
         if not queries:  # fallback — never leave the research pass with nothing to look up
@@ -203,8 +211,6 @@ class MarketResearchAgent(BaseAgent):
 
     async def _gather_mcp(self, queries: List[str], profile: CompanyProfile) -> Dict[str, Any]:
         """Fan out web searches (one per query) + one news + one market lookup, in parallel."""
-        import asyncio
-
         sector = profile.sector or (queries[0] if queries else "")
         tasks = [mcp_client.search_web(q) for q in queries]
         tasks.append(mcp_client.fetch_news(sector))
@@ -243,7 +249,11 @@ class MarketResearchAgent(BaseAgent):
         )
         try:
             return self._parse_json(self.provider.chat(SYSTEM_PROMPT_EXTRACT, user_message, self.max_tokens))
-        except (ValueError, Exception):
+        except json.JSONDecodeError as e:
+            logger.warning("Research extraction: JSON parse failed — %s", e)
+            return {"summary": "", "data_points": [], "data_gaps": ["Research extraction failed."]}
+        except Exception as e:
+            logger.exception("Research extraction: unexpected error — %s", e)
             return {"summary": "", "data_points": [], "data_gaps": ["Research extraction failed."]}
 
     # ──────────────────────────────────────────

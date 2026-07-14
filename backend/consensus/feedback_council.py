@@ -144,7 +144,7 @@ class FeedbackCouncil:
         ]
 
         # ── Baseline comparison — what the council caught that one agent missed ─
-        council_corrections = _derive_corrections(challenges, overrides)
+        council_corrections = _derive_corrections(challenges, overrides, analyst_themes)
 
         baseline_comparison = BaselineComparison(
             single_agent_summary=baseline_summary,
@@ -163,7 +163,11 @@ class FeedbackCouncil:
         )
 
 
-def _derive_corrections(challenges: List[dict], overrides: List[dict]) -> List[str]:
+def _derive_corrections(
+    challenges: List[dict],
+    overrides: List[dict],
+    analyst_themes: List[dict],
+) -> List[str]:
     """
     Produce the list of things the council caught that a single agent would have missed.
 
@@ -171,27 +175,35 @@ def _derive_corrections(challenges: List[dict], overrides: List[dict]) -> List[s
     (accepted or reframed). Overridden challenges are not counted — the council
     vindicated the Analyst there.
 
+    Challenges whose theme was never in the Analyst's output are hallucinations —
+    they are skipped and logged rather than inflating corrections_count.
+
     If the Chair omits an override entry for a challenge (LLM truncation), that
     challenge is flagged as unaddressed rather than silently dropped.
     """
+    analyst_theme_names = {t.get("theme", "") for t in analyst_themes}
     override_by_theme = {o["theme"]: o for o in overrides}
     corrections: List[str] = []
     for c in challenges:
-        override = override_by_theme.get(c["theme"])
+        theme = c.get("theme", "")
+        if theme not in analyst_theme_names:
+            logger.warning("Skeptic challenged non-existent theme %r — skipping", theme)
+            continue
+        override = override_by_theme.get(theme)
         if override is None:
             # Chair failed to address this challenge — count it as a correction
             # so corrections_count doesn't silently undercount.
             corrections.append(
-                f"Raised (unaddressed by Chair): '{c['theme']}' — {c['objection']}"
+                f"Raised (unaddressed by Chair): '{theme}' — {c.get('objection', '')}"
             )
             continue
         decision = override.get("decision", "")
         if decision == "accepted":
             corrections.append(
-                f"Removed '{c['theme']}' — {c['objection']}"
+                f"Removed '{theme}' — {c.get('objection', '')}"
             )
         elif decision == "reframed":
             corrections.append(
-                f"Reframed '{c['theme']}' — {override.get('rationale', c['objection'])}"
+                f"Reframed '{theme}' — {override.get('rationale', c.get('objection', ''))}"
             )
     return corrections
