@@ -59,6 +59,28 @@ Skeptic → Chair) for Track 3: Agent Society. 9 hermetic tests passing.
   mock mode: analyze pulls only curated notes, runtime note git-ignored, feedback works after a
   simulated restart. **Redeploy the Space after merge so the pruned vault ships.**
 
+**Feature Delivery Loop (2026-07-15 session, branch `feat/feature-loop`):** the SWE ⇄ QA
+iteration the user sketched — extends Track 3 past "ranked brief" into delivery:
+- **Flow:** council theme → **Data Analyst signal gate** (is the feedback representative of the
+  majority of users? off-thesis or single-report themes are stopped) → **Senior SWE** writes a
+  build spec → **QA Engineer** reviews for bugs/leaks/breaches → failing rounds send the spec
+  back to the SWE (**genuine iteration** — the mechanic the sequential council lacked) → pass ⇒
+  **release note written to the vault** (`type: release`); cap hit ⇒ status `held` with open issues.
+- **New:** `backend/agents/swe.py` (`senior_swe`, DEEP, 6000 tok) + `backend/agents/qa.py`
+  (`qa_engineer`, DEEP, 3000 tok) with call-counted mock fixtures (round 1 fails on a planted
+  PII-leak + missing rate limit; round 2 passes the fix) · `backend/consensus/feature_loop.py`
+  (`FeatureLoop`, `QA_LOOP_ROUNDS` env, default 2) · `POST /api/feature-loop`
+  (`FEATURE_LOOP_RATE_LIMIT`) · models `BuildSpec`/`QAIssue`/`QARound`/`SignalGate`/
+  `FeatureLoopRequest`/`FeatureLoopResponse` (mirrored in `types.ts`) ·
+  `frontend/src/components/FeatureLoop.tsx` + "Build from this brief" buttons on
+  `/boardroom/council` (callout now shows all 5 roles).
+- **Vault:** `write_release()` added; `index()`/`read()` now include **only `type: decision`**
+  (release + feedback notes never enter decision retrieval). Release filenames carry the
+  8-hex suffix so the runtime-write-back gitignore rule covers them.
+- **Tests:** `backend/tests/test_feature_loop.py` — released path, vault exclusion, gate
+  (insufficient / off-thesis), held-at-cap, HTTP round-trip + 422. **80/80 passing**;
+  `tsc --noEmit` + `next build` green. Smoke-verified: council → loop → released in mock mode.
+
 **Remaining before July 20:**
 - Rehearse the 3-minute demo with a stopwatch per `docs/demo_script.md`
 - Archive Kestrel cold-start receipt

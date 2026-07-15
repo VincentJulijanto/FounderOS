@@ -195,3 +195,55 @@ export interface CouncilBriefResponse {
   ranked_brief: string
   mock_mode?: boolean
 }
+
+// ── Feature Delivery Loop — SWE ⇄ QA iteration (Track 3: Agent Society) ───────
+
+export interface BuildSpec {
+  feature_name: string
+  problem: string
+  scope: string[]
+  out_of_scope: string[]
+  data_touched: string[]
+  implementation_steps: string[]
+  security_considerations: string[]
+  test_notes: string[]
+}
+
+export interface QAIssue {
+  severity: 'high' | 'medium' | 'low'
+  category: 'bug' | 'leak' | 'breach' | 'gap'
+  description: string
+  location: string
+}
+
+export interface QARound {
+  round: number
+  verdict: 'pass' | 'fail'
+  issues: QAIssue[]
+}
+
+export interface SignalGate {
+  sufficient: boolean
+  rationale: string
+}
+
+export interface FeatureLoopRequest {
+  company_id: string
+  theme: FeedbackTheme
+  feedback_notes_read: number
+}
+
+export type LoopStatus = 'released' | 'held' | 'insufficient_signal'
+
+export interface FeatureLoopResponse {
+  company_id: string
+  theme: FeedbackTheme
+  gate: SignalGate
+  loop_dialogue: CouncilTurn[]
+  build_spec: BuildSpec | null
+  qa_rounds: QARound[]
+  iterations: number
+  status: LoopStatus
+  release_note_path: string
+  mock_mode?: boolean
+}
