@@ -374,3 +374,66 @@ class CouncilBriefResponse(BaseModel):
     baseline_comparison: BaselineComparison
     ranked_brief: str                         # human-readable final output
     mock_mode: bool = False
+
+
+# ─────────────────────────────────────────────
+# Feature Delivery Loop — SWE ⇄ QA iteration (Track 3: Agent Society)
+# ─────────────────────────────────────────────
+
+class BuildSpec(BaseModel):
+    """The Senior SWE's build spec for one feature — the artifact QA reviews."""
+    feature_name: str
+    problem: str = ""                         # the user need the feature answers
+    scope: List[str] = []
+    out_of_scope: List[str] = []
+    data_touched: List[str] = []              # what user/company data the feature reads or stores
+    implementation_steps: List[str] = []
+    security_considerations: List[str] = []
+    test_notes: List[str] = []
+
+    _s = field_validator("problem", mode="before")(_to_str)
+    _ls = field_validator(
+        "scope", "out_of_scope", "data_touched", "implementation_steps",
+        "security_considerations", "test_notes", mode="before",
+    )(_items_to_str)
+
+
+class QAIssue(BaseModel):
+    """One problem QA found in a build spec."""
+    severity: Literal["high", "medium", "low"] = "medium"
+    category: Literal["bug", "leak", "breach", "gap"] = "bug"
+    description: str
+    location: str = ""                        # which part of the spec the issue lives in
+
+
+class QARound(BaseModel):
+    """One QA review pass over the spec — the loop's auditable unit."""
+    round: int
+    verdict: Literal["pass", "fail"]
+    issues: List[QAIssue] = []
+
+
+class SignalGate(BaseModel):
+    """The Data Analyst's go/no-go: does the feedback represent enough users to build for?"""
+    sufficient: bool
+    rationale: str = ""
+
+
+class FeatureLoopRequest(BaseModel):
+    company_id: str = Field(pattern=_COMPANY_ID_PATTERN)
+    theme: FeedbackTheme                      # the council theme to build (picked in the UI)
+    feedback_notes_read: int = 0              # denominator for the signal gate
+
+
+class FeatureLoopResponse(BaseModel):
+    """One delivery-loop run: gate → build spec → QA rounds (⇄ SWE fixes) → release/hold."""
+    company_id: str
+    theme: FeedbackTheme
+    gate: SignalGate
+    loop_dialogue: List[CouncilTurn] = []     # analyst gate + every SWE/QA turn, in order
+    build_spec: Optional[BuildSpec] = None    # final revision (None when gated out)
+    qa_rounds: List[QARound] = []
+    iterations: int = 0                       # number of QA reviews run
+    status: Literal["released", "held", "insufficient_signal"]
+    release_note_path: str = ""               # vault note written on release
+    mock_mode: bool = False

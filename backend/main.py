@@ -29,10 +29,13 @@ from .models import (
     Decision,
     CouncilBriefRequest,
     CouncilBriefResponse,
+    FeatureLoopRequest,
+    FeatureLoopResponse,
 )
 from .graph import run_graph
 from . import vault
 from .consensus.feedback_council import FeedbackCouncil
+from .consensus.feature_loop import FeatureLoop
 
 # ─────────────────────────────────────────────
 # App Setup
@@ -43,6 +46,7 @@ from .consensus.feedback_council import FeedbackCouncil
 ANALYZE_RATE_LIMIT = os.environ.get("ANALYZE_RATE_LIMIT", "5/minute")
 FEEDBACK_RATE_LIMIT = os.environ.get("FEEDBACK_RATE_LIMIT", "20/minute")
 COUNCIL_RATE_LIMIT = os.environ.get("COUNCIL_RATE_LIMIT", "10/minute")
+FEATURE_LOOP_RATE_LIMIT = os.environ.get("FEATURE_LOOP_RATE_LIMIT", "5/minute")
 limiter = Limiter(
     key_func=get_remote_address,
     enabled=os.environ.get("RATE_LIMIT_ENABLED", "true").lower() != "false",
@@ -253,6 +257,27 @@ async def get_council_brief(request: Request, body: CouncilBriefRequest):
     except Exception:
         logger.exception("Council brief failed for company %s", body.company_id)
         raise HTTPException(status_code=500, detail="Council brief failed. Please try again.")
+
+
+@app.post("/api/feature-loop", response_model=FeatureLoopResponse)
+@limiter.limit(FEATURE_LOOP_RATE_LIMIT)
+async def run_feature_loop(request: Request, body: FeatureLoopRequest):
+    """
+    Run the Feature Delivery Loop on one council theme.
+
+    Track 3: Agent Society — the Data Analyst gates on signal strength, the Senior
+    SWE writes a build spec, and the QA Engineer reviews it for bugs/leaks/breaches;
+    failing rounds send the spec back to the SWE (genuine iteration) until it passes
+    (release note written to the vault) or the round cap holds it.
+    """
+    try:
+        loop = FeatureLoop()
+        return loop.run(body.company_id, body.theme, body.feedback_notes_read)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception:
+        logger.exception("Feature loop failed for company %s", body.company_id)
+        raise HTTPException(status_code=500, detail="Feature loop failed. Please try again.")
 
 
 @app.get("/api/company/{company_id}")

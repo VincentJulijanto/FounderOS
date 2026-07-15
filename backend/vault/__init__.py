@@ -24,6 +24,7 @@ from .store import (
     history,
     read_feedback,
     find_by_response_id,
+    write_release,
 )
 
 __all__ = [
@@ -35,4 +36,5 @@ __all__ = [
     "history",
     "read_feedback",
     "find_by_response_id",
+    "write_release",
 ]

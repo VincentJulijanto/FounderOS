@@ -40,6 +40,7 @@ from ..models import (
     CompanyProfile,
     Decision,
     BoardRecommendation,
+    BuildSpec,
     VaultNote,
     ContextBundle,
     FeedbackNote,
@@ -182,9 +183,10 @@ class Vault:
                 fm, _body = _parse_frontmatter(path.read_text(encoding="utf-8"))
             except OSError:
                 continue
-            # Feedback notes are read via read_feedback() — exclude them from the
-            # decision-context index so they don't pollute the selector or history.
-            if fm.get("type") == "feedback":
+            # Decision notes ONLY: feedback notes are read via read_feedback(),
+            # release notes via the delivery loop — neither belongs in the
+            # decision-context index the selector ranks or the history endpoint.
+            if fm.get("type") != "decision":
                 continue
             notes.append(VaultNote(
                 path=path.name,
@@ -253,7 +255,7 @@ class Vault:
                 fm, _body = _parse_frontmatter(path.read_text(encoding="utf-8"))
             except OSError:
                 continue
-            if fm.get("type") == "feedback":
+            if fm.get("type") != "decision":
                 continue
             index_entries.append(VaultNote(
                 path=path.name,
@@ -412,6 +414,50 @@ class Vault:
                 return True
         return False
 
+    def write_release(self, company_id: str, spec: BuildSpec, theme: str) -> str:
+        """Write a `type: release` note for a feature that cleared the QA loop.
+
+        Release notes are delivery-loop provenance, not board memory: index()/read()
+        include only `type: decision`, so they never enter decision retrieval. The
+        uuid suffix keeps same-day releases distinct AND matches the .gitignore
+        rule for runtime write-backs. Returns the filename.
+        """
+        company_dir = self._company_dir(company_id)
+        company_dir.mkdir(parents=True, exist_ok=True)
+
+        release_id = str(uuid.uuid4())
+        date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        fm = {
+            "type": "release",
+            "release_id": release_id,
+            "date": date,
+            "feature": spec.feature_name.replace("\n", " ")[:120],
+            "theme": theme.replace("\n", " ")[:120],
+            "summary": f"Released: {spec.feature_name} (from feedback theme: {theme})"[:200],
+        }
+
+        def _section(title: str, items: List[str]) -> str:
+            lines = "\n".join(f"- {i}" for i in items) or "- (none)"
+            return f"### {title}\n{lines}\n"
+
+        body = (
+            f"## Released feature: {spec.feature_name}\n\n"
+            f"**From feedback theme:** {theme}\n\n"
+            f"**Problem:** {spec.problem}\n\n"
+            + _section("Scope", spec.scope)
+            + "\n" + _section("Out of scope", spec.out_of_scope)
+            + "\n" + _section("Data touched", spec.data_touched)
+            + "\n" + _section("Implementation steps", spec.implementation_steps)
+            + "\n" + _section("Security considerations", spec.security_considerations)
+            + "\n" + _section("QA verified", spec.test_notes)
+        )
+
+        filename = f"release-{date}-{_slugify(spec.feature_name)}-{release_id[:8]}.md"
+        (company_dir / filename).write_text(
+            f"{_dump_frontmatter(fm)}\n\n{body}", encoding="utf-8"
+        )
+        return filename
+
     def find_by_response_id(self, response_id: str) -> Optional[tuple[str, str]]:
         """Locate the decision note written for a response → (company_id, decision_id).
 
@@ -490,6 +536,10 @@ def write_back(company_id: str, decision: Decision,
 
 def find_by_response_id(response_id: str) -> Optional[tuple[str, str]]:
     return _vault.find_by_response_id(response_id)
+
+
+def write_release(company_id: str, spec: BuildSpec, theme: str) -> str:
+    return _vault.write_release(company_id, spec, theme)
 
 
 def read_profile(company_id: str) -> Optional[CompanyProfile]:
