@@ -12,3 +12,4 @@ humans and are ignored by the retrieval index.
 | 2026-01-20 | Build our own last-mile fleet vs stay asset-light | hold | Held — validated, margins held |
 | 2026-02-10 | Bid for the e-commerce platform's MY–SG tender | conditional | Shortlisted — award pending |
 | 2026-04-05 | Add cold-chain capability for pharma clients | proceed | (pending) |
+| 2026-07-09 | Buy land in Indonesia for a dock-accessible yard vs lease | hold | (pending) |

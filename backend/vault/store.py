@@ -332,8 +332,13 @@ class Vault:
         recommendation: BoardRecommendation,
         learnings: Optional[List[str]] = None,
         profile: Optional[CompanyProfile] = None,
+        response_id: str = "",
     ) -> str:
-        """Append a decision note and return its decision_id (used by the outcome loop)."""
+        """Append a decision note and return its decision_id (used by the outcome loop).
+
+        response_id is stored in the frontmatter so the outcome loop can find the
+        note again after a restart wipes the in-memory response store.
+        """
         company_dir = self._company_dir(company_id)
         company_dir.mkdir(parents=True, exist_ok=True)
 
@@ -348,6 +353,7 @@ class Vault:
         fm = {
             "type": "decision",
             "decision_id": decision_id,
+            "response_id": response_id,
             "date": date,
             "recommendation": recommendation.recommendation,
             "confidence": recommendation.confidence,
@@ -406,6 +412,29 @@ class Vault:
                 return True
         return False
 
+    def find_by_response_id(self, response_id: str) -> Optional[tuple[str, str]]:
+        """Locate the decision note written for a response → (company_id, decision_id).
+
+        Fallback for the outcome loop when the in-memory response store was wiped
+        by a restart — the vault note is the durable record. Walks every company
+        folder's frontmatter (small vaults; bodies are never read).
+        """
+        if not response_id or not self.root.exists():
+            return None
+        for company_dir in sorted(self.root.iterdir()):
+            if not company_dir.is_dir():
+                continue
+            for path in company_dir.glob("*.md"):
+                if path.name.startswith("_"):
+                    continue
+                try:
+                    fm, _body = _parse_frontmatter(path.read_text(encoding="utf-8"))
+                except OSError:
+                    continue
+                if fm.get("response_id") == response_id and fm.get("decision_id"):
+                    return company_dir.name, fm["decision_id"]
+        return None
+
     def read_feedback(self, company_id: str) -> List[FeedbackNote]:
         """Return all notes with frontmatter type=feedback for this company.
 
@@ -454,8 +483,13 @@ def read(company_id: str, query: str) -> ContextBundle:
 def write_back(company_id: str, decision: Decision,
                recommendation: BoardRecommendation,
                learnings: Optional[List[str]] = None,
-               profile: Optional[CompanyProfile] = None) -> str:
-    return _vault.write_back(company_id, decision, recommendation, learnings, profile)
+               profile: Optional[CompanyProfile] = None,
+               response_id: str = "") -> str:
+    return _vault.write_back(company_id, decision, recommendation, learnings, profile, response_id)
+
+
+def find_by_response_id(response_id: str) -> Optional[tuple[str, str]]:
+    return _vault.find_by_response_id(response_id)
 
 
 def read_profile(company_id: str) -> Optional[CompanyProfile]:

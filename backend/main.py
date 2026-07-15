@@ -173,6 +173,7 @@ async def analyze(request: Request, body: AnalyzeRequest):
             recommendation=response.recommendation,
             learnings=[d.position for d in response.recommendation.dissent],
             profile=profile,
+            response_id=response.response_id,
         )
         responses_store[response.response_id] = {
             "response": response.model_dump(),
@@ -205,16 +206,24 @@ def submit_feedback(request: Request, body: FeedbackRequest):
     The outcome loop — record what actually happened against the decision note.
     """
     record = responses_store.get(body.response_id)
-    if not record:
-        raise HTTPException(status_code=404, detail="Response not found")
+    if record:
+        company_id, decision_id = record["company_id"], record["decision_id"]
+    else:
+        # The in-memory store is wiped on restart; the vault note is the durable
+        # record — its frontmatter carries the response_id.
+        found = vault.find_by_response_id(body.response_id)
+        if not found:
+            raise HTTPException(status_code=404, detail="Response not found")
+        company_id, decision_id = found
 
     ok = vault.record_outcome(
-        company_id=record["company_id"],
-        decision_id=record["decision_id"],
+        company_id=company_id,
+        decision_id=decision_id,
         outcome=body.outcome or "",
         notes=body.notes or "",
     )
-    record["response"]["_outcome"] = body.outcome
+    if record:
+        record["response"]["_outcome"] = body.outcome
 
     return {
         "status": "ok",

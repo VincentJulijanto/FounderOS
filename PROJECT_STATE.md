@@ -5,7 +5,7 @@
 > what to do next. Read this first at the start of any new session. The **canonical, frozen Phase 0
 > contract** lives in `docs/architecture.md`; the **standing brief** for both build lanes is `CLAUDE.md`.
 
-**Last updated:** 2026-07-14
+**Last updated:** 2026-07-15
 **Current phase:** **SUBMISSION-READY — All Track 3 features merged and live. Submission checklist items complete.**
 Everything through PR #18 is merged to `main` and deployed: frontend at **founderos-zeta.vercel.app**
 (Vercel Hobby), backend at **vincent-playground-founderos-api.hf.space** (HF Docker Space, CPU Basic, live Qwen).
@@ -38,6 +38,26 @@ Skeptic → Chair) for Track 3: Agent Society. 9 hermetic tests passing.
 - Boardroom header now links to `/boardroom/council` (Feedback Council)
 - `docs/architecture-diagram.md` — Mermaid system diagram (two-layer agent society, required by hackathon)
 - `README.md` rewritten around Track 3 submission narrative; cross-track elements (Track 1 memory, Track 4 autopilot) explicit; license badge added
+
+**Vault hygiene + durable outcome loop (2026-07-15 session, branch `fix/vault-hygiene`, stacked on `fix/bugs-and-perf`):**
+- **Seed vault pruned:** deleted 7 committed runtime write-back artifacts (mock-fixture bodies —
+  incl. the off-thesis "study assistant" note in harborline and duplicate "skin analysis" notes in
+  lumen). Kept + renamed the coherent live-run Indonesia land note to curated style
+  (`2026-07-09-buy-land-in-indonesia-vs-lease.md`); harborline `_index.md` updated. These
+  artifacts shipped in the Docker image and could surface as incoherent "prior board history"
+  during a live demo run.
+- **`.gitignore`:** runtime write-backs (`vault/**/*-<8-hex>.md` — every `write_back` filename ends
+  in the decision_id's first 8 hex chars) can never be committed again. Curated notes unaffected.
+- **Outcome loop survives restarts:** `write_back` now stores `response_id` in the note
+  frontmatter; new `vault.find_by_response_id()`; `POST /api/feedback` falls back to the vault
+  when the in-memory `responses_store` was wiped (HF Space restarts are routine). New test:
+  `test_feedback_survives_restart_via_vault_lookup`.
+- **Write-back UX decided:** no pre-memo prompt (would block the payoff moment in a 3-min demo);
+  write-back stays automatic (powers the "board remembers" beat); the existing one-line
+  confirmation in the boardroom export card is the right weight — no frontend change.
+- `test_system.py` seed counts updated (10→6, 11→7). **73/73 tests passing.** Smoke-verified in
+  mock mode: analyze pulls only curated notes, runtime note git-ignored, feedback works after a
+  simulated restart. **Redeploy the Space after merge so the pruned vault ships.**
 
 **Remaining before July 20:**
 - Rehearse the 3-minute demo with a stopwatch per `docs/demo_script.md`

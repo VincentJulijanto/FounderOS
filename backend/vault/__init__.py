@@ -15,6 +15,24 @@ board simply runs as a first session. VAULT_PATH is env-configurable, never
 hardcoded (Decision #8).
 """
 
-from .store import Vault, read, read_profile, write_back, record_outcome, history, read_feedback
+from .store import (
+    Vault,
+    read,
+    read_profile,
+    write_back,
+    record_outcome,
+    history,
+    read_feedback,
+    find_by_response_id,
+)
 
-__all__ = ["Vault", "read", "read_profile", "write_back", "record_outcome", "history", "read_feedback"]
+__all__ = [
+    "Vault",
+    "read",
+    "read_profile",
+    "write_back",
+    "record_outcome",
+    "history",
+    "read_feedback",
+    "find_by_response_id",
+]

@@ -28,3 +28,7 @@ frontend/.next/
 
 # Diagnostic LLM failure logs
 logs/
+
+# Runtime vault write-backs (filenames end in the decision_id's first 8 hex chars).
+# The committed seed vault is curated by hand — never commit run artifacts.
+vault/**/*-[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].md
