@@ -138,6 +138,32 @@ def test_analyze_response_feedback_company_flow(company, decision, isolated_vaul
     assert hist2[0]["outcome"].startswith("proceeded")
 
 
+def test_feedback_survives_restart_via_vault_lookup(company, decision, isolated_vault):
+    """The outcome loop must work after a restart wipes the in-memory store —
+    the vault note's response_id frontmatter is the durable link."""
+    import backend.main as main_mod
+    client = TestClient(app)
+
+    r = client.post("/api/analyze", json={
+        "company_id": "kirana",
+        "profile": company.model_dump(),
+        "decision": decision.model_dump(),
+    })
+    assert r.status_code == 200
+    response_id = r.json()["response_id"]
+
+    main_mod.responses_store.clear()                  # simulate a restart
+
+    fb = client.post("/api/feedback", json={
+        "response_id": response_id, "outcome": "launched", "notes": "post-restart",
+    })
+    assert fb.status_code == 200
+    assert fb.json()["written_to_vault"] is True
+
+    hist = client.get("/api/company/kirana").json()["history"]
+    assert hist[0]["outcome"].startswith("launched")
+
+
 def test_feedback_unknown_response_404(isolated_vault):
     client = TestClient(app)
     resp = client.post("/api/feedback", json={
