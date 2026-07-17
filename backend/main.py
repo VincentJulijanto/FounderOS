@@ -55,6 +55,7 @@ GLOBAL_LLM_RATE_LIMIT = os.environ.get("GLOBAL_LLM_RATE_LIMIT", "60/hour;200/day
 limiter = Limiter(
     key_func=get_remote_address,
     enabled=os.environ.get("RATE_LIMIT_ENABLED", "true").lower() != "false",
+    headers_enabled=True,  # emit X-RateLimit-* on responses so clients see the cap
 )
 
 
