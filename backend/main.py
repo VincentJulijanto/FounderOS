@@ -11,7 +11,7 @@ Endpoints (contract in docs/architecture.md § API Architecture):
 import logging
 import os
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -162,7 +162,7 @@ def root():
 @app.post("/api/analyze", response_model=BoardResponse)
 @limiter.limit(ANALYZE_RATE_LIMIT)
 @limiter.limit(GLOBAL_LLM_RATE_LIMIT, key_func=_global_llm_key)
-async def analyze(request: Request, body: AnalyzeRequest):
+async def analyze(request: Request, response: Response, body: AnalyzeRequest):
     """
     Evaluate one company decision and return a board memo.
     Runs the full board (LangGraph) and writes the decision back to the vault.
@@ -217,7 +217,7 @@ def get_response(response_id: str):
 
 @app.post("/api/feedback")
 @limiter.limit(FEEDBACK_RATE_LIMIT)
-def submit_feedback(request: Request, body: FeedbackRequest):
+def submit_feedback(request: Request, response: Response, body: FeedbackRequest):
     """
     The outcome loop — record what actually happened against the decision note.
     """
@@ -251,7 +251,7 @@ def submit_feedback(request: Request, body: FeedbackRequest):
 @app.post("/api/council-brief", response_model=CouncilBriefResponse)
 @limiter.limit(COUNCIL_RATE_LIMIT)
 @limiter.limit(GLOBAL_LLM_RATE_LIMIT, key_func=_global_llm_key)
-async def get_council_brief(request: Request, body: CouncilBriefRequest):
+async def get_council_brief(request: Request, response: Response, body: CouncilBriefRequest):
     """
     Run the Feedback Intelligence Council on all user feedback for a company.
 
@@ -275,7 +275,7 @@ async def get_council_brief(request: Request, body: CouncilBriefRequest):
 @app.post("/api/feature-loop", response_model=FeatureLoopResponse)
 @limiter.limit(FEATURE_LOOP_RATE_LIMIT)
 @limiter.limit(GLOBAL_LLM_RATE_LIMIT, key_func=_global_llm_key)
-async def run_feature_loop(request: Request, body: FeatureLoopRequest):
+async def run_feature_loop(request: Request, response: Response, body: FeatureLoopRequest):
     """
     Run the Feature Delivery Loop on one council theme.
 
