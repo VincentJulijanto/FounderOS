@@ -47,10 +47,20 @@ ANALYZE_RATE_LIMIT = os.environ.get("ANALYZE_RATE_LIMIT", "5/minute")
 FEEDBACK_RATE_LIMIT = os.environ.get("FEEDBACK_RATE_LIMIT", "20/minute")
 COUNCIL_RATE_LIMIT = os.environ.get("COUNCIL_RATE_LIMIT", "10/minute")
 FEATURE_LOOP_RATE_LIMIT = os.environ.get("FEATURE_LOOP_RATE_LIMIT", "5/minute")
+# Global backstop shared across ALL IPs for the expensive LLM routes (analyze,
+# council-brief, feature-loop). Uses a constant key so a rotating-IP bot cannot
+# drain the model's daily quota by hopping addresses; per-IP limits above still
+# apply on top. Cheap GET routes are untouched.
+GLOBAL_LLM_RATE_LIMIT = os.environ.get("GLOBAL_LLM_RATE_LIMIT", "60/hour;200/day")
 limiter = Limiter(
     key_func=get_remote_address,
     enabled=os.environ.get("RATE_LIMIT_ENABLED", "true").lower() != "false",
 )
+
+
+def _global_llm_key(request: "Request") -> str:
+    """Constant key -> one shared bucket across all clients for LLM routes."""
+    return "global-llm"
 
 app = FastAPI(
     title="FounderOS API",
@@ -150,6 +160,7 @@ def root():
 
 @app.post("/api/analyze", response_model=BoardResponse)
 @limiter.limit(ANALYZE_RATE_LIMIT)
+@limiter.limit(GLOBAL_LLM_RATE_LIMIT, key_func=_global_llm_key)
 async def analyze(request: Request, body: AnalyzeRequest):
     """
     Evaluate one company decision and return a board memo.
@@ -238,6 +249,7 @@ def submit_feedback(request: Request, body: FeedbackRequest):
 
 @app.post("/api/council-brief", response_model=CouncilBriefResponse)
 @limiter.limit(COUNCIL_RATE_LIMIT)
+@limiter.limit(GLOBAL_LLM_RATE_LIMIT, key_func=_global_llm_key)
 async def get_council_brief(request: Request, body: CouncilBriefRequest):
     """
     Run the Feedback Intelligence Council on all user feedback for a company.
@@ -261,6 +273,7 @@ async def get_council_brief(request: Request, body: CouncilBriefRequest):
 
 @app.post("/api/feature-loop", response_model=FeatureLoopResponse)
 @limiter.limit(FEATURE_LOOP_RATE_LIMIT)
+@limiter.limit(GLOBAL_LLM_RATE_LIMIT, key_func=_global_llm_key)
 async def run_feature_loop(request: Request, body: FeatureLoopRequest):
     """
     Run the Feature Delivery Loop on one council theme.
