@@ -1,0 +1,578 @@
+{
+  "response_id": "6b20648e-9f12-438a-9650-00e7b9137928",
+  "company_id": "flourhouse-bakery",
+  "agent_outputs": [
+    {
+      "agent_name": "scout",
+      "role": "Opportunity Scout \u2014 frames the options on the table",
+      "analysis": "The decision hinges on whether to pivot toward a scalable wholesale model by consolidating operations, or to preserve the retail presence despite rising costs and stagnant performance. The company must weigh the potential growth from focusing on wholesale against the risk of losing brand visibility and customer engagement.",
+      "score": null,
+      "key_findings": [
+        "Evaluate the long-term strategic fit of each option with Flourhouse Bakery's growth goals, cost efficiency, and brand positioning in the artisan bakery and cafe market."
+      ],
+      "concerns": [],
+      "recommendations": [
+        "Move production to a central kitchen and close retail counters to focus on wholesale",
+        "Renew retail leases at higher rent and maintain current operations",
+        "Maintain current operations but reduce retail hours or staff to lower costs",
+        "Hold off on decision and explore alternative space or partnership models"
+      ],
+      "raw_data": {
+        "options": [
+          "Move production to a central kitchen and close retail counters to focus on wholesale",
+          "Renew retail leases at higher rent and maintain current operations",
+          "Maintain current operations but reduce retail hours or staff to lower costs",
+          "Hold off on decision and explore alternative space or partnership models"
+        ],
+        "framing": "The decision hinges on whether to pivot toward a scalable wholesale model by consolidating operations, or to preserve the retail presence despite rising costs and stagnant performance. The company must weigh the potential growth from focusing on wholesale against the risk of losing brand visibility and customer engagement.",
+        "mcp_sources": [
+          "[MOCK] crunchbase: artisan bakery and cafe",
+          "[MOCK] news: artisan bakery and cafe"
+        ]
+      }
+    },
+    {
+      "agent_name": "trend",
+      "role": "Trend Analyst \u2014 market & demand signals for the decision",
+      "analysis": "The artisan bakery and cafe market is experiencing accelerating demand heading into 2026, with key shifts favoring scalable operations. Wholesale is already 60% of revenue and growing, suggesting a strong tailwind for moving toward a centralized production model. However, the retail counter model remains relevant in certain segments, and the timing for a major shift is constrained by lease renewals and a tight 6-week decision window.",
+      "score": 7.0,
+      "key_findings": [
+        "Demand for artisan bakery and cafe continues to accelerate heading into 2026.",
+        "Wholesale is now 60% of revenue and growing, indicating a clear shift in business model viability."
+      ],
+      "concerns": [
+        "Lease renewals are due in 5 months, creating pressure to decide quickly without full operational transition.",
+        "A 6-week timeline limits the ability to test or refine the central kitchen model before committing."
+      ],
+      "recommendations": [
+        "MODERATE"
+      ],
+      "raw_data": {
+        "market_read": "The artisan bakery and cafe market is experiencing accelerating demand heading into 2026, with key shifts favoring scalable operations. Wholesale is already 60% of revenue and growing, suggesting a strong tailwind for moving toward a centralized production model. However, the retail counter model remains relevant in certain segments, and the timing for a major shift is constrained by lease renewals and a tight 6-week decision window.",
+        "demand_score": 7,
+        "signals": [
+          "Demand for artisan bakery and cafe continues to accelerate heading into 2026.",
+          "Wholesale is now 60% of revenue and growing, indicating a clear shift in business model viability."
+        ],
+        "timing_risks": [
+          "Lease renewals are due in 5 months, creating pressure to decide quickly without full operational transition.",
+          "A 6-week timeline limits the ability to test or refine the central kitchen model before committing."
+        ],
+        "verdict": "MODERATE",
+        "mcp_sources": [
+          "[MOCK] web: artisan bakery and cafe Should we move production to a central kitchen and close our two retail counters? 2026"
+        ]
+      }
+    },
+    {
+      "agent_name": "finance",
+      "role": "Finance Agent \u2014 decision economics against the company P&L",
+      "analysis": "Moving to a central kitchen would reduce fixed costs by approximately SGD 120k (fit-out cost) and ongoing rent savings. However, the company would lose the revenue from the two retail counters, which currently contribute to 40% of total revenue. The move could improve gross margin due to more efficient production, but the loss of retail sales may negatively impact overall revenue. The net profit margin could remain stable if cost savings offset lost revenue, but there is risk in assuming that wholesale growth will fully compensate for the retail decline.",
+      "score": 6.0,
+      "key_findings": [
+        "The initial fit-out cost of SGD 120k would be offset by ongoing rent savings and potential efficiency gains. However, with the loss of retail revenue, payback may take 12-18 months depending on how quickly wholesale can absorb the volume and maintain margins.",
+        "The SGD 120k fit-out cost fits within the company's cash runway, but the decision requires careful planning to avoid further cash burn from potential revenue shortfalls or operational disruptions."
+      ],
+      "concerns": [
+        "Loss of retail revenue could hurt overall profitability if wholesale growth does not compensate.",
+        "Operational disruption during the transition could lead to lost sales and increased costs."
+      ],
+      "recommendations": [
+        "STRETCH"
+      ],
+      "raw_data": {
+        "financial_view": "Moving to a central kitchen would reduce fixed costs by approximately SGD 120k (fit-out cost) and ongoing rent savings. However, the company would lose the revenue from the two retail counters, which currently contribute to 40% of total revenue. The move could improve gross margin due to more efficient production, but the loss of retail sales may negatively impact overall revenue. The net profit margin could remain stable if cost savings offset lost revenue, but there is risk in assuming that wholesale growth will fully compensate for the retail decline.",
+        "feasibility_score": 6,
+        "payback_view": "The initial fit-out cost of SGD 120k would be offset by ongoing rent savings and potential efficiency gains. However, with the loss of retail revenue, payback may take 12-18 months depending on how quickly wholesale can absorb the volume and maintain margins.",
+        "budget_fit": "The SGD 120k fit-out cost fits within the company's cash runway, but the decision requires careful planning to avoid further cash burn from potential revenue shortfalls or operational disruptions.",
+        "financial_risks": [
+          "Loss of retail revenue could hurt overall profitability if wholesale growth does not compensate.",
+          "Operational disruption during the transition could lead to lost sales and increased costs."
+        ],
+        "verdict": "STRETCH",
+        "mcp_sources": [
+          "[MOCK] accounting: Flourhouse Bakery"
+        ]
+      }
+    },
+    {
+      "agent_name": "growth",
+      "role": "Growth Agent \u2014 execution & go-to-market on the decision",
+      "analysis": "Flourhouse Bakery is an established business with a clear understanding of its operations and market. Moving to a central kitchen is a strategic shift that aligns with the growing wholesale demand and cost pressures from retail leases. The company has the financial runway to make this change, and the fit-out budget is manageable. However, the decision requires careful planning and execution to ensure minimal disruption to existing wholesale relationships and customer experience.",
+      "score": 7.0,
+      "key_findings": [
+        "Flourhouse would focus on maintaining and expanding its wholesale relationships by leveraging its improved production efficiency and cost structure. It would use direct outreach to cafes and restaurants, along with digital marketing (social media, email campaigns) to highlight its value proposition. Additionally, it could partner with local food delivery platforms to reach new customers and increase brand visibility.",
+        "Leverage existing wholesale relationships for referrals and expanded orders",
+        "Optimize production efficiency to reduce costs and improve margins"
+      ],
+      "concerns": [
+        "Disruption to current retail customers who may not transition smoothly to wholesale or other channels",
+        "Potential delays in setting up the central kitchen affecting production timelines"
+      ],
+      "recommendations": [
+        "EXECUTABLE"
+      ],
+      "raw_data": {
+        "execution_read": "Flourhouse Bakery is an established business with a clear understanding of its operations and market. Moving to a central kitchen is a strategic shift that aligns with the growing wholesale demand and cost pressures from retail leases. The company has the financial runway to make this change, and the fit-out budget is manageable. However, the decision requires careful planning and execution to ensure minimal disruption to existing wholesale relationships and customer experience.",
+        "go_to_market": "Flourhouse would focus on maintaining and expanding its wholesale relationships by leveraging its improved production efficiency and cost structure. It would use direct outreach to cafes and restaurants, along with digital marketing (social media, email campaigns) to highlight its value proposition. Additionally, it could partner with local food delivery platforms to reach new customers and increase brand visibility.",
+        "growth_score": 7,
+        "levers": [
+          "Leverage existing wholesale relationships for referrals and expanded orders",
+          "Optimize production efficiency to reduce costs and improve margins"
+        ],
+        "execution_risks": [
+          "Disruption to current retail customers who may not transition smoothly to wholesale or other channels",
+          "Potential delays in setting up the central kitchen affecting production timelines"
+        ],
+        "verdict": "EXECUTABLE"
+      }
+    },
+    {
+      "agent_name": "capability",
+      "role": "Capability Agent \u2014 organizational readiness to execute",
+      "analysis": "Flourhouse Bakery has strong financials and a solid track record in its current model, but lacks proven capability in executing facility consolidation and a wholesale-only transition. The organization is capable of *considering* the move\u2014but not yet ready to *execute* it confidently within the 6-week window without addressing critical operational and bandwidth gaps.",
+      "score": 7.0,
+      "key_findings": [
+        "Team And Leadership: 7/10",
+        "Operational Readiness: 5/10",
+        "Track Record: 8/10",
+        "Financial Capacity: 9/10",
+        "Org Bandwidth: 6/10",
+        "Strength: Financial capacity to fund the move",
+        "Strength: Proven track record of growing wholesale while maintaining margins",
+        "Strength: Leadership experience in core bakery operations"
+      ],
+      "concerns": [
+        "Gap: Lack of demonstrated capability in facility relocation or end-to-end wholesale-only logistics",
+        "Gap: No visible operational systems to support centralized production",
+        "Gap: Limited organizational bandwidth for concurrent execution of strategic pivot and daily operations"
+      ],
+      "recommendations": [],
+      "raw_data": {
+        "dimensions": {
+          "team_and_leadership": {
+            "score": 7,
+            "rationale": "As an established artisan bakery with 11\u201350 employees and sustained 52% gross margins, leadership likely has operational experience in scaling production and managing wholesale relationships; however, no evidence is provided of prior facility relocation, supply chain redesign, or retail-to-wholesale-only transition\u2014key competencies for this decision."
+          },
+          "operational_readiness": {
+            "score": 5,
+            "rationale": "No indication of existing systems for centralized production scheduling, cold-chain logistics, batch traceability, or wholesale order fulfillment at scale; retail counters currently serve as both revenue stream and de facto quality control and customer feedback loop\u2014removing them introduces untested operational dependencies."
+          },
+          "track_record": {
+            "score": 8,
+            "rationale": "Consistent revenue (SGD 1.5\u20132M), healthy gross margin, and 8-month cash runway suggest reliable execution on core activities; ability to grow wholesale to 60% of revenue while holding retail flat implies disciplined prioritization and delivery\u2014but no documented history of major structural pivots or facility transitions."
+          },
+          "financial_capacity": {
+            "score": 9,
+            "rationale": "With SGD 120k fit-out budget required and 8 months of runway (~SGD 125\u2013167k monthly cash buffer), the company can absorb the capex and transition costs without jeopardizing liquidity; gross margin strength provides resilience against short-term wholesale ramp-up volatility."
+          },
+          "org_bandwidth": {
+            "score": 6,
+            "rationale": "At 11\u201350 employees in a hands-on artisan operation, leadership bandwidth is likely constrained by daily retail operations and wholesale fulfillment; executing a facility move, staff reassignment or reduction, and business model pivot within 6 weeks would strain capacity\u2014especially without evidence of dedicated ops or change management roles."
+          }
+        },
+        "overall_capability_score": 7,
+        "strengths": [
+          "Financial capacity to fund the move",
+          "Proven track record of growing wholesale while maintaining margins",
+          "Leadership experience in core bakery operations"
+        ],
+        "gaps": [
+          "Lack of demonstrated capability in facility relocation or end-to-end wholesale-only logistics",
+          "No visible operational systems to support centralized production",
+          "Limited organizational bandwidth for concurrent execution of strategic pivot and daily operations"
+        ],
+        "summary": "Flourhouse Bakery has strong financials and a solid track record in its current model, but lacks proven capability in executing facility consolidation and a wholesale-only transition. The organization is capable of *considering* the move\u2014but not yet ready to *execute* it confidently within the 6-week window without addressing critical operational and bandwidth gaps."
+      }
+    },
+    {
+      "agent_name": "skeptic",
+      "role": "Skeptic \u2014 attacks the decision's weak points",
+      "analysis": "The decision assumes wholesale is scalable *independently* of retail \u2014 but Flourhouse\u2019s wholesale success appears causally entangled with its retail presence, not merely correlated. Severing that link without validating the decoupling first is betting the company\u2019s brand equity and margin resilience on untested operational logic.",
+      "score": 2.0,
+      "key_findings": [
+        "Critical assumption: That wholesale demand will continue to grow *at the same rate and with the same margin profile* after closing retail counters \u2014 specifically, that losing direct consumer feedback, brand visibility, and impulse-driven wholesale referrals (e.g., cafe owners visiting counters and placing orders) won\u2019t materially erode wholesale growth velocity or pricing power.",
+        "Case against: Closing retail counters surrenders Flourhouse\u2019s most valuable strategic asset: its live, daily interface with end consumers and B2B buyers. Those counters aren\u2019t just revenue streams \u2014 they\u2019re R&D labs, trust accelerators, and distribution scouts. Wholesale growth to date has been *fueled* by counter visibility (e.g., cafes noticing consistent quality, volume, and customer loyalty on-site). Removing that engine risks turning wholesale into a commoditized, price-sensitive channel \u2014 especially as margins compress under increased delivery complexity and centralized scale. The rent savings are real, but they\u2019re accounting-level optimization; the risk is strategic de-positioning."
+      ],
+      "concerns": [
+        "Wholesale growth stalls or reverses due to loss of frontline market intelligence and relationship-driven sales",
+        "Central kitchen operational bottlenecks emerge (e.g., capacity constraints, logistics delays, quality variance across batches) without retail as a real-time quality control and buffer outlet",
+        "Verdict: Proceed with caution"
+      ],
+      "recommendations": [
+        "Proceed with caution"
+      ],
+      "raw_data": {
+        "critical_assumption": "That wholesale demand will continue to grow *at the same rate and with the same margin profile* after closing retail counters \u2014 specifically, that losing direct consumer feedback, brand visibility, and impulse-driven wholesale referrals (e.g., cafe owners visiting counters and placing orders) won\u2019t materially erode wholesale growth velocity or pricing power.",
+        "failure_modes": [
+          {
+            "risk": "Wholesale growth stalls or reverses due to loss of frontline market intelligence and relationship-driven sales",
+            "probability": "High",
+            "mitigation": "Implement a structured voice-of-customer program (e.g., biweekly cafe owner interviews, mystery shopping of wholesale partner outlets) within 30 days of transition \u2014 but this cannot replace organic discovery from foot traffic."
+          },
+          {
+            "risk": "Retail closure triggers brand dilution, reducing perceived premium positioning and enabling competitors to capture 'artisan' mindshare in key neighborhoods",
+            "probability": "Medium",
+            "mitigation": "Launch a high-fidelity digital brand campaign pre-transition (e.g., behind-the-scenes storytelling, local influencer partnerships), but digital reach \u2260 physical legitimacy for artisan credibility."
+          },
+          {
+            "risk": "Central kitchen operational bottlenecks emerge (e.g., capacity constraints, logistics delays, quality variance across batches) without retail as a real-time quality control and buffer outlet",
+            "probability": "High",
+            "mitigation": "Run parallel production for 8 weeks post-move with 20% of output diverted to pop-up retail events \u2014 but requires staffing and coordination Flourhouse has not demonstrated."
+          }
+        ],
+        "steelman_against": "Closing retail counters surrenders Flourhouse\u2019s most valuable strategic asset: its live, daily interface with end consumers and B2B buyers. Those counters aren\u2019t just revenue streams \u2014 they\u2019re R&D labs, trust accelerators, and distribution scouts. Wholesale growth to date has been *fueled* by counter visibility (e.g., cafes noticing consistent quality, volume, and customer loyalty on-site). Removing that engine risks turning wholesale into a commoditized, price-sensitive channel \u2014 especially as margins compress under increased delivery complexity and centralized scale. The rent savings are real, but they\u2019re accounting-level optimization; the risk is strategic de-positioning.",
+        "risk_score": 8,
+        "verdict": "PROCEED_WITH_CAUTION",
+        "overall_concern": "The decision assumes wholesale is scalable *independently* of retail \u2014 but Flourhouse\u2019s wholesale success appears causally entangled with its retail presence, not merely correlated. Severing that link without validating the decoupling first is betting the company\u2019s brand equity and margin resilience on untested operational logic."
+      }
+    },
+    {
+      "agent_name": "venture_partner",
+      "role": "Chair \u2014 synthesizes the debate into the board memo",
+      "analysis": "The board agrees Flourhouse must de-risk the central kitchen move by preserving retail revenue and intelligence functions during transition \u2014 not eliminating them. All agents converged on a phased, coexistent model: renew leases *with conditions*, launch central kitchen *in parallel*, and only close counters *after* the kitchen proves stable, scalable, and capable of replacing retail\u2019s strategic roles (quality feedback, customer insight, sales buffer). This avoids the revenue cliff, respects operational reality, and honors the causal link between retail presence and wholesale growth \u2014 without freezing the company in an unsustainable rent trap.",
+      "score": null,
+      "key_findings": [
+        "Recommendation: conditional (medium confidence)"
+      ],
+      "concerns": [
+        "Retail staff attrition during dual-operation ambiguity",
+        "Central kitchen logistics bottlenecks causing late deliveries to wholesale clients",
+        "Landlord refusing co-investment, forcing suboptimal counter upgrades or weaker B2B positioning"
+      ],
+      "recommendations": [
+        "conditional"
+      ],
+      "raw_data": {
+        "recommendation": "conditional",
+        "confidence": "medium",
+        "rationale": "The board agrees Flourhouse must de-risk the central kitchen move by preserving retail revenue and intelligence functions during transition \u2014 not eliminating them. All agents converged on a phased, coexistent model: renew leases *with conditions*, launch central kitchen *in parallel*, and only close counters *after* the kitchen proves stable, scalable, and capable of replacing retail\u2019s strategic roles (quality feedback, customer insight, sales buffer). This avoids the revenue cliff, respects operational reality, and honors the causal link between retail presence and wholesale growth \u2014 without freezing the company in an unsustainable rent trap.",
+        "missing_inputs": [
+          "Landlord\u2019s response to co-investment ask for B2B-facing counter upgrades",
+          "Results of Day 10 Readiness Gate Review (RGR) \u2014 specifically logistics plan, QA handover protocol, and first draft of B2B feedback loop design",
+          "Confirmed fit-out quote breakdown (SGD 120k) with timeline-aligned payment milestones",
+          "Wholesale client capacity survey: how many current accounts can absorb +25% volume in next 6 months without quality or delivery strain"
+        ],
+        "options_assessed": [
+          {
+            "option": "Move production to a central kitchen and close our two retail counters",
+            "assessment": "Eliminates immediate rent pressure but triggers irreversible revenue loss and severs intelligence flows critical to wholesale health. Contradicts Round 2 consensus and violates skeptic\u2019s non-negotiable condition of 90-day operational proof before closure.",
+            "verdict": "avoid"
+          },
+          {
+            "option": "Renew retail leases at higher rent and maintain current operations",
+            "assessment": "Preserves revenue and intelligence but locks in +20% rent without offsetting strategic upgrade. Ignores wholesale growth momentum and margin erosion from fixed-cost inflation. Fails finance\u2019s payback test and growth\u2019s scalability mandate.",
+            "verdict": "viable"
+          },
+          {
+            "option": "Maintain current operations but reduce retail hours or staff to lower costs",
+            "assessment": "Short-term cost relief only \u2014 doesn\u2019t address structural rent pressure or enable wholesale scale. Risks brand dilution, employee morale, and frontline insight degradation. Not aligned with trend or growth signals.",
+            "verdict": "viable"
+          },
+          {
+            "option": "Hold off on decision and explore alternative space or partnership models",
+            "assessment": "Buys time but forfeits the available central kitchen unit (rent advantage, timing alignment) and delays response to confirmed wholesale demand. Undermines growth urgency and contradicts finance\u2019s 8\u201310 month payback window under coexistence.",
+            "verdict": "avoid"
+          }
+        ],
+        "what_would_change_this_call": "If the landlord rejects co-investment terms *and* no alternative B2B-facing upgrade path is secured within 3 weeks; if Day 10 RGR fails to confirm logistics, QA, and feedback loop readiness; or if >30% of top 10 wholesale clients signal inability to absorb increased volume without service degradation.",
+        "execution_plan": {
+          "phases": [
+            {
+              "name": "Validate",
+              "objective": "Secure landlord agreement on lease renewal with value-add terms, confirm central kitchen unit availability, and pass Day 10 Readiness Gate Review",
+              "actions": [
+                "Submit formal lease renewal request with co-investment clause for B2B counter upgrades",
+                "Lock central kitchen unit with 30-day option period",
+                "Conduct Day 10 RGR: present logistics map, QA handover checklist, draft B2B feedback protocol, and staffing plan for dual operation"
+              ],
+              "timeframe": "Weeks 1\u20132"
+            },
+            {
+              "name": "Pilot",
+              "objective": "Operate central kitchen at 30% capacity alongside full retail while validating quality consistency, delivery reliability, and B2B feedback integration",
+              "actions": [
+                "Fit-out begins only after RGR sign-off and lease terms locked",
+                "Hire/assign dedicated QA liaison between kitchen and retail counters",
+                "Launch biweekly 'counter intel sync' meetings with retail staff to feed observations into kitchen production planning",
+                "Track batch-level defect rate, on-time delivery %, and wholesale client feedback score"
+              ],
+              "timeframe": "Weeks 3\u201312"
+            },
+            {
+              "name": "Scale",
+              "objective": "Shift to full central kitchen production and evaluate retail counter closure based on objective performance thresholds",
+              "actions": [
+                "At 90 days: assess if kitchen meets all thresholds (defect rate \u22640.5%, on-time delivery \u226598%, B2B feedback score \u22654.6/5, wholesale volume up \u226515%)",
+                "If thresholds met: initiate phased counter wind-down starting with lower-performing location",
+                "If thresholds missed: extend Pilot for 30 days with targeted fixes, or renegotiate lease terms for longer coexistence"
+              ],
+              "timeframe": "Weeks 13\u201326"
+            }
+          ]
+        },
+        "financial_view": "Net cash impact is neutral-to-positive over 12 months: SGD 120k fit-out is offset by SGD 120k annual rent savings, and wholesale growth (projected +22% YoY) absorbs lost retail margin. But profitability hinges on avoiding disruption \u2014 hence the strict Pilot phase controls. No revenue loss occurs before validation; payback starts only after Scale begins.",
+        "risks": [
+          "Retail staff attrition during dual-operation ambiguity",
+          "Central kitchen logistics bottlenecks causing late deliveries to wholesale clients",
+          "Landlord refusing co-investment, forcing suboptimal counter upgrades or weaker B2B positioning"
+        ],
+        "disclaimer": "This is advisory guidance from an AI board; it does not constitute fiduciary advice or replace human governance."
+      }
+    }
+  ],
+  "debate_rounds": [
+    {
+      "round_number": 1,
+      "conflicts_identified": [
+        {
+          "topic": "Wholesale scalability independent of retail",
+          "agent_a": "skeptic",
+          "agent_a_position": "Wholesale growth is causally entangled with retail presence \u2014 closing counters risks eroding wholesale growth velocity, pricing power, and market intelligence because retail acts as an R&D lab, trust accelerator, and distribution scout.",
+          "agent_b": "trend",
+          "agent_b_position": "Wholesale is already 60% of revenue and growing, indicating a clear shift in business model viability and strong tailwind for centralized production independent of retail.",
+          "severity": "high",
+          "resolved": false
+        },
+        {
+          "topic": "Feasibility of 6-week central kitchen transition",
+          "agent_a": "capability",
+          "agent_a_position": "The organization lacks proven capability in facility consolidation and end-to-end wholesale-only logistics; operational readiness is only 5/10, and executing within 6 weeks is not confidently achievable.",
+          "agent_b": "growth",
+          "agent_b_position": "The company has the financial runway and operational foundation to make the change, and the pivot is 'EXECUTABLE' \u2014 implying the 6-week timeline is realistic with proper planning.",
+          "severity": "high",
+          "resolved": false
+        },
+        {
+          "topic": "Revenue risk from closing retail counters",
+          "agent_a": "finance",
+          "agent_a_position": "Closing retail counters eliminates 40% of total revenue, creating a profitability risk if wholesale cannot absorb volume and maintain margins \u2014 payback may take 12\u201318 months.",
+          "agent_b": "scout",
+          "agent_b_position": "Recommends *both* moving production to a central kitchen *and* renewing retail leases at higher rent to maintain current operations \u2014 implying retail revenue should be preserved, not sacrificed.",
+          "severity": "high",
+          "resolved": false
+        },
+        {
+          "topic": "Strategic value of retail counters",
+          "agent_a": "skeptic",
+          "agent_a_position": "Retail counters are Flourhouse\u2019s most valuable strategic asset \u2014 live interfaces for consumer feedback, B2B relationship building, and quality validation \u2014 not just revenue streams.",
+          "agent_b": "trend",
+          "agent_b_position": "Retail is a cost drag under rising lease pressure, and the market shift favors scalable operations \u2014 implying retail\u2019s strategic role is diminishing relative to wholesale efficiency.",
+          "severity": "medium",
+          "resolved": false
+        }
+      ],
+      "revised_positions": {
+        "scout": "Recommends: Move production to a central kitchen *while renewing retail leases for 12\u201318 months* \u2014 enabling parallel operation, de-risking revenue loss, and using retail as a live validation layer for central kitchen output.",
+        "trend": "Recommends: MODERATE \u2014 with explicit condition: central kitchen launch must be paired with *at least 12-month retail continuity* to preserve market intelligence and revenue stability during transition.",
+        "finance": "Recommends: STRETCH \u2014 revised to require full 12-month dual-operation financial model before approving fit-out spend; payback analysis must include retained retail revenue and incremental wholesale margin uplift.",
+        "growth": "Recommends: EXECUTABLE \u2014 revised to specify 'EXECUTABLE *only if* retail operations remain active during central kitchen ramp-up, with shared QA protocols and joint customer feedback loops established pre-transition.'",
+        "capability": "Recommends: Proceed with caution \u2014 revised to 'Proceed with caution *unless* a 12-month coexistence plan is adopted, including capability-building sprints (logistics QA, batch traceability, wholesale order forecasting) embedded in the first 8 weeks.'",
+        "skeptic": "Recommends: Proceed with caution \u2014 unchanged, but now explicitly tied to requirement: 'No retail closure until central kitchen demonstrates 90-day operational stability *and* wholesale growth velocity sustains *independently* of counter-driven referrals.'"
+      },
+      "resolution_achieved": false,
+      "moderator_summary": "This round established consensus that retail counters must remain open during central kitchen transition \u2014 resolving the immediate revenue cliff and reframing the decision from 'either/or' to 'phased coexistence.' All agents revised positions to reflect this, embedding retail continuity as a non-negotiable condition. However, fundamental disagreements persist on wholesale independence, operational feasibility, and strategic valuation of retail \u2014 requiring deeper validation in Round 2."
+    },
+    {
+      "round_number": 2,
+      "conflicts_identified": [
+        {
+          "topic": "Wholesale scalability independent of retail",
+          "agent_a": "skeptic",
+          "agent_a_position": "Wholesale growth is causally entangled with retail presence \u2014 closing counters risks eroding wholesale growth velocity, pricing power, and market intelligence because retail acts as an R&D lab, trust accelerator, and distribution scout.",
+          "agent_b": "trend",
+          "agent_b_position": "Wholesale is already 60% of revenue and growing, indicating a clear shift in business model viability and strong tailwind for centralized production independent of retail.",
+          "severity": "high",
+          "resolved": false
+        },
+        {
+          "topic": "Feasibility of 6-week central kitchen transition",
+          "agent_a": "capability",
+          "agent_a_position": "The organization lacks proven capability in facility consolidation and end-to-end wholesale-only logistics; operational readiness is only 5/10, and executing within 6 weeks is not confidently achievable.",
+          "agent_b": "growth",
+          "agent_b_position": "The company has the financial runway and operational foundation to make the change, and the pivot is 'EXECUTABLE' \u2014 implying the 6-week timeline is realistic with proper planning.",
+          "severity": "high",
+          "resolved": false
+        },
+        {
+          "topic": "Revenue risk from closing retail counters",
+          "agent_a": "finance",
+          "agent_a_position": "Closing retail counters eliminates 40% of total revenue, creating a profitability risk if wholesale cannot absorb volume and maintain margins \u2014 payback may take 12\u201318 months.",
+          "agent_b": "scout",
+          "agent_b_position": "Recommends *both* moving production to a central kitchen *and* renewing retail leases at higher rent to maintain current operations \u2014 implying retail revenue should be preserved, not sacrificed.",
+          "severity": "high",
+          "resolved": false
+        },
+        {
+          "topic": "Strategic value of retail counters",
+          "agent_a": "skeptic",
+          "agent_a_position": "Retail counters are Flourhouse\u2019s most valuable strategic asset \u2014 live interfaces for consumer feedback, B2B relationship building, and quality validation \u2014 not just revenue streams.",
+          "agent_b": "trend",
+          "agent_b_position": "Retail is a cost drag under rising lease pressure, and the market shift favors scalable operations \u2014 implying retail\u2019s strategic role is diminishing relative to wholesale efficiency.",
+          "severity": "medium",
+          "resolved": false
+        }
+      ],
+      "revised_positions": {
+        "scout": "MODERATE \u2014 withdraws dual-recommendation phrasing; now recommends: 'Renew retail leases *contingent on landlord co-investment in B2B-facing counter upgrades*, while launching central kitchen with Readiness Gate Review at Day 10 and embedded intelligence-replacement mechanisms.'",
+        "trend": "MODERATE \u2014 revises to: 'Wholesale scalability is confirmed, but strategic de-positioning risk is real; endorse staged transition with intelligence-replacement safeguards and lease renewal as bridge, not permanent state.'",
+        "finance": "MODERATE \u2014 revises to: 'Revenue risk mitigated by lease renewal; payback window now projected at 8\u201310 months assuming embedded B2B feedback loops increase wholesale order size by 12%.'",
+        "growth": "STRETCH \u2014 revises to: 'EXECUTABLE *only with* Day 10 Readiness Gate Review and mandatory B2B feedback integration plan \u2014 otherwise downgraded to STRETCH.'",
+        "capability": "MODERATE \u2014 revises to: 'Operational readiness remains 5/10 *pre*-RGR; post-RGR sign-off, readiness rises to 7/10 contingent on approved intelligence-replacement mechanisms.'",
+        "skeptic": "MODERATE \u2014 revises to: 'Proceed \u2014 but only with binding commitments to replicate counter intelligence functions and preserve at least one counter as a permanent brand lab, not revenue center.'"
+      },
+      "resolution_achieved": true,
+      "moderator_summary": "All four high-priority conflicts were resolved through qualified consensus: wholesale scalability is affirmed but requires intelligence-replacement mechanisms; the 6-week timeline is conditionally executable with a Day 10 Readiness Gate Review; revenue risk is eliminated by leasing renewal with value-add conditions; and retail's strategic value is preserved only if replicated functionally. No agent holds an unrevised extreme position \u2014 all shifted to MODERATE or adjusted STRETCH/EXECUTABLE with clear guardrails. The board now operates from shared assumptions on feasibility, risk mitigation, and strategic continuity."
+    }
+  ],
+  "consensus": {
+    "consensus_score": 0.0,
+    "label": "Weak / contested",
+    "total_conflicts": 4,
+    "resolved_conflicts": 0,
+    "unresolved_conflicts": [
+      {
+        "topic": "Wholesale scalability independent of retail",
+        "agent_a": "skeptic",
+        "agent_a_position": "Wholesale growth is causally entangled with retail presence \u2014 closing counters risks eroding wholesale growth velocity, pricing power, and market intelligence because retail acts as an R&D lab, trust accelerator, and distribution scout.",
+        "agent_b": "trend",
+        "agent_b_position": "Wholesale is already 60% of revenue and growing, indicating a clear shift in business model viability and strong tailwind for centralized production independent of retail.",
+        "severity": "high",
+        "resolved": false
+      },
+      {
+        "topic": "Feasibility of 6-week central kitchen transition",
+        "agent_a": "capability",
+        "agent_a_position": "The organization lacks proven capability in facility consolidation and end-to-end wholesale-only logistics; operational readiness is only 5/10, and executing within 6 weeks is not confidently achievable.",
+        "agent_b": "growth",
+        "agent_b_position": "The company has the financial runway and operational foundation to make the change, and the pivot is 'EXECUTABLE' \u2014 implying the 6-week timeline is realistic with proper planning.",
+        "severity": "high",
+        "resolved": false
+      },
+      {
+        "topic": "Revenue risk from closing retail counters",
+        "agent_a": "finance",
+        "agent_a_position": "Closing retail counters eliminates 40% of total revenue, creating a profitability risk if wholesale cannot absorb volume and maintain margins \u2014 payback may take 12\u201318 months.",
+        "agent_b": "scout",
+        "agent_b_position": "Recommends *both* moving production to a central kitchen *and* renewing retail leases at higher rent to maintain current operations \u2014 implying retail revenue should be preserved, not sacrificed.",
+        "severity": "high",
+        "resolved": false
+      },
+      {
+        "topic": "Strategic value of retail counters",
+        "agent_a": "skeptic",
+        "agent_a_position": "Retail counters are Flourhouse\u2019s most valuable strategic asset \u2014 live interfaces for consumer feedback, B2B relationship building, and quality validation \u2014 not just revenue streams.",
+        "agent_b": "trend",
+        "agent_b_position": "Retail is a cost drag under rising lease pressure, and the market shift favors scalable operations \u2014 implying retail\u2019s strategic role is diminishing relative to wholesale efficiency.",
+        "severity": "medium",
+        "resolved": false
+      }
+    ],
+    "rounds_used": 2,
+    "summary": "Weak / contested (0.0/10): 0 of 4 conflict(s) resolved over 2 round(s).\nKey tension: Agents fundamentally disagree on whether wholesale can sustain growth and margins without retail\u2019s strategic functions, whether the 6-week transition is operationally feasible, and whether sacrificing 40% of revenue for centralization is justified.\n\nRound 1: This round established consensus that retail counters must remain open during central kitchen transition \u2014 resolving the immediate revenue cliff and reframing the decision from 'either/or' to 'phased coexistence.' All agents revised positions to reflect this, embedding retail continuity as a non-negotiable condition. However, fundamental disagreements persist on wholesale independence, operational feasibility, and strategic valuation of retail \u2014 requiring deeper validation in Round 2.\n  scout revised: Recommends: Move production to a central kitchen *while renewing retail leases for 12\u201318 months* \u2014 enabling parallel operation, de-risking revenue los\n  trend revised: Recommends: MODERATE \u2014 with explicit condition: central kitchen launch must be paired with *at least 12-month retail continuity* to preserve market in\n  finance revised: Recommends: STRETCH \u2014 revised to require full 12-month dual-operation financial model before approving fit-out spend; payback analysis must include re\n  growth revised: Recommends: EXECUTABLE \u2014 revised to specify 'EXECUTABLE *only if* retail operations remain active during central kitchen ramp-up, with shared QA proto\n  capability revised: Recommends: Proceed with caution \u2014 revised to 'Proceed with caution *unless* a 12-month coexistence plan is adopted, including capability-building spr\n  skeptic revised: Recommends: Proceed with caution \u2014 unchanged, but now explicitly tied to requirement: 'No retail closure until central kitchen demonstrates 90-day ope\nRound 2: All four high-priority conflicts were resolved through qualified consensus: wholesale scalability is affirmed but requires intelligence-replacement mechanisms; the 6-week timeline is conditionally executable with a Day 10 Readiness Gate Review; revenue risk is eliminated by leasing renewal with value-add conditions; and retail's strategic value is preserved only if replicated functionally. No agent holds an unrevised extreme position \u2014 all shifted to MODERATE or adjusted STRETCH/EXECUTABLE with clear guardrails. The board now operates from shared assumptions on feasibility, risk mitigation, and strategic continuity.\n  scout revised: MODERATE \u2014 withdraws dual-recommendation phrasing; now recommends: 'Renew retail leases *contingent on landlord co-investment in B2B-facing counter up\n  trend revised: MODERATE \u2014 revises to: 'Wholesale scalability is confirmed, but strategic de-positioning risk is real; endorse staged transition with intelligence-rep\n  finance revised: MODERATE \u2014 revises to: 'Revenue risk mitigated by lease renewal; payback window now projected at 8\u201310 months assuming embedded B2B feedback loops incr\n  growth revised: STRETCH \u2014 revises to: 'EXECUTABLE *only with* Day 10 Readiness Gate Review and mandatory B2B feedback integration plan \u2014 otherwise downgraded to STRET\n  capability revised: MODERATE \u2014 revises to: 'Operational readiness remains 5/10 *pre*-RGR; post-RGR sign-off, readiness rises to 7/10 contingent on approved intelligence-r\n  skeptic revised: MODERATE \u2014 revises to: 'Proceed \u2014 but only with binding commitments to replicate counter intelligence functions and preserve at least one counter as a"
+  },
+  "recommendation": {
+    "recommendation": "conditional",
+    "confidence": "medium",
+    "rationale": "The board agrees Flourhouse must de-risk the central kitchen move by preserving retail revenue and intelligence functions during transition \u2014 not eliminating them. All agents converged on a phased, coexistent model: renew leases *with conditions*, launch central kitchen *in parallel*, and only close counters *after* the kitchen proves stable, scalable, and capable of replacing retail\u2019s strategic roles (quality feedback, customer insight, sales buffer). This avoids the revenue cliff, respects operational reality, and honors the causal link between retail presence and wholesale growth \u2014 without freezing the company in an unsustainable rent trap.",
+    "missing_inputs": [
+      "Landlord\u2019s response to co-investment ask for B2B-facing counter upgrades",
+      "Results of Day 10 Readiness Gate Review (RGR) \u2014 specifically logistics plan, QA handover protocol, and first draft of B2B feedback loop design",
+      "Confirmed fit-out quote breakdown (SGD 120k) with timeline-aligned payment milestones",
+      "Wholesale client capacity survey: how many current accounts can absorb +25% volume in next 6 months without quality or delivery strain"
+    ],
+    "options_assessed": [
+      {
+        "option": "Move production to a central kitchen and close retail counters to focus on wholesale",
+        "assessment": "Eliminates immediate rent pressure but triggers irreversible revenue loss and severs intelligence flows critical to wholesale health. Contradicts Round 2 consensus and violates skeptic\u2019s non-negotiable condition of 90-day operational proof before closure.",
+        "verdict": "avoid"
+      },
+      {
+        "option": "Renew retail leases at higher rent and maintain current operations",
+        "assessment": "Preserves revenue and intelligence but locks in +20% rent without offsetting strategic upgrade. Ignores wholesale growth momentum and margin erosion from fixed-cost inflation. Fails finance\u2019s payback test and growth\u2019s scalability mandate.",
+        "verdict": "viable"
+      },
+      {
+        "option": "Maintain current operations but reduce retail hours or staff to lower costs",
+        "assessment": "Short-term cost relief only \u2014 doesn\u2019t address structural rent pressure or enable wholesale scale. Risks brand dilution, employee morale, and frontline insight degradation. Not aligned with trend or growth signals.",
+        "verdict": "viable"
+      },
+      {
+        "option": "Hold off on decision and explore alternative space or partnership models",
+        "assessment": "Buys time but forfeits the available central kitchen unit (rent advantage, timing alignment) and delays response to confirmed wholesale demand. Undermines growth urgency and contradicts finance\u2019s 8\u201310 month payback window under coexistence.",
+        "verdict": "avoid"
+      }
+    ],
+    "dissent": [
+      {
+        "agent": "skeptic",
+        "position": "Wholesale growth is causally entangled with retail presence \u2014 closing counters risks eroding wholesale growth velocity, pricing power, and market intelligence because retail acts as an R&D lab, trust accelerator, and distribution scout."
+      },
+      {
+        "agent": "growth",
+        "position": "The company has the financial runway and operational foundation to make the change, and the pivot is 'EXECUTABLE' \u2014 implying the 6-week timeline is realistic with proper planning."
+      },
+      {
+        "agent": "scout",
+        "position": "Recommends *both* moving production to a central kitchen *and* renewing retail leases at higher rent to maintain current operations \u2014 implying retail revenue should be preserved, not sacrificed."
+      },
+      {
+        "agent": "skeptic",
+        "position": "Retail counters are Flourhouse\u2019s most valuable strategic asset \u2014 live interfaces for consumer feedback, B2B relationship building, and quality validation \u2014 not just revenue streams."
+      }
+    ],
+    "what_would_change_this_call": "If the landlord rejects co-investment terms *and* no alternative B2B-facing upgrade path is secured within 3 weeks; if Day 10 RGR fails to confirm logistics, QA, and feedback loop readiness; or if >30% of top 10 wholesale clients signal inability to absorb increased volume without service degradation.",
+    "execution_plan": {
+      "phases": [
+        {
+          "name": "Validate",
+          "objective": "Secure landlord agreement on lease renewal with value-add terms, confirm central kitchen unit availability, and pass Day 10 Readiness Gate Review",
+          "actions": [
+            "Submit formal lease renewal request with co-investment clause for B2B counter upgrades",
+            "Lock central kitchen unit with 30-day option period",
+            "Conduct Day 10 RGR: present logistics map, QA handover checklist, draft B2B feedback protocol, and staffing plan for dual operation"
+          ],
+          "timeframe": "Weeks 1\u20132"
+        },
+        {
+          "name": "Pilot",
+          "objective": "Operate central kitchen at 30% capacity alongside full retail while validating quality consistency, delivery reliability, and B2B feedback integration",
+          "actions": [
+            "Fit-out begins only after RGR sign-off and lease terms locked",
+            "Hire/assign dedicated QA liaison between kitchen and retail counters",
+            "Launch biweekly 'counter intel sync' meetings with retail staff to feed observations into kitchen production planning",
+            "Track batch-level defect rate, on-time delivery %, and wholesale client feedback score"
+          ],
+          "timeframe": "Weeks 3\u201312"
+        },
+        {
+          "name": "Scale",
+          "objective": "Shift to full central kitchen production and evaluate retail counter closure based on objective performance thresholds",
+          "actions": [
+            "At 90 days: assess if kitchen meets all thresholds (defect rate \u22640.5%, on-time delivery \u226598%, B2B feedback score \u22654.6/5, wholesale volume up \u226515%)",
+            "If thresholds met: initiate phased counter wind-down starting with lower-performing location",
+            "If thresholds missed: extend Pilot for 30 days with targeted fixes, or renegotiate lease terms for longer coexistence"
+          ],
+          "timeframe": "Weeks 13\u201326"
+        }
+      ]
+    },
+    "financial_view": "Net cash impact is neutral-to-positive over 12 months: SGD 120k fit-out is offset by SGD 120k annual rent savings, and wholesale growth (projected +22% YoY) absorbs lost retail margin. But profitability hinges on avoiding disruption \u2014 hence the strict Pilot phase controls. No revenue loss occurs before validation; payback starts only after Scale begins.",
+    "risks": [
+      "Retail staff attrition during dual-operation ambiguity",
+      "Central kitchen logistics bottlenecks causing late deliveries to wholesale clients",
+      "Landlord refusing co-investment, forcing suboptimal counter upgrades or weaker B2B positioning"
+    ],
+    "disclaimer": "This is advisory guidance from an AI board; it does not constitute fiduciary advice or replace human governance."
+  },
+  "mcp_used": false,
+  "mcp_sources": [
+    "[MOCK] crunchbase: artisan bakery and cafe",
+    "[MOCK] news: artisan bakery and cafe",
+    "[MOCK] web: artisan bakery and cafe Should we move production to a central kitchen and close our two retail counters? 2026",
+    "[MOCK] accounting: Flourhouse Bakery"
+  ],
+  "mock_mode": false,
+  "used_paths": [],
+  "created_at": "2026-07-06T08:31:48.445777"
+}

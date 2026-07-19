@@ -1,0 +1,442 @@
+{
+  "response_id": "6088b09e-9db5-4d94-b1e6-461676afdbf6",
+  "company_id": "harborline-logistics",
+  "agent_outputs": [
+    {
+      "agent_name": "scout",
+      "role": "Opportunity Scout \u2014 frames the options on the table",
+      "analysis": "The decision hinges on whether the Vietnam lane is ready for expansion given current performance, margin constraints, and the need to balance growth with financial discipline. The company must weigh the potential of new demand against the risks of overcommitting without stronger client guarantees.",
+      "score": null,
+      "key_findings": [
+        "Evaluate options based on their alignment with scalable growth while maintaining financial stability and operational control."
+      ],
+      "concerns": [],
+      "recommendations": [
+        "Add a second Vietnam-side partner and dedicated capacity to scale the lane",
+        "Hold at pilot volume until a third anchor client signs a committed-volume contract"
+      ],
+      "raw_data": {
+        "options": [
+          "Add a second Vietnam-side partner and dedicated capacity to scale the lane",
+          "Hold at pilot volume until a third anchor client signs a committed-volume contract"
+        ],
+        "framing": "The decision hinges on whether the Vietnam lane is ready for expansion given current performance, margin constraints, and the need to balance growth with financial discipline. The company must weigh the potential of new demand against the risks of overcommitting without stronger client guarantees.",
+        "mcp_sources": [
+          "[MOCK] crunchbase: regional cross-border logistics",
+          "[MOCK] news: regional cross-border logistics"
+        ]
+      }
+    },
+    {
+      "agent_name": "trend",
+      "role": "Trend Analyst \u2014 market & demand signals for the decision",
+      "analysis": "Market demand for regional cross-border logistics is accelerating into 2026, suggesting a favorable environment for scaling. However, the specific Vietnam lane has shown mixed performance in the pilot, with one client underperforming and another showing interest. The broader trend supports expansion, but execution risks remain.",
+      "score": 7.0,
+      "key_findings": [
+        "Demand for regional cross-border logistics is accelerating heading into 2026.",
+        "There are key shifts and emerging gaps in the regional cross-border logistics landscape."
+      ],
+      "concerns": [
+        "The pilot's underperformance by one client may signal operational or market challenges that could affect scalability.",
+        "The need to decide within 4 weeks limits the ability to gather more data or secure additional commitments before scaling."
+      ],
+      "recommendations": [
+        "MODERATE"
+      ],
+      "raw_data": {
+        "market_read": "Market demand for regional cross-border logistics is accelerating into 2026, suggesting a favorable environment for scaling. However, the specific Vietnam lane has shown mixed performance in the pilot, with one client underperforming and another showing interest. The broader trend supports expansion, but execution risks remain.",
+        "demand_score": 7,
+        "signals": [
+          "Demand for regional cross-border logistics is accelerating heading into 2026.",
+          "There are key shifts and emerging gaps in the regional cross-border logistics landscape."
+        ],
+        "timing_risks": [
+          "The pilot's underperformance by one client may signal operational or market challenges that could affect scalability.",
+          "The need to decide within 4 weeks limits the ability to gather more data or secure additional commitments before scaling."
+        ],
+        "verdict": "MODERATE",
+        "mcp_sources": [
+          "[MOCK] web: regional cross-border logistics Should we scale the Vietnam cross-border lane beyond the pilot? 2026"
+        ]
+      }
+    },
+    {
+      "agent_name": "finance",
+      "role": "Finance Agent \u2014 decision economics against the company P&L",
+      "analysis": "Scaling the Vietnam cross-border lane beyond the pilot would require an additional SGD 300k investment, primarily for a second local partner and dedicated capacity. Based on the current margin of 31%, this could generate incremental revenue of around SGD 900k (assuming 30% margin on new volume), but with uncertain demand from the third shipper. The company has a 16-month runway, so the investment is affordable in the short term, but it risks reducing cash reserves if the expected volume does not materialize.",
+      "score": 6.0,
+      "key_findings": [
+        "Payback is uncertain due to variable demand. If the third shipper commits and volumes meet expectations, payback could occur within 6-8 months. However, if volumes remain low, it may take over a year to break even.",
+        "The SGD 300k investment fits within the company's budget, as it represents about 13% of current cash reserves. However, it reduces the runway by approximately 2.1 months, which could be a concern if other opportunities arise or if cash flow slows."
+      ],
+      "concerns": [
+        "Uncertain demand from the third shipper may result in underutilized capacity and lower-than-expected revenue.",
+        "Reduced cash runway could limit flexibility for other growth opportunities or unexpected expenses."
+      ],
+      "recommendations": [
+        "STRETCH"
+      ],
+      "raw_data": {
+        "financial_view": "Scaling the Vietnam cross-border lane beyond the pilot would require an additional SGD 300k investment, primarily for a second local partner and dedicated capacity. Based on the current margin of 31%, this could generate incremental revenue of around SGD 900k (assuming 30% margin on new volume), but with uncertain demand from the third shipper. The company has a 16-month runway, so the investment is affordable in the short term, but it risks reducing cash reserves if the expected volume does not materialize.",
+        "feasibility_score": 6,
+        "payback_view": "Payback is uncertain due to variable demand. If the third shipper commits and volumes meet expectations, payback could occur within 6-8 months. However, if volumes remain low, it may take over a year to break even.",
+        "budget_fit": "The SGD 300k investment fits within the company's budget, as it represents about 13% of current cash reserves. However, it reduces the runway by approximately 2.1 months, which could be a concern if other opportunities arise or if cash flow slows.",
+        "financial_risks": [
+          "Uncertain demand from the third shipper may result in underutilized capacity and lower-than-expected revenue.",
+          "Reduced cash runway could limit flexibility for other growth opportunities or unexpected expenses."
+        ],
+        "verdict": "STRETCH",
+        "mcp_sources": [
+          "[MOCK] accounting: Harborline Logistics"
+        ]
+      }
+    },
+    {
+      "agent_name": "growth",
+      "role": "Growth Agent \u2014 execution & go-to-market on the decision",
+      "analysis": "Harborline has the operational and financial capacity to execute this decision. With a scalable B2B logistics model and a strong cash runway, they can move quickly on the chosen option. However, scaling beyond the pilot requires careful partner management and customer acquisition execution.",
+      "score": 7.0,
+      "key_findings": [
+        "Add a second Vietnam-side partner and dedicated capacity to scale the lane. Use existing client relationships to secure commitments from the third electronics shipper. Leverage regional trade associations and logistics networks for lead generation. Focus on digital channels (LinkedIn, industry forums) and direct outreach to mid-sized shippers in high-volume sectors like electronics and e-commerce.",
+        "Leverage existing client relationships to secure volume commitments",
+        "Utilize regional logistics networks and trade associations for lead generation"
+      ],
+      "concerns": [
+        "Partner performance may not meet expectations, risking service quality and margin erosion",
+        "Third shipper may not commit to volume, leading to underutilized capacity"
+      ],
+      "recommendations": [
+        "EXECUTABLE"
+      ],
+      "raw_data": {
+        "execution_read": "Harborline has the operational and financial capacity to execute this decision. With a scalable B2B logistics model and a strong cash runway, they can move quickly on the chosen option. However, scaling beyond the pilot requires careful partner management and customer acquisition execution.",
+        "go_to_market": "Add a second Vietnam-side partner and dedicated capacity to scale the lane. Use existing client relationships to secure commitments from the third electronics shipper. Leverage regional trade associations and logistics networks for lead generation. Focus on digital channels (LinkedIn, industry forums) and direct outreach to mid-sized shippers in high-volume sectors like electronics and e-commerce.",
+        "growth_score": 7,
+        "levers": [
+          "Leverage existing client relationships to secure volume commitments",
+          "Utilize regional logistics networks and trade associations for lead generation"
+        ],
+        "execution_risks": [
+          "Partner performance may not meet expectations, risking service quality and margin erosion",
+          "Third shipper may not commit to volume, leading to underutilized capacity"
+        ],
+        "verdict": "EXECUTABLE"
+      }
+    },
+    {
+      "agent_name": "capability",
+      "role": "Capability Agent \u2014 organizational readiness to execute",
+      "analysis": "Harborline has the financial means and foundational leadership capability to scale the Vietnam lane, but lacks operational readiness and organizational bandwidth to reliably execute a multi-partner expansion without first closing key capability gaps. Holding at pilot volume until a third anchor client commits is the lower-risk path aligned with current capabilities.",
+      "score": 6.0,
+      "key_findings": [
+        "Team And Leadership: 7/10",
+        "Operational Readiness: 5/10",
+        "Track Record: 6/10",
+        "Financial Capacity: 9/10",
+        "Org Bandwidth: 4/10",
+        "Strength: financial capacity",
+        "Strength: leadership domain experience",
+        "Strength: proven ability to land anchor clients"
+      ],
+      "concerns": [
+        "Gap: lack of Vietnam-specific operational control and systems",
+        "Gap: limited org bandwidth to manage multi-partner expansion",
+        "Gap: incomplete track record in sustaining committed volume across multiple clients"
+      ],
+      "recommendations": [],
+      "raw_data": {
+        "dimensions": {
+          "team_and_leadership": {
+            "score": 7,
+            "rationale": "Harborline is in scaling stage with B2B freight/3PL expertise in regional cross-border logistics; leadership likely has domain experience managing partner-dependent lanes and pilot-to-scale transitions, but no evidence of prior Vietnam-specific lane buildout or multi-partner coordination in that market."
+          },
+          "operational_readiness": {
+            "score": 5,
+            "rationale": "Pilot was asset-light and partner-run \u2014 revealing limited internal operational control over Vietnam-side execution (customs, last-mile, documentation); no indication of established SOPs, tech integration (TMS/WMS), or performance monitoring for this lane beyond basic volume tracking."
+          },
+          "track_record": {
+            "score": 6,
+            "rationale": "Pilot delivered positive margin and secured one anchor client \u2014 a credible signal of delivery capability \u2014 but missed volume target by 40% due to second client underperformance, suggesting gaps in demand forecasting, client commitment management, or contingency planning."
+          },
+          "financial_capacity": {
+            "score": 9,
+            "rationale": "SGD 300k budget is <4% of annual revenue and well within 16-month cash runway; gross margin (31%) provides cushion, and the investment is bounded and reversible \u2014 low financial risk relative to capacity."
+          },
+          "org_bandwidth": {
+            "score": 4,
+            "rationale": "At 11\u201350 employees and scaling stage, Harborline likely operates near capacity; adding a second Vietnam partner requires dedicated commercial, ops, and account management bandwidth not indicated in profile \u2014 no mention of Vietnam-dedicated staff or scalable support functions."
+          }
+        },
+        "overall_capability_score": 6,
+        "strengths": [
+          "financial capacity",
+          "leadership domain experience",
+          "proven ability to land anchor clients"
+        ],
+        "gaps": [
+          "lack of Vietnam-specific operational control and systems",
+          "limited org bandwidth to manage multi-partner expansion",
+          "incomplete track record in sustaining committed volume across multiple clients"
+        ],
+        "summary": "Harborline has the financial means and foundational leadership capability to scale the Vietnam lane, but lacks operational readiness and organizational bandwidth to reliably execute a multi-partner expansion without first closing key capability gaps. Holding at pilot volume until a third anchor client commits is the lower-risk path aligned with current capabilities."
+      }
+    },
+    {
+      "agent_name": "skeptic",
+      "role": "Skeptic \u2014 attacks the decision's weak points",
+      "analysis": "Harborline is betting fixed capital on unvalidated operational capability \u2014 not market demand \u2014 and the Capability Agent explicitly confirms they lack the bandwidth to execute reliably. That gap cannot be outsourced; it will manifest as service failure, not missed revenue.",
+      "score": 2.0,
+      "key_findings": [
+        "Critical assumption: That the third electronics shipper will convert to a committed-volume contract *without* Harborline first demonstrating scalable, reliable, and differentiated execution \u2014 and that their rate inquiry implies near-term volume intent rather than exploratory benchmarking.",
+        "Case against: Scaling before securing a binding volume commitment from the third shipper violates Harborline\u2019s own asset-light discipline \u2014 it replaces low-risk, variable-cost leverage with fixed-cost exposure just as operational readiness is flagged as deficient. The pilot proved demand *exists*, not that demand is *reliable enough to de-risk fixed investment*. Holding allows time to pressure-test the third shipper\u2019s intent (e.g., via a 3-month volume trial with shared risk) while avoiding irreversible burn \u2014 especially since the company has 16 months of runway but zero margin for error on *execution credibility* with existing clients."
+      ],
+      "concerns": [
+        "Second partner underperforms or misaligns operationally (e.g., customs delays, documentation errors, capacity shortfalls), eroding service reliability and triggering client churn from anchor clients",
+        "Dedicated capacity sits idle for >45 days due to delayed third-client conversion or anchor client seasonality (Q1 electronics shipment lull), burning SGD 300k without ROI",
+        "Verdict: Proceed with caution"
+      ],
+      "recommendations": [
+        "Proceed with caution"
+      ],
+      "raw_data": {
+        "critical_assumption": "That the third electronics shipper will convert to a committed-volume contract *without* Harborline first demonstrating scalable, reliable, and differentiated execution \u2014 and that their rate inquiry implies near-term volume intent rather than exploratory benchmarking.",
+        "failure_modes": [
+          {
+            "risk": "Second partner underperforms or misaligns operationally (e.g., customs delays, documentation errors, capacity shortfalls), eroding service reliability and triggering client churn from anchor clients",
+            "probability": "High",
+            "mitigation": "Require SLA-backed onboarding with joint KPI tracking for first 90 days; withhold 30% of partner fee until Q1 2026 service stability confirmed"
+          },
+          {
+            "risk": "Thin pilot margins collapse under scale due to unmodeled Vietnam-side cost inflation (e.g., port congestion surcharges, rising inland trucking rates, FX volatility), turning positive gross margin negative at volume >120% of pilot",
+            "probability": "Medium",
+            "mitigation": "Lock in USD-denominated pricing with both partners for 6 months; build 8% margin buffer into all quoted rates"
+          },
+          {
+            "risk": "Dedicated capacity sits idle for >45 days due to delayed third-client conversion or anchor client seasonality (Q1 electronics shipment lull), burning SGD 300k without ROI",
+            "probability": "High",
+            "mitigation": "Structure second partner agreement as 'capacity-on-call' (not reserved) with <30-day termination; allocate max SGD 120k to fixed capacity pre-commitment"
+          }
+        ],
+        "steelman_against": "Scaling before securing a binding volume commitment from the third shipper violates Harborline\u2019s own asset-light discipline \u2014 it replaces low-risk, variable-cost leverage with fixed-cost exposure just as operational readiness is flagged as deficient. The pilot proved demand *exists*, not that demand is *reliable enough to de-risk fixed investment*. Holding allows time to pressure-test the third shipper\u2019s intent (e.g., via a 3-month volume trial with shared risk) while avoiding irreversible burn \u2014 especially since the company has 16 months of runway but zero margin for error on *execution credibility* with existing clients.",
+        "risk_score": 8,
+        "verdict": "PROCEED_WITH_CAUTION",
+        "overall_concern": "Harborline is betting fixed capital on unvalidated operational capability \u2014 not market demand \u2014 and the Capability Agent explicitly confirms they lack the bandwidth to execute reliably. That gap cannot be outsourced; it will manifest as service failure, not missed revenue."
+      }
+    },
+    {
+      "agent_name": "venture_partner",
+      "role": "Chair \u2014 synthesizes the debate into the board memo",
+      "analysis": "The pilot confirmed demand exists but also exposed two unresolved risks: (1) volume concentration \u2014 only one of two anchors delivered as promised, and (2) operational control \u2014 Capability and Skeptic confirm Harborline lacks Vietnam-specific SOPs, customs visibility, and bandwidth to manage even two partners reliably. The third shipper\u2019s rate inquiry is not a commitment, and scaling before that commitment \u2014 or before closing the capability gap \u2014 repeats the exact mistake flagged in the vault: betting fixed cost on unvalidated execution. The board\u2019s prior consensus was clear: hold until contractual certainty *and* operational readiness are both achieved. Neither is met today.",
+      "score": null,
+      "key_findings": [
+        "Recommendation: hold (medium confidence)"
+      ],
+      "concerns": [
+        "Third shipper walks away during trial, leaving no path to scale",
+        "Current partner resists SOP co-development or delays customs verification",
+        "Lane owner assignment fails due to bandwidth conflict \u2014 exposing the same org-readiness gap"
+      ],
+      "recommendations": [
+        "hold"
+      ],
+      "raw_data": {
+        "recommendation": "hold",
+        "confidence": "medium",
+        "rationale": "The pilot confirmed demand exists but also exposed two unresolved risks: (1) volume concentration \u2014 only one of two anchors delivered as promised, and (2) operational control \u2014 Capability and Skeptic confirm Harborline lacks Vietnam-specific SOPs, customs visibility, and bandwidth to manage even two partners reliably. The third shipper\u2019s rate inquiry is not a commitment, and scaling before that commitment \u2014 or before closing the capability gap \u2014 repeats the exact mistake flagged in the vault: betting fixed cost on unvalidated execution. The board\u2019s prior consensus was clear: hold until contractual certainty *and* operational readiness are both achieved. Neither is met today.",
+        "missing_inputs": [
+          "Signed minimum-volume contract from the third shipper",
+          "Vietnam customs/permit lead time verified with current partner",
+          "SOPs co-developed and signed off by current partner + Harborline ops lead",
+          "Internal lane ownership assigned (name + bandwidth confirmed)"
+        ],
+        "options_assessed": [
+          {
+            "option": "Add a second Vietnam-side partner and dedicated capacity to scale the lane",
+            "assessment": "Premature. Adds complexity and fixed cost without resolving the core gaps: no binding volume, no SOPs, no lane owner, no customs clarity. Finance\u2019s contingency funding cannot release without those preconditions \u2014 and Skeptic rightly warns idle capacity would burn SGD 300k in <45 days.",
+            "verdict": "avoid"
+          },
+          {
+            "option": "Hold at pilot volume until a third anchor client signs a committed-volume contract",
+            "assessment": "Aligned with vault precedent, debate outcome, and all agents\u2019 revised positions. Gives time to close capability gaps while running a shared-risk trial with the third shipper \u2014 e.g., a 60-day rate lock with volume ramp-up clause. Preserves cash runway and avoids service risk to existing anchors.",
+            "verdict": "favoured"
+          }
+        ],
+        "what_would_change_this_call": "A signed volume commitment from the third shipper *plus* documented sign-off on Vietnam SOPs and assignment of internal lane ownership would shift this to 'proceed'. Conversely, if the third shipper declines to commit after a 60-day shared-risk trial, or if SOP co-development stalls past 3 weeks, the call remains 'hold' \u2014 and the lane should be sunsetted unless anchor #2 re-engages with volume terms.",
+        "execution_plan": {
+          "phases": [
+            {
+              "name": "Validate",
+              "objective": "Confirm whether the third shipper\u2019s interest converts to contracted volume under shared-risk terms",
+              "actions": [
+                "Draft and send 60-day trial agreement: fixed rate, volume ramp-up clause (e.g., 30% month 1, 70% month 2, 100% month 3), exit if either side misses target by >15%",
+                "Verify customs clearance timeline with current partner using live shipment docs",
+                "Map current Vietnam documentation flow and identify 3 highest-risk handoff points"
+              ],
+              "timeframe": "Weeks 1\u20132"
+            },
+            {
+              "name": "Pilot",
+              "objective": "Close one critical capability gap and assign accountability",
+              "actions": [
+                "Co-develop and sign off on 5-page Vietnam SOP covering documentation, customs escalation, and KPI tracking (on-time cross-border, error rate, dwell time)",
+                "Assign named Harborline lane owner with 10 hrs/week bandwidth confirmed in writing",
+                "Run first 3 trial shipments end-to-end with SOP adherence tracked"
+              ],
+              "timeframe": "Weeks 3\u20134"
+            },
+            {
+              "name": "Scale",
+              "objective": "Only if both Validate and Pilot succeed: activate second partner and release SGD 300k contingency",
+              "actions": [
+                "Onboard second partner *only after* SOP sign-off and trial shipment pass rate \u226595%",
+                "Deploy SGD 300k in two tranches: 50% at partner onboarding, 50% after 30 days of dual-partner uptime \u226598%",
+                "Review margin weekly; pause spend if blended lane margin falls below 12% for two consecutive weeks"
+              ],
+              "timeframe": "Week 5+ (contingent)"
+            }
+          ]
+        },
+        "financial_view": "Holding costs nothing \u2014 the SGD 300k stays in reserve. Piloting the trial and building SOPs costs <SGD 15k (internal time + minor legal review). If the third shipper commits, margin uplift comes from volume leverage \u2014 not new fixed cost. If it doesn\u2019t, Harborline avoids burning SGD 300k on idle capacity while preserving 16-month runway for higher-conviction opportunities like cold-chain (where pharma clients are already contracted-adjacent).",
+        "risks": [
+          "Third shipper walks away during trial, leaving no path to scale",
+          "Current partner resists SOP co-development or delays customs verification",
+          "Lane owner assignment fails due to bandwidth conflict \u2014 exposing the same org-readiness gap"
+        ],
+        "disclaimer": "This is advisory guidance only; Harborline Logistics retains full fiduciary and operational authority."
+      }
+    }
+  ],
+  "debate_rounds": [
+    {
+      "round_number": 1,
+      "conflicts_identified": [
+        {
+          "topic": "scaling before third shipper commitment",
+          "agent_a": "scout",
+          "agent_a_position": "Hold at pilot volume until a third anchor client signs a committed-volume contract",
+          "agent_b": "growth",
+          "agent_b_position": "Add a second Vietnam-side partner and dedicated capacity to scale the lane, using existing relationships to secure commitments from the third electronics shipper",
+          "severity": "high",
+          "resolved": true
+        },
+        {
+          "topic": "operational readiness for multi-partner expansion",
+          "agent_a": "capability",
+          "agent_a_position": "Lacks operational readiness and organizational bandwidth to reliably execute multi-partner expansion without first closing key capability gaps; recommends holding at pilot volume",
+          "agent_b": "growth",
+          "agent_b_position": "Harborline has the operational and financial capacity to execute this decision; scaling is executable with proper partner management and customer acquisition",
+          "severity": "high",
+          "resolved": true
+        },
+        {
+          "topic": "risk of fixed-cost exposure without validated execution",
+          "agent_a": "skeptic",
+          "agent_a_position": "Scaling before securing a binding volume commitment violates Harborline\u2019s asset-light discipline and replaces low-risk variable-cost leverage with irreversible fixed-cost exposure, especially given confirmed operational readiness gaps",
+          "agent_b": "finance",
+          "agent_b_position": "The SGD 300k investment fits within budget (13% of cash reserves) and is financially justifiable as a 'STRETCH' \u2014 implying acceptable risk given potential payback in 6\u20138 months if volumes materialize",
+          "severity": "high",
+          "resolved": true
+        }
+      ],
+      "revised_positions": {
+        "scout": "Hold at pilot volume until a third anchor client signs a committed-volume contract",
+        "growth": "Acknowledge operational readiness gap; revise recommendation to: 'Add second Vietnam-side partner only after closing one key capability gap (e.g., customs SOP + bilingual ops coordinator) AND securing a time-bound volume trial (e.g., 3-month, minimum 200 TEUs) with the third shipper'",
+        "capability": "Maintain position; clarify that 'holding' includes using the pause to co-develop Vietnam-specific SOPs with current partner and assign lane ownership",
+        "skeptic": "Maintain position; emphasize that 'proceed with caution' now means requiring a shared-risk trial before any fixed spend",
+        "finance": "Revise to 'CONTAIN': reclassify SGD 300k as contingency-funded \u2014 release only upon execution of shared-risk trial AND SOP sign-off; adjust payback horizon to 12+ months to reflect trial period"
+      },
+      "resolution_achieved": true,
+      "moderator_summary": "All three high-priority conflicts were resolved in favor of disciplined, execution-validated scaling. The board reaffirmed its asset-light principle and operational readiness threshold as non-negotiable prerequisites. Growth revised its stance to require capability-gap closure and a time-bound trial; finance reframed the investment as conditional and contingently funded; skeptic and capability positions were affirmed as aligned with precedent. Scout\u2019s original recommendation remains the anchor position. The path forward is now: hold pilot volume, execute shared-risk trial with third shipper, close one critical operational gap, then reassess scaling."
+    }
+  ],
+  "consensus": {
+    "consensus_score": 10.0,
+    "label": "Strong consensus",
+    "total_conflicts": 3,
+    "resolved_conflicts": 3,
+    "unresolved_conflicts": [],
+    "rounds_used": 1,
+    "summary": "Strong consensus (10.0/10): 3 of 3 conflict(s) resolved over 1 round(s).\nKey tension: Core disagreement centers on whether to commit fixed capital to scale the Vietnam lane before securing a binding volume commitment from the third shipper \u2014 with scout, capability, and skeptic insisting on holding until operational readiness and contractual certainty are achieved, while growth and finance treat the expansion as executable or financially justified despite those gaps.\n\nRound 1: All three high-priority conflicts were resolved in favor of disciplined, execution-validated scaling. The board reaffirmed its asset-light principle and operational readiness threshold as non-negotiable prerequisites. Growth revised its stance to require capability-gap closure and a time-bound trial; finance reframed the investment as conditional and contingently funded; skeptic and capability positions were affirmed as aligned with precedent. Scout\u2019s original recommendation remains the anchor position. The path forward is now: hold pilot volume, execute shared-risk trial with third shipper, close one critical operational gap, then reassess scaling.\n  scout revised: Hold at pilot volume until a third anchor client signs a committed-volume contract\n  growth revised: Acknowledge operational readiness gap; revise recommendation to: 'Add second Vietnam-side partner only after closing one key capability gap (e.g., cus\n  capability revised: Maintain position; clarify that 'holding' includes using the pause to co-develop Vietnam-specific SOPs with current partner and assign lane ownership\n  skeptic revised: Maintain position; emphasize that 'proceed with caution' now means requiring a shared-risk trial before any fixed spend\n  finance revised: Revise to 'CONTAIN': reclassify SGD 300k as contingency-funded \u2014 release only upon execution of shared-risk trial AND SOP sign-off; adjust payback hor"
+  },
+  "recommendation": {
+    "recommendation": "hold",
+    "confidence": "medium",
+    "rationale": "The pilot confirmed demand exists but also exposed two unresolved risks: (1) volume concentration \u2014 only one of two anchors delivered as promised, and (2) operational control \u2014 Capability and Skeptic confirm Harborline lacks Vietnam-specific SOPs, customs visibility, and bandwidth to manage even two partners reliably. The third shipper\u2019s rate inquiry is not a commitment, and scaling before that commitment \u2014 or before closing the capability gap \u2014 repeats the exact mistake flagged in the vault: betting fixed cost on unvalidated execution. The board\u2019s prior consensus was clear: hold until contractual certainty *and* operational readiness are both achieved. Neither is met today.",
+    "missing_inputs": [
+      "Signed minimum-volume contract from the third shipper",
+      "Vietnam customs/permit lead time verified with current partner",
+      "SOPs co-developed and signed off by current partner + Harborline ops lead",
+      "Internal lane ownership assigned (name + bandwidth confirmed)"
+    ],
+    "options_assessed": [
+      {
+        "option": "Add a second Vietnam-side partner and dedicated capacity to scale the lane",
+        "assessment": "Premature. Adds complexity and fixed cost without resolving the core gaps: no binding volume, no SOPs, no lane owner, no customs clarity. Finance\u2019s contingency funding cannot release without those preconditions \u2014 and Skeptic rightly warns idle capacity would burn SGD 300k in <45 days.",
+        "verdict": "avoid"
+      },
+      {
+        "option": "Hold at pilot volume until a third anchor client signs a committed-volume contract",
+        "assessment": "Aligned with vault precedent, debate outcome, and all agents\u2019 revised positions. Gives time to close capability gaps while running a shared-risk trial with the third shipper \u2014 e.g., a 60-day rate lock with volume ramp-up clause. Preserves cash runway and avoids service risk to existing anchors.",
+        "verdict": "favoured"
+      }
+    ],
+    "dissent": [],
+    "what_would_change_this_call": "A signed volume commitment from the third shipper *plus* documented sign-off on Vietnam SOPs and assignment of internal lane ownership would shift this to 'proceed'. Conversely, if the third shipper declines to commit after a 60-day shared-risk trial, or if SOP co-development stalls past 3 weeks, the call remains 'hold' \u2014 and the lane should be sunsetted unless anchor #2 re-engages with volume terms.",
+    "execution_plan": {
+      "phases": [
+        {
+          "name": "Validate",
+          "objective": "Confirm whether the third shipper\u2019s interest converts to contracted volume under shared-risk terms",
+          "actions": [
+            "Draft and send 60-day trial agreement: fixed rate, volume ramp-up clause (e.g., 30% month 1, 70% month 2, 100% month 3), exit if either side misses target by >15%",
+            "Verify customs clearance timeline with current partner using live shipment docs",
+            "Map current Vietnam documentation flow and identify 3 highest-risk handoff points"
+          ],
+          "timeframe": "Weeks 1\u20132"
+        },
+        {
+          "name": "Pilot",
+          "objective": "Close one critical capability gap and assign accountability",
+          "actions": [
+            "Co-develop and sign off on 5-page Vietnam SOP covering documentation, customs escalation, and KPI tracking (on-time cross-border, error rate, dwell time)",
+            "Assign named Harborline lane owner with 10 hrs/week bandwidth confirmed in writing",
+            "Run first 3 trial shipments end-to-end with SOP adherence tracked"
+          ],
+          "timeframe": "Weeks 3\u20134"
+        },
+        {
+          "name": "Scale",
+          "objective": "Only if both Validate and Pilot succeed: activate second partner and release SGD 300k contingency",
+          "actions": [
+            "Onboard second partner *only after* SOP sign-off and trial shipment pass rate \u226595%",
+            "Deploy SGD 300k in two tranches: 50% at partner onboarding, 50% after 30 days of dual-partner uptime \u226598%",
+            "Review margin weekly; pause spend if blended lane margin falls below 12% for two consecutive weeks"
+          ],
+          "timeframe": "Week 5+ (contingent)"
+        }
+      ]
+    },
+    "financial_view": "Holding costs nothing \u2014 the SGD 300k stays in reserve. Piloting the trial and building SOPs costs <SGD 15k (internal time + minor legal review). If the third shipper commits, margin uplift comes from volume leverage \u2014 not new fixed cost. If it doesn\u2019t, Harborline avoids burning SGD 300k on idle capacity while preserving 16-month runway for higher-conviction opportunities like cold-chain (where pharma clients are already contracted-adjacent).",
+    "risks": [
+      "Third shipper walks away during trial, leaving no path to scale",
+      "Current partner resists SOP co-development or delays customs verification",
+      "Lane owner assignment fails due to bandwidth conflict \u2014 exposing the same org-readiness gap"
+    ],
+    "disclaimer": "This is advisory guidance only; Harborline Logistics retains full fiduciary and operational authority."
+  },
+  "mcp_used": false,
+  "mcp_sources": [
+    "[MOCK] crunchbase: regional cross-border logistics",
+    "[MOCK] news: regional cross-border logistics",
+    "[MOCK] web: regional cross-border logistics Should we scale the Vietnam cross-border lane beyond the pilot? 2026",
+    "[MOCK] accounting: Harborline Logistics"
+  ],
+  "mock_mode": false,
+  "used_paths": [
+    "_profile.md",
+    "2025-09-12-open-a-vietnam-cross-border-lane.md",
+    "2025-11-18-raise-spot-lane-rates-8-percent.md",
+    "2026-04-05-add-cold-chain-for-pharma.md"
+  ],
+  "created_at": "2026-07-06T08:28:50.048979"
+}
