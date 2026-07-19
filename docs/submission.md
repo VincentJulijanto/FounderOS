@@ -84,7 +84,6 @@ gives them a board's argument before commitment, at ~US$0.02 and ~2 minutes per 
 **Measured against a single-agent baseline** — same three live decisions across three sectors
 (logistics, F&B, IT services), full board vs one bare `qwen-plus` advisor call, counting only
 what can be counted (`scripts/benchmark.py`, `scripts/bench_results/RESULTS.md`):
-<!-- bench lands via bench-artifacts branch -->
 
 | Dimension | Board | Bare single agent |
 |---|---|---|
@@ -105,8 +104,9 @@ accordingly (`PROJECT_STATE.md`, walkthrough in `docs/demo_script.md`).
 
 ## Presentation & Documentation (15%)
 
-- **Architecture diagram:** `docs/architecture-diagram.md` — the current two-layer agent
-  society (8-agent board + 3-agent council), as a rendered Mermaid diagram.
+- **Architecture diagram:** `docs/architecture.png` (rendered) — the current two-layer agent
+  society (8-agent board + 3-agent council, model tiers, vault memory); Mermaid source in
+  `docs/architecture-diagram.md`.
 - **Demo video:** [VIDEO LINK PLACEHOLDER]
 - **Guide:** this document plus `README.md` (quickstart, contract, project map) and
   `docs/architecture.md` (the frozen API contract).
