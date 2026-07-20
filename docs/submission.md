@@ -107,7 +107,7 @@ accordingly (`PROJECT_STATE.md`, walkthrough in `docs/demo_script.md`).
 - **Architecture diagram:** `docs/architecture.png` (rendered) — the current two-layer agent
   society (8-agent board + 3-agent council, model tiers, vault memory); Mermaid source in
   `docs/architecture-diagram.md`.
-- **Demo video:** [VIDEO LINK PLACEHOLDER]
+- **Demo video:** [Demo video (~2 min)](https://youtu.be/X6x_u6IWHog)
 - **Guide:** this document plus `README.md` (quickstart, contract, project map) and
   `docs/architecture.md` (the frozen API contract).
 
@@ -120,6 +120,8 @@ Qwen call via Alibaba Cloud's DashScope API
 (client + endpoint) and
 [`backend/config.py`](https://github.com/VincentJulijanto/FounderOS/blob/main/backend/config.py)
 (model tiers + base URL).
+
+Backend deployed live on Alibaba Cloud ECS (Singapore, 47.236.142.171).
 
 ## Track
 
